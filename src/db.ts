@@ -1,16 +1,9 @@
 import mongoose from "mongoose";
 
-const conectarDB = async () => {
-    try {
-        const mongoUri = process.env.MONGODB_URI;
-        if (!mongoUri) {
-            throw new Error("MONGODB URI no esta definido");
-        }
-        await mongoose.connect(mongoUri);
-        console.log("MongoDB conectado");
-    }catch(error) {
-        console.error("error a conectar: "+error);
-        process.exit(1);
-    }
+export const connectDatabase = async (mongoUri: string): Promise<void> => {
+  await mongoose.connect(mongoUri);
 };
-export default conectarDB();
+
+export const disconnectDatabase = async (): Promise<void> => {
+  await mongoose.disconnect();
+};
