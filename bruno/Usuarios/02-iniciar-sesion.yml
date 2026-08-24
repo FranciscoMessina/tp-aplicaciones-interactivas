@@ -1,0 +1,37 @@
+info:
+  name: Iniciar sesion
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/users/login"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{userEmail}}",
+        "password": "{{userPassword}}"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 200) {
+          bru.setVar("accessToken", res.body.accessToken);
+        }
+    - type: tests
+      code: |-
+        test("inicia sesion", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.accessToken).to.be.a("string");
+        });
+
+settings:
+  encodeUrl: true

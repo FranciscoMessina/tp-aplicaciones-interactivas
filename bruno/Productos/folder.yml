@@ -1,0 +1,10 @@
+info:
+  name: Productos
+  type: folder
+  seq: 2
+
+docs: |-
+  Consulta publica y administracion de productos.
+
+  Crear, actualizar, cambiar estado y eliminar requieren que `accessToken`
+  contenga el JWT de un usuario con rol `admin`.

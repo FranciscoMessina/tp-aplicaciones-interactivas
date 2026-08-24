@@ -80,7 +80,7 @@ export async function registerUser(
   }
 }
 
-export async function loginUser(input: LoginInput): Promise<AuthenticatedUser> {
+export async function loginUser(input: LoginInput) {
   const user = await UserModel.findOne({ email: input.email }).select(
     "+passwordHash",
   );
@@ -112,7 +112,7 @@ export async function updateUserProfile(
     const user = await UserModel.findByIdAndUpdate(
       userId,
       { $set: updates },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     ).select(PUBLIC_USER_FIELDS);
 
     if (!user) {

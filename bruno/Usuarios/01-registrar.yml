@@ -1,0 +1,44 @@
+info:
+  name: Registrar usuario
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/users/register"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "fullName": "Cliente Bruno",
+        "email": "{{userEmail}}",
+        "phone": "+54 11 5555-0101",
+        "password": "{{userPassword}}"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        bru.setVar("userEmail", `cliente.bruno.${Date.now()}@example.com`);
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("accessToken", res.body.accessToken);
+          bru.setVar("userEmail", res.body.user.email);
+        }
+    - type: tests
+      code: |-
+        test("registra el usuario", function() {
+          expect(res.status).to.equal(201);
+          expect(res.body.accessToken).to.be.a("string");
+          expect(res.body.user.role).to.equal("customer");
+        });
+
+settings:
+  encodeUrl: true

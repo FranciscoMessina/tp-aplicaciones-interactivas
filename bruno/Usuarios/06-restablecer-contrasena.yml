@@ -1,0 +1,32 @@
+info:
+  name: Restablecer contrasena
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/users/reset-password"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "token": "{{resetToken}}",
+        "password": "{{newUserPassword}}"
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("restablece la contrasena", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.message).to.equal("Password updated successfully");
+        });
+
+settings:
+  encodeUrl: true

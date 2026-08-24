@@ -1,0 +1,45 @@
+info:
+  name: Crear producto
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/products"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Notebook Bruno",
+        "category": "Tecnologia",
+        "description": "Producto creado desde la coleccion de Bruno",
+        "images": [
+          "https://example.com/images/notebook-front.jpg",
+          "https://example.com/images/notebook-back.jpg"
+        ],
+        "price": 1299.99
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("productId", res.body._id);
+        }
+    - type: tests
+      code: |-
+        test("crea el producto", function() {
+          expect(res.status).to.equal(201);
+          expect(res.body._id).to.be.a("string");
+          expect(res.body.isActive).to.equal(true);
+        });
+
+settings:
+  encodeUrl: true

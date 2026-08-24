@@ -1,0 +1,10 @@
+info:
+  name: Usuarios
+  type: folder
+  seq: 1
+
+docs: |-
+  Registro, autenticacion, perfil y recuperacion de contrasena.
+
+  La ultima request inicia sesion como administrador y deja `accessToken`
+  preparado para ejecutar la carpeta Productos.

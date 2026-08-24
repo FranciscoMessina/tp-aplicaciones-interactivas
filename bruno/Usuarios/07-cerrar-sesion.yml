@@ -1,0 +1,22 @@
+info:
+  name: Cerrar sesion
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/users/logout"
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("cierra la sesion", function() {
+          expect(res.status).to.equal(204);
+        });
+
+settings:
+  encodeUrl: true

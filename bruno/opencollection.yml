@@ -1,0 +1,50 @@
+opencollection: 1.0.0
+
+info:
+  name: TP APIs
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: baseUrl
+      value: http://localhost:8080
+    - name: userEmail
+      value: test@example.com
+    - name: userPassword
+      value: "12345678"
+    - name: accessToken
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzg3NTkwNDgwLCJleHAiOjE3ODc1OTQwODAsInN1YiI6IjZhOGM3NjhjZGMyYzc0ZDNlMmY2N2ZiMyIsImp0aSI6IjAyMDRkM2E2LWE2YTItNDBiYS1hNTZmLTNlZjQ4YjhiZDFiZiJ9.DAkaeQ-iTRPcsBaw26r35e9id29870tybd4RJWiDKUk
+    - name: adminEmail
+      value: admin@example.com
+    - name: adminPassword
+      value: "12345678"
+
+docs:
+  content: |-
+    # TP APIs
+
+    Coleccion local para probar todos los endpoints de usuarios y productos.
+
+    1. Iniciar la API con `npm run dev`.
+    2. Seleccionar el entorno `Local` en Bruno.
+    3. Crear en MongoDB el usuario configurado como `adminEmail` y asignarle el rol `admin`.
+    4. Ejecutar las requests individualmente o correr la coleccion completa en orden.
+
+    Las requests guardan automaticamente los tokens e identificadores necesarios como variables de runtime.
+  type: text/markdown
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

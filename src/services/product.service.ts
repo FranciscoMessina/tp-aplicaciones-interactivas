@@ -35,7 +35,7 @@ export async function updateProduct(
   const product = await ProductModel.findByIdAndUpdate(
     productId,
     { $set: updates },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   );
 
   if (!product) {
@@ -60,7 +60,7 @@ export async function setProductActive(
   const product = await ProductModel.findByIdAndUpdate(
     productId,
     { $set: { isActive } },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   );
 
   if (!product) {

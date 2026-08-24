@@ -1,0 +1,22 @@
+info:
+  name: Eliminar producto
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/products/{{productId}}"
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("elimina el producto", function() {
+          expect(res.status).to.equal(204);
+        });
+
+settings:
+  encodeUrl: true

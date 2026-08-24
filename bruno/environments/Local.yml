@@ -1,0 +1,24 @@
+variables:
+  - name: baseUrl
+    value: http://localhost:8080
+  - name: userEmail
+    value: cliente.bruno@example.com
+  - name: userPassword
+    value: cliente123
+    secret: true
+  - name: newUserPassword
+    value: cliente456
+    secret: true
+  - name: adminEmail
+    value: admin@example.com
+  - name: adminPassword
+    value: admin1234
+    secret: true
+  - name: accessToken
+    value: ""
+    secret: true
+  - name: productId
+    value: ""
+  - name: resetToken
+    value: ""
+    secret: true
