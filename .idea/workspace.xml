@@ -1,26 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="892d5adc-d913-4fcf-af2e-def5dba87088" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/app.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth/authorization.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/bin/www" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/config.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/controllers/users.controller.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/models/Category.model.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/models/Product.model.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/models/User.model.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/public/stylesheets/style.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/routes/api.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/routes/api/product.route.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/routes/api/user.route.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/routes/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/services/user.service.js" beforeDir="false" />
-    </list>
+    <list default="true" id="892d5adc-d913-4fcf-af2e-def5dba87088" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -41,22 +22,22 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "agustinM08"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;agustinM08&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/FranciscoMessina/tp-aplicaciones-interactivas.git",
-    "accountId": "b5373b99-b6f3-44dc-9574-82b8b4a10855"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/FranciscoMessina/tp-aplicaciones-interactivas.git&quot;,
+    &quot;accountId&quot;: &quot;b5373b99-b6f3-44dc-9574-82b8b4a10855&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 3,
-  "fromUser": false
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3,
+  &quot;fromUser&quot;: false
+}</component>
   <component name="ProjectId" id="3ILGj5gjZ0fup1OKOa4Nr5RT3Pt" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
@@ -67,6 +48,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
@@ -76,7 +58,8 @@
     "node.js.detected.package.jshint": "true",
     "node.js.selected.package.jshint": "",
     "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\Users\\tinch\\AppData\\Local\\JetBrains\\WebStorm2026.2\\ts-go-native-preview\\v7.0.0-dev.jetbrains.20260702.4\\node_modules\\@typescript\\native-preview-win32-x64\\lib"
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2026.2.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external"
   }
 }]]></component>
   <component name="SharedIndexes">
@@ -94,6 +77,7 @@
       <option name="presentableId" value="Default" />
       <updated>1787536569140</updated>
       <workItem from="1787536573488" duration="2440000" />
+      <workItem from="1787581718035" duration="1193000" />
     </task>
     <servers />
   </component>
