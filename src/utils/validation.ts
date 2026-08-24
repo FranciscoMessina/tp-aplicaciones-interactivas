@@ -13,6 +13,10 @@ export function readString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
+export function readRouteParam(value: string | string[] | undefined): string {
+  return typeof value === "string" ? value : "";
+}
+
 export function readTrimmedString(value: unknown): string {
   return readString(value).trim();
 }
@@ -23,4 +27,34 @@ export function normalizeEmail(value: unknown): string {
 
 export function isValidEmail(email: string): boolean {
   return EMAIL_PATTERN.test(email);
+}
+
+export function readStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+}
+
+export function readBoolean(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined;
+}
+
+/**
+ * Devuelve `undefined` cuando el precio no vino en el body (es opcional),
+ * y `null` cuando vino pero no es un numero valido, para que el caller
+ * pueda distinguir "no enviado" de "invalido".
+ */
+export function readOptionalNonNegativeNumber(
+  value: unknown,
+): number | undefined | null {
+  if (value === undefined) {
+    return undefined;
+  }
+
+  return typeof value === "number" && value >= 0 ? value : null;
 }

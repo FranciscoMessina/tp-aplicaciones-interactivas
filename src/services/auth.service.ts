@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import bcrypt from "bcryptjs";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { env } from "../config/env.ts";
+import { UserRole } from "../models/user.model.ts";
 
 const PASSWORD_SALT_ROUNDS = 12;
 
@@ -9,6 +10,7 @@ export interface AccessTokenPayload extends JwtPayload {
   sub: string;
   jti: string;
   type: "access";
+  role: UserRole;
 }
 
 export function hashPassword(password: string): Promise<string> {
@@ -22,8 +24,8 @@ export function verifyPassword(
   return bcrypt.compare(password, passwordHash);
 }
 
-export function createAccessToken(userId: string): string {
-  return jwt.sign({ type: "access" }, env.jwtSecret, {
+export function createAccessToken(userId: string, role: UserRole): string {
+  return jwt.sign({ type: "access", role }, env.jwtSecret, {
     expiresIn: env.jwtExpirationSeconds,
     jwtid: randomUUID(),
     subject: userId,
@@ -39,7 +41,8 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
     typeof payload === "string" ||
     payload.type !== "access" ||
     typeof payload.sub !== "string" ||
-    typeof payload.jti !== "string"
+    typeof payload.jti !== "string" ||
+    !Object.values(UserRole).includes(payload.role as UserRole)
   ) {
     throw new Error("Invalid access token payload");
   }

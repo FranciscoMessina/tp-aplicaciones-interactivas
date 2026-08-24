@@ -1,6 +1,6 @@
 import type { DocumentType } from "@typegoose/typegoose";
 import { env } from "../config/env.ts";
-import { User, UserModel } from "../models/user.model.ts";
+import { User, UserModel, type UserRole } from "../models/user.model.ts";
 import { HttpError, isMongoDuplicateKeyError } from "../utils/http-error.ts";
 import {
   createAccessToken,
@@ -13,7 +13,7 @@ import {
 const RESET_TOKEN_DURATION_MS = 15 * 60 * 1000;
 
 // Campos que se pueden devolver al cliente sin exponer datos sensibles.
-const PUBLIC_USER_FIELDS = "fullName email phone createdAt updatedAt";
+const PUBLIC_USER_FIELDS = "fullName email phone role createdAt updatedAt";
 
 export interface RegisterUserInput {
   fullName: string;
@@ -40,17 +40,19 @@ export interface AuthenticatedUser {
     fullName: string;
     email: string;
     phone: string;
+    role: UserRole;
   };
 }
 
 function toAuthenticatedUser(user: DocumentType<User>): AuthenticatedUser {
   return {
-    accessToken: createAccessToken(user.id),
+    accessToken: createAccessToken(user.id, user.role),
     user: {
       id: user.id,
       fullName: user.fullName,
       email: user.email,
       phone: user.phone,
+      role: user.role,
     },
   };
 }

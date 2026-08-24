@@ -5,6 +5,13 @@ import {
   prop,
 } from "@typegoose/typegoose";
 
+export const UserRole = {
+  Customer: "customer",
+  Admin: "admin",
+} as const;
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
+
 @index({ email: 1 }, { unique: true })
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class User {
@@ -16,6 +23,9 @@ export class User {
 
   @prop({ required: true, trim: true })
   public phone!: string;
+
+  @prop({ required: true, enum: UserRole, default: UserRole.Customer })
+  public role!: UserRole;
 
   @prop({ required: true, select: false })
   public passwordHash!: string;

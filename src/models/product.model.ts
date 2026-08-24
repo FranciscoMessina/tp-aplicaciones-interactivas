@@ -11,10 +11,19 @@ export class Product {
   public name!: string;
 
   @prop({ required: true, trim: true })
+  public category!: string;
+
+  @prop({ required: true, trim: true })
   public description!: string;
 
-  @prop({ required: true, min: 0 })
-  public stock!: number;
+  @prop({ type: () => [String], default: [] })
+  public images!: string[];
+
+  @prop({ min: 0 })
+  public price?: number;
+
+  @prop({ required: true, default: true })
+  public isActive!: boolean;
 }
 
 export const ProductModel = getModelForClass(Product);

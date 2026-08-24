@@ -1,6 +1,21 @@
 import type { Request, Response } from "express";
 import * as productService from "../services/product.service.ts";
-import { getRequestBody, readTrimmedString } from "../utils/validation.ts";
+import type {
+  CreateProductInput,
+  UpdateProductInput,
+} from "../services/product.service.ts";
+import {
+  getRequestBody,
+  readBoolean,
+  readOptionalNonNegativeNumber,
+  readRouteParam,
+  readStringArray,
+  readTrimmedString,
+} from "../utils/validation.ts";
+
+function getProductId(req: Request): string {
+  return readRouteParam(req.params.id);
+}
 
 export async function getProducts(_req: Request, res: Response): Promise<void> {
   const products = await productService.listProducts();
@@ -13,21 +28,101 @@ export async function createProduct(
 ): Promise<void> {
   const body = getRequestBody(req);
   const name = readTrimmedString(body.name);
+  const category = readTrimmedString(body.category);
   const description = readTrimmedString(body.description);
-  const stock = typeof body.stock === "number" ? body.stock : Number.NaN;
+  const images = readStringArray(body.images);
+  const price = readOptionalNonNegativeNumber(body.price);
 
-  if (!name || !description || !Number.isInteger(stock) || stock < 0) {
+  if (!name || !category || !description || price === null) {
     res.status(400).json({
       message:
-        "name, description and a stock greater than or equal to 0 are required",
+        "name, category, description are required and price, if provided, must be a number greater than or equal to 0",
     });
     return;
   }
 
-  const product = await productService.createProduct({
-    name,
-    description,
-    stock,
-  });
+  const input: CreateProductInput = { name, category, description, images };
+  if (price !== undefined) {
+    input.price = price;
+  }
+
+  const product = await productService.createProduct(input);
   res.status(201).json(product);
+}
+
+export async function updateProduct(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const body = getRequestBody(req);
+  const updates: UpdateProductInput = {};
+
+  if (body.name !== undefined) {
+    updates.name = readTrimmedString(body.name);
+  }
+  if (body.category !== undefined) {
+    updates.category = readTrimmedString(body.category);
+  }
+  if (body.description !== undefined) {
+    updates.description = readTrimmedString(body.description);
+  }
+  if (body.images !== undefined) {
+    updates.images = readStringArray(body.images);
+  }
+
+  const price = readOptionalNonNegativeNumber(body.price);
+  if (price === null) {
+    res
+      .status(400)
+      .json({ message: "price must be a number greater than or equal to 0" });
+    return;
+  }
+  if (price !== undefined) {
+    updates.price = price;
+  }
+
+  if (
+    Object.keys(updates).length === 0 ||
+    (updates.name !== undefined && !updates.name) ||
+    (updates.category !== undefined && !updates.category) ||
+    (updates.description !== undefined && !updates.description)
+  ) {
+    res.status(400).json({
+      message:
+        "Provide a valid name, category, description, images and/or price",
+    });
+    return;
+  }
+
+  const product = await productService.updateProduct(
+    getProductId(req),
+    updates,
+  );
+  res.json(product);
+}
+
+export async function deleteProduct(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  await productService.deleteProduct(getProductId(req));
+  res.status(204).send();
+}
+
+export async function setProductActive(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const isActive = readBoolean(getRequestBody(req).isActive);
+
+  if (isActive === undefined) {
+    res.status(400).json({ message: "isActive must be a boolean" });
+    return;
+  }
+
+  const product = await productService.setProductActive(
+    getProductId(req),
+    isActive,
+  );
+  res.json(product);
 }

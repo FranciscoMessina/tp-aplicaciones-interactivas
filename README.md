@@ -46,15 +46,25 @@ API REST desarrollada con Node.js, Express, TypeScript, MongoDB, Mongoose y Type
 
 ## API
 
-La colección de productos está disponible en `/api/products`:
+La colección de productos está disponible en `/api/products`. Cada publicación
+tiene `name`, `category`, `description`, `images` (array de URLs), `price`
+(opcional) e `isActive` (estado de disponibilidad). Crear, modificar, eliminar
+y activar/desactivar publicaciones requiere estar autenticado con un usuario
+de rol `admin`.
 
-- `GET /api/products`: obtiene la lista de productos.
-- `POST /api/products`: crea un producto utilizando `name`, `description` y `quantity`.
+- `GET /api/products`: obtiene la lista de productos. No requiere autenticación.
+- `POST /api/products`: crea un producto con `name`, `category`, `description`,
+  `images` y `price` (opcional). Solo administradores.
+- `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores. Solo
+  administradores.
+- `DELETE /api/products/:id`: elimina una publicación. Solo administradores.
+- `PATCH /api/products/:id/status`: activa o desactiva la publicación con
+  `isActive` (`true`/`false`). Solo administradores.
 
 ### Usuarios y autenticación
 
-- `POST /api/users/register`: registra un usuario con `fullName`, `email`, `phone` y `password` (mínimo 8 caracteres).
-- `POST /api/users/login`: inicia sesión con `email` y `password` y devuelve un JWT.
+- `POST /api/users/register`: registra un usuario con `fullName`, `email`, `phone` y `password` (mínimo 8 caracteres). El rol se asigna siempre como `customer`; un rol `admin` debe otorgarse manualmente en la base de datos.
+- `POST /api/users/login`: inicia sesión con `email` y `password` y devuelve un JWT (incluye el rol del usuario).
 - `POST /api/users/logout`: valida el JWT y responde sin contenido; el cliente debe eliminar el token almacenado.
 - `GET /api/users/me`: obtiene los datos del usuario autenticado.
 - `PATCH /api/users/me`: modifica `fullName`, `email` y/o `phone` del usuario autenticado.
