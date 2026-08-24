@@ -1,5 +1,7 @@
 # Proyecto de Aplicaciones Interactivas
 
+Por ahora solo el backend, despues se sumara el front.
+
 API REST desarrollada con Node.js, Express, TypeScript, MongoDB, Mongoose y Typegoose.
 
 ## Requisitos
