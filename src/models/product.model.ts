@@ -1,4 +1,11 @@
-import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import {
+  getModelForClass,
+  modelOptions,
+  prop,
+  type Ref,
+} from "@typegoose/typegoose";
+
+import { Category } from "./category.model.ts";
 
 // Seguramente se pregunten, que demonios es esto?
 // Bueno es una forma de definir los modelos de Mongoose con typescript,
@@ -10,8 +17,8 @@ export class Product {
   @prop({ required: true, trim: true })
   public name!: string;
 
-  @prop({ required: true, trim: true })
-  public category!: string;
+  @prop({ ref: () => Category, required: true })
+  public category!: Ref<Category>;
 
   @prop({ required: true, trim: true })
   public description!: string;
