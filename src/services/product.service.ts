@@ -1,6 +1,7 @@
 import type { DocumentType } from "@typegoose/typegoose";
 import { Product, ProductModel } from "../models/product.model.ts";
 import { HttpError } from "../utils/http-error.ts";
+import { CategoryModel } from "../models/category.model.ts";
 
 export interface CreateProductInput {
   name: string;
@@ -18,13 +19,15 @@ export interface UpdateProductInput {
   price?: number;
 }
 
-export function listProducts(): Promise<DocumentType<Product>[]> {
-  return ProductModel.find();
+export async function listProducts(): Promise<DocumentType<Product>[]> {
+  return ProductModel.find().populate("category");
 }
 
-export function createProduct(
+export async function createProduct(
   input: CreateProductInput,
 ): Promise<DocumentType<Product>> {
+  await ensureCategoryExists(input.category);
+
   return ProductModel.create(input);
 }
 
@@ -32,6 +35,9 @@ export async function updateProduct(
   productId: string,
   updates: UpdateProductInput,
 ): Promise<DocumentType<Product>> {
+  if (updates.category !== undefined) {
+  await ensureCategoryExists(updates.category);
+}
   const product = await ProductModel.findByIdAndUpdate(
     productId,
     { $set: updates },
@@ -68,4 +74,12 @@ export async function setProductActive(
   }
 
   return product;
+}
+
+async function ensureCategoryExists(categoryId: string): Promise<void> {
+  const category = await CategoryModel.findById(categoryId);
+
+  if (!category) {
+    throw new HttpError(400, "Category not found");
+  }
 }
