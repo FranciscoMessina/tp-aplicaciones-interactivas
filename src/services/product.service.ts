@@ -19,8 +19,38 @@ export interface UpdateProductInput {
   price?: number;
 }
 
-export async function listProducts(): Promise<DocumentType<Product>[]> {
-  return ProductModel.find().populate("category");
+export interface ProductFilters {
+  search?: string;
+  category?: string;
+}
+
+export async function listProducts(
+  filters: ProductFilters = {},
+): Promise<DocumentType<Product>[]> {
+  let query = ProductModel.find();
+
+  if (filters.search) {
+    query = query.or([
+      {
+        name: {
+          $regex: filters.search,
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: filters.search,
+          $options: "i",
+        },
+      },
+    ]);
+  }
+
+  if (filters.category) {
+    query = query.where("category").equals(filters.category);
+  }
+
+  return await query.populate("category");
 }
 
 export async function createProduct(

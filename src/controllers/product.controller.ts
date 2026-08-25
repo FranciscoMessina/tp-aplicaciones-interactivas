@@ -17,8 +17,32 @@ function getProductId(req: Request): string {
   return readRouteParam(req.params.id);
 }
 
-export async function getProducts(_req: Request, res: Response): Promise<void> {
-  const products = await productService.listProducts();
+export async function getProducts(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const search =
+    typeof req.query.search === "string"
+      ? req.query.search.trim()
+      : undefined;
+
+  const category =
+    typeof req.query.category === "string"
+      ? req.query.category.trim()
+      : undefined;
+
+  const filters: productService.ProductFilters = {};
+
+if (search) {
+  filters.search = search;
+}
+
+if (category) {
+  filters.category = category;
+}
+
+const products = await productService.listProducts(filters);
+
   res.json(products);
 }
 
