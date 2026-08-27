@@ -5,9 +5,9 @@ import {
 } from "@typegoose/typegoose";
 
 export const ContactFormStatus = {
-  Pending: "PENDIENTE",
-  Read: "LEIDA",
-  Resolved: "RESUELTA",
+  Pending: "PENDING",
+  Read: "READ",
+  Resolved: "RESOLVED",
 };
 
 export type ContactFormStatus =
