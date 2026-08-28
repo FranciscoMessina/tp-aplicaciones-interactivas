@@ -14,15 +14,6 @@ export interface CreateContactFormInput {
   message: string;
 }
 
-export interface UpdateContactFormInput {
-  name?: string;
-  email?: string;
-  phone?: number;
-  subject?: string;
-  message?: string;
-  status?: ContactFormStatus;
-}
-
 export async function getContactForms(): Promise<DocumentType<ContactForm>[]> {
   try {
     const contactForms = await ContactFormModel.find();
@@ -39,13 +30,13 @@ export async function createContactForm(
   return ContactFormModel.create(input);
 }
 
-export async function updateContactForm(
+export async function updateContactFormStatus(
   contactFormId: string,
-  updates: UpdateContactFormInput,
+  status: ContactFormStatus,
 ): Promise<DocumentType<ContactForm>> {
   const contactForm = await ContactFormModel.findByIdAndUpdate(
     contactFormId,
-    { $set: updates },
+    { $set: { status } },
     { returnDocument: "after", runValidators: true },
   );
 

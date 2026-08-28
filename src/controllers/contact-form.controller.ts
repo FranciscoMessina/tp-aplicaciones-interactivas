@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import type {
   CreateContactFormInput,
-  UpdateContactFormInput,
 } from "../services/contact-form.service.ts";
 import * as contactFormService from "../services/contact-form.service.ts";
 import {
@@ -11,6 +10,7 @@ import {
   readString,
   readTrimmedString,
 } from "../utils/validation.ts";
+import type { ContactFormStatus } from "../models/contact-form.model.ts";
 
 function getContactFormId(req: Request): string {
   return readRouteParam(req.params.id);
@@ -62,51 +62,23 @@ export async function createContactForm(
   return;
 }
 
-export async function updateContactForm(
+export async function updateContactFormStatus(
   req: Request,
   res: Response,
 ): Promise<void> {
   const body = getRequestBody(req);
-  const updates: UpdateContactFormInput = {};
+  const status = readString(body.status) as ContactFormStatus | undefined;
 
-  if (body.name !== undefined) {
-    updates.name = readTrimmedString(body.name);
-  }
-  if (body.email !== undefined) {
-    updates.email = readTrimmedString(body.email);
-  }
-  if (body.subject !== undefined) {
-    updates.subject = readTrimmedString(body.subject);
-  }
-  if (body.message !== undefined) {
-    updates.message = readTrimmedString(body.message);
-  }
-  if (body.status !== undefined) {
-    updates.status = readString(body.status);
-  }
-
-  const phone = readOptionalNonNegativeNumber(body.phone);
-
-  if (phone !== undefined && phone !== null) {
-    updates.phone = phone;
-  }
-
-  if (
-    Object.keys(updates).length === 0 ||
-    (updates.name !== undefined && !updates.name) ||
-    (updates.email !== undefined && !updates.email) ||
-    (updates.subject !== undefined && !updates.subject) ||
-    (updates.message !== undefined && !updates.message)
-  ) {
+  if (!status){
     res.status(400).json({
-      message: "Provide a valid name, email, subject, message",
+      message: "status is required",
     });
     return;
   }
 
-  const contactForm = await contactFormService.updateContactForm(
+  const contactForm = await contactFormService.updateContactFormStatus(
     getContactFormId(req),
-    updates,
+    status,
   );
   res.json(contactForm);
 }
