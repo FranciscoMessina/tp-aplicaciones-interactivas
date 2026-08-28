@@ -1,9 +1,12 @@
 import type { DocumentType } from "@typegoose/typegoose";
 import {
+  ApplicationError,
+  ApplicationErrorKind,
+} from "../domain/application-error.ts";
+import {
   BusinessInfo,
   BusinessInfoModel,
 } from "../models/business-info.model.ts";
-import { HttpError } from "../utils/http-error.ts";
 
 export interface BusinessInfoInput {
   name: string;
@@ -14,8 +17,17 @@ export interface BusinessInfoInput {
   openingHours: string[];
 }
 
-export function getBusinessInfo(): Promise<DocumentType<BusinessInfo> | null> {
-  return BusinessInfoModel.findOne();
+export async function getBusinessInfo(): Promise<DocumentType<BusinessInfo>> {
+  const businessInfo = await BusinessInfoModel.findOne();
+
+  if (!businessInfo) {
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "Business information not found",
+    );
+  }
+
+  return businessInfo;
 }
 
 export async function upsertBusinessInfo(
@@ -33,7 +45,10 @@ export async function upsertBusinessInfo(
   );
 
   if (!businessInfo) {
-    throw new HttpError(500, "Could not save business information");
+    throw new ApplicationError(
+      ApplicationErrorKind.Unexpected,
+      "Could not save business information",
+    );
   }
 
   return businessInfo;

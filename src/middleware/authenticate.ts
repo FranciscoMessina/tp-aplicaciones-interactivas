@@ -1,5 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
 import {
+  ApplicationError,
+  ApplicationErrorKind,
+} from "../domain/application-error.ts";
+import {
   verifyAccessToken,
   type AccessTokenPayload,
 } from "../services/auth.service.ts";
@@ -16,7 +20,12 @@ export function authenticate(
   const authorization = req.header("authorization");
 
   if (!authorization?.startsWith("Bearer ")) {
-    res.status(401).json({ message: "A bearer token is required" });
+    next(
+      new ApplicationError(
+        ApplicationErrorKind.Unauthenticated,
+        "A bearer token is required",
+      ),
+    );
     return;
   }
 
@@ -25,6 +34,11 @@ export function authenticate(
     (req as AuthenticatedRequest).auth = payload;
     next();
   } catch {
-    res.status(401).json({ message: "Invalid or expired token" });
+    next(
+      new ApplicationError(
+        ApplicationErrorKind.Unauthenticated,
+        "Invalid or expired token",
+      ),
+    );
   }
 }

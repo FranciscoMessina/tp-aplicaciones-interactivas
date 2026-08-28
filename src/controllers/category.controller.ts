@@ -1,75 +1,54 @@
 import type { Request, Response } from "express";
+import { z } from "zod";
 import * as categoryService from "../services/category.service.ts";
-import type {
-  CreateCategoryInput,
-  UpdateCategoryInput,
-} from "../services/category.service.ts";
-import {
-  getRequestBody,
-  readRouteParam,
-  readTrimmedString,
-} from "../utils/validation.ts";
+import * as catalogAdministration from "../services/catalog.service.ts";
 
-function getCategoryId(req: Request): string {
-  return readRouteParam(req.params.id);
-}
+const objectIdSchema = z
+  .string()
+  .regex(/^[0-9a-fA-F]{24}$/, "Must be a valid identifier");
+const categoryBodySchema = z.object({ name: z.string().trim().min(1) });
+const createCategoryRequestSchema = z.object({ body: categoryBodySchema });
+const updateCategoryRequestSchema = z.object({
+  params: z.object({ id: objectIdSchema }),
+  body: categoryBodySchema,
+});
+const categoryIdRequestSchema = z.object({
+  params: z.object({ id: objectIdSchema }),
+});
 
 export async function getCategories(
   _req: Request,
   res: Response,
 ): Promise<void> {
-  const categories = await categoryService.listCategories();
-  res.json(categories);
+  res.json(await categoryService.listCategories());
 }
 
 export async function createCategory(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const body = getRequestBody(req);
-  const name = readTrimmedString(body.name);
-
-  if (!name) {
-    res.status(400).json({
-      message: "name is required",
-    });
-    return;
-  }
-
-  const input: CreateCategoryInput = { name };
-
-  const category = await categoryService.createCategory(input);
-  res.status(201).json(category);
+  const requestBody: unknown = req.body;
+  const { body } = createCategoryRequestSchema.parse({ body: requestBody });
+  res.status(201).json(await catalogAdministration.createCategory(body));
 }
 
 export async function updateCategory(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const body = getRequestBody(req);
-  const name = readTrimmedString(body.name);
-
-  if (!name) {
-    res.status(400).json({
-      message: "Provide a valid name",
-    });
-    return;
-  }
-
-  const updates: UpdateCategoryInput = { name };
-
-  const category = await categoryService.updateCategory(
-    getCategoryId(req),
-    updates,
-  );
-
-  res.json(category);
+  const requestBody: unknown = req.body;
+  const { params, body } = updateCategoryRequestSchema.parse({
+    params: req.params,
+    body: requestBody,
+  });
+  res.json(await catalogAdministration.updateCategory(params.id, body));
 }
 
 export async function deleteCategory(
   req: Request,
   res: Response,
 ): Promise<void> {
-  await categoryService.deleteCategory(getCategoryId(req));
+  const { params } = categoryIdRequestSchema.parse({ params: req.params });
+  await catalogAdministration.deleteCategory(params.id);
   res.status(204).send();
 }

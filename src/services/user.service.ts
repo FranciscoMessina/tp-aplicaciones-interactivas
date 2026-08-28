@@ -1,7 +1,10 @@
 import type { DocumentType } from "@typegoose/typegoose";
 import { env } from "../config/env.ts";
+import {
+  ApplicationError,
+  ApplicationErrorKind,
+} from "../domain/application-error.ts";
 import { User, UserModel, type UserRole } from "../models/user.model.ts";
-import { HttpError, isMongoDuplicateKeyError } from "../utils/http-error.ts";
 import {
   createAccessToken,
   createPasswordResetToken,
@@ -62,22 +65,14 @@ export async function registerUser(
 ): Promise<AuthenticatedUser> {
   const passwordHash = await hashPassword(input.password);
 
-  try {
-    const user = await UserModel.create({
-      fullName: input.fullName,
-      email: input.email,
-      phone: input.phone,
-      passwordHash,
-    });
+  const user = await UserModel.create({
+    fullName: input.fullName,
+    email: input.email,
+    phone: input.phone,
+    passwordHash,
+  });
 
-    return toAuthenticatedUser(user);
-  } catch (error) {
-    if (isMongoDuplicateKeyError(error)) {
-      throw new HttpError(409, "An account with that email already exists");
-    }
-
-    throw error;
-  }
+  return toAuthenticatedUser(user);
 }
 
 export async function loginUser(input: LoginInput) {
@@ -86,7 +81,10 @@ export async function loginUser(input: LoginInput) {
   );
 
   if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
-    throw new HttpError(401, "Invalid email or password");
+    throw new ApplicationError(
+      ApplicationErrorKind.Unauthenticated,
+      "Invalid email or password",
+    );
   }
 
   return toAuthenticatedUser(user);
@@ -98,7 +96,7 @@ export async function getUserProfile(
   const user = await UserModel.findById(userId).select(PUBLIC_USER_FIELDS);
 
   if (!user) {
-    throw new HttpError(404, "User not found");
+    throw new ApplicationError(ApplicationErrorKind.NotFound, "User not found");
   }
 
   return user;
@@ -108,25 +106,17 @@ export async function updateUserProfile(
   userId: string,
   updates: UpdateProfileInput,
 ): Promise<DocumentType<User>> {
-  try {
-    const user = await UserModel.findByIdAndUpdate(
-      userId,
-      { $set: updates },
-      { returnDocument: "after", runValidators: true },
-    ).select(PUBLIC_USER_FIELDS);
+  const user = await UserModel.findByIdAndUpdate(
+    userId,
+    { $set: updates },
+    { returnDocument: "after", runValidators: true },
+  ).select(PUBLIC_USER_FIELDS);
 
-    if (!user) {
-      throw new HttpError(404, "User not found");
-    }
-
-    return user;
-  } catch (error) {
-    if (isMongoDuplicateKeyError(error)) {
-      throw new HttpError(409, "An account with that email already exists");
-    }
-
-    throw error;
+  if (!user) {
+    throw new ApplicationError(ApplicationErrorKind.NotFound, "User not found");
   }
+
+  return user;
 }
 
 /**
@@ -170,6 +160,9 @@ export async function resetPassword(
   );
 
   if (!user) {
-    throw new HttpError(400, "Invalid or expired reset token");
+    throw new ApplicationError(
+      ApplicationErrorKind.InvalidInput,
+      "Invalid or expired reset token",
+    );
   }
 }

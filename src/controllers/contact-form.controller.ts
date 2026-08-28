@@ -1,92 +1,74 @@
 import type { Request, Response } from "express";
-import type {
-  CreateContactFormInput,
-} from "../services/contact-form.service.ts";
+import { z } from "zod";
+import { ContactFormStatus } from "../domain/contact-form.ts";
 import * as contactFormService from "../services/contact-form.service.ts";
-import {
-  getRequestBody,
-  readOptionalNonNegativeNumber,
-  readRouteParam,
-  readString,
-  readTrimmedString,
-} from "../utils/validation.ts";
-import type { ContactFormStatus } from "../models/contact-form.model.ts";
+import type { CreateContactFormInput } from "../services/contact-form.service.ts";
 
-function getContactFormId(req: Request): string {
-  return readRouteParam(req.params.id);
-}
+const objectIdSchema = z
+  .string()
+  .regex(/^[0-9a-fA-F]{24}$/, "Must be a valid identifier");
+const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
+const createContactFormRequestSchema = z.object({
+  body: z.object({
+    name: z.string().trim().min(1),
+    email: emailSchema,
+    phone: z.string().trim().min(1).optional(),
+    subject: z.string().trim().min(1),
+    message: z.string().trim().min(1),
+  }),
+});
+const updateContactFormStatusRequestSchema = z.object({
+  params: z.object({ id: objectIdSchema }),
+  body: z.object({ status: z.enum(ContactFormStatus) }),
+});
+const contactFormIdRequestSchema = z.object({
+  params: z.object({ id: objectIdSchema }),
+});
 
 export async function getContactForms(
-  req: Request,
+  _req: Request,
   res: Response,
 ): Promise<void> {
-  try {
-    const contactForms = await contactFormService.getContactForms();
-    res.status(200).json(contactForms);
-  } catch (error) {
-    res.status(500).json({ message: String(error) });
-  }
+  const contactForm = await contactFormService.listContactForms();
+
+  res.json(contactForm);
 }
 
 export async function createContactForm(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const body = getRequestBody(req);
-  const name = readTrimmedString(body.name);
-  const email = readTrimmedString(body.email);
-  const phone = readOptionalNonNegativeNumber(body.phone);
-  const subject = readTrimmedString(body.subject);
-  const message = readTrimmedString(body.message);
-  // dudas removidas porque el estatus nunca viaja como opcion, es algo automatico en la creacion, y ademas lo cambie a un objeto con string.
-
-  if (!name || !email || !subject || message) {
-    res.status(400).json({
-      message: "name, email, subject, message are required",
-    });
-    return;
-  }
-
+  const requestBody: unknown = req.body;
+  const { body } = createContactFormRequestSchema.parse({ body: requestBody });
   const input: CreateContactFormInput = {
-    name,
-    email,
-    subject,
-    message,
+    name: body.name,
+    email: body.email,
+    ...(body.phone !== undefined ? { phone: body.phone } : {}),
+    subject: body.subject,
+    message: body.message,
   };
-  if (phone !== undefined && phone !== null) {
-    input.phone = phone;
-  }
-
-  await contactFormService.createContactForm(input);
-  res.status(201).json({});
-  return;
+  res.status(201).json(await contactFormService.intakeContactForm(input));
 }
 
 export async function updateContactFormStatus(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const body = getRequestBody(req);
-  const status = readString(body.status) as ContactFormStatus | undefined;
-
-  if (!status){
-    res.status(400).json({
-      message: "status is required",
-    });
-    return;
-  }
-
-  const contactForm = await contactFormService.updateContactFormStatus(
-    getContactFormId(req),
-    status,
+  const requestBody: unknown = req.body;
+  const { params, body } = updateContactFormStatusRequestSchema.parse({
+    params: req.params,
+    body: requestBody,
+  });
+  res.json(
+    await contactFormService.transitionContactForm(params.id, body.status),
   );
-  res.json(contactForm);
 }
 
-export async function deleteContacForm(
+export async function deleteContactForm(
   req: Request,
   res: Response,
 ): Promise<void> {
-  await contactFormService.deleteContactForm(getContactFormId(req));
+  const { params } = contactFormIdRequestSchema.parse({ params: req.params });
+  await contactFormService.discardContactForm(params.id);
   res.status(204).send();
 }

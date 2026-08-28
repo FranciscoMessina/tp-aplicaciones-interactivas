@@ -61,6 +61,27 @@ de rol `admin`.
 - `PATCH /api/products/:id/status`: activa o desactiva la publicación con
   `isActive` (`true`/`false`). Solo administradores.
 
+Las publicaciones inactivas no se devuelven desde el listado público. Cada
+publicación debe incluir al menos una imagen con una URL válida y su categoría
+debe ser el ID de una categoría existente.
+
+### Categorías e información institucional
+
+- `GET /api/categories`: lista categorías.
+- `POST`, `PATCH /:id` y `DELETE /:id` sobre `/api/categories`: solo administradores.
+- `GET /api/business-info`: obtiene la información pública del comercio.
+- `PUT /api/business-info`: crea o actualiza la información institucional. Solo administradores.
+
+### Consultas
+
+- `POST /api/contact-form`: permite a cualquier visitante enviar una consulta.
+- `GET /api/contact-form`, `PATCH /api/contact-form/:id` y `DELETE /api/contact-form/:id`:
+  solo administradores.
+
+El estado de una consulta comienza en `PENDING`. Puede avanzar a `READ` o
+`RESOLVED`, y desde `READ` sólo puede avanzar a `RESOLVED`; los cambios al mismo
+estado son idempotentes.
+
 ### Usuarios y autenticación
 
 - `POST /api/users/register`: registra un usuario con `fullName`, `email`, `phone` y `password` (mínimo 8 caracteres). El rol se asigna siempre como `customer`; un rol `admin` debe otorgarse manualmente en la base de datos.
@@ -74,3 +95,8 @@ de rol `admin`.
 Los correos se normalizan a minúsculas y tienen un índice único en MongoDB. Las
 contraseñas se almacenan con bcrypt y los tokens de recuperación son de un solo
 uso, se guardan hasheados y vencen a los 15 minutos.
+
+## Validación
+
+Los cuerpos de las solicitudes se validan con Zod. Cuando son inválidos, la API
+responde `400` con el campo y el motivo de cada error.

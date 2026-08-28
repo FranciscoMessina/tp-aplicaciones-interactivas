@@ -1,4 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
+import {
+  ApplicationError,
+  ApplicationErrorKind,
+} from "../domain/application-error.ts";
 import { UserRole } from "../models/user.model.ts";
 import type { AuthenticatedRequest } from "./authenticate.ts";
 
@@ -9,7 +13,12 @@ export function requireRole(
     const { role } = (req as AuthenticatedRequest).auth;
 
     if (!roles.includes(role)) {
-      res.status(403).json({ message: "Insufficient permissions" });
+      next(
+        new ApplicationError(
+          ApplicationErrorKind.Forbidden,
+          "Insufficient permissions",
+        ),
+      );
       return;
     }
 

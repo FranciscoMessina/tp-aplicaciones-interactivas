@@ -10,11 +10,13 @@ import { contactFormRouter } from "./routes/contact-form.routes.ts";
 const app = express();
 
 app.use(express.json());
+
 app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
 app.use("/api/users", userRouter);
-app.use(errorHandler);
 app.use("/api/business-info", businessInfoRouter);
-app.use("/api/contact-form",contactFormRouter);
+app.use("/api/contact-form", contactFormRouter);
+
+app.use(errorHandler);
 
 export { app };

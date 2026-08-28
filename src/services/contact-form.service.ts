@@ -1,56 +1,82 @@
 import type { DocumentType } from "@typegoose/typegoose";
 import {
-  ContactForm,
-  ContactFormModel,
+  ApplicationError,
+  ApplicationErrorKind,
+} from "../domain/application-error.ts";
+import {
   ContactFormStatus,
-} from "../models/contact-form.model.ts";
-import { HttpError } from "../utils/http-error.ts";
+  type ContactFormStatus as ContactFormStatusValue,
+} from "../domain/contact-form.ts";
+import { ContactForm, ContactFormModel } from "../models/contact-form.model.ts";
 
 export interface CreateContactFormInput {
   name: string;
   email: string;
-  phone?: number;
+  phone?: string;
   subject: string;
   message: string;
 }
 
-export async function getContactForms(): Promise<DocumentType<ContactForm>[]> {
-  try {
-    const contactForms = await ContactFormModel.find();
-    return contactForms;
-  } catch (error) {
-    console.error(error);
-    throw new HttpError(500, "Error al obtener los formularios de contacto");
-  }
+export function listContactForms(): Promise<DocumentType<ContactForm>[]> {
+  return ContactFormModel.find();
 }
 
-export async function createContactForm(
+export function intakeContactForm(
   input: CreateContactFormInput,
 ): Promise<DocumentType<ContactForm>> {
-  return ContactFormModel.create(input);
+  return ContactFormModel.create({
+    ...input,
+    status: ContactFormStatus.Pending,
+  });
 }
 
-export async function updateContactFormStatus(
+export async function transitionContactForm(
   contactFormId: string,
-  status: ContactFormStatus,
+  nextStatus: ContactFormStatusValue,
 ): Promise<DocumentType<ContactForm>> {
-  const contactForm = await ContactFormModel.findByIdAndUpdate(
-    contactFormId,
-    { $set: { status } },
-    { returnDocument: "after", runValidators: true },
-  );
+  const contactForm = await ContactFormModel.findById(contactFormId);
 
   if (!contactForm) {
-    throw new HttpError(404, "ContactForm not found");
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "Contact form not found",
+    );
   }
 
-  return contactForm;
+  if (contactForm.status === nextStatus) {
+    return contactForm;
+  }
+
+  if (!allowedTransitions[contactForm.status].includes(nextStatus)) {
+    throw new ApplicationError(
+      ApplicationErrorKind.Conflict,
+      `Cannot transition contact form from ${contactForm.status} to ${nextStatus}`,
+    );
+  }
+
+  contactForm.status = nextStatus;
+  return contactForm.save();
 }
 
-export async function deleteContactForm(contactFormId: string): Promise<void> {
+export async function discardContactForm(contactFormId: string): Promise<void> {
   const contactForm = await ContactFormModel.findByIdAndDelete(contactFormId);
 
   if (!contactForm) {
-    throw new HttpError(404, "ContactForm not found");
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "Contact form not found",
+    );
   }
 }
+
+const allowedTransitions: Record<
+  ContactFormStatusValue,
+  ContactFormStatusValue[]
+> = {
+  [ContactFormStatus.Pending]: [
+    ContactFormStatus.Read,
+    ContactFormStatus.Resolved,
+  ],
+  [ContactFormStatus.Read]: [ContactFormStatus.Resolved],
+  [ContactFormStatus.Resolved]: [],
+};

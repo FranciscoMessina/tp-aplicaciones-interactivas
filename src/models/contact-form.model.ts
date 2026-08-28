@@ -1,17 +1,8 @@
+import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
 import {
-  getModelForClass,
-  modelOptions,
-  prop,
-} from "@typegoose/typegoose";
-
-export const ContactFormStatus = {
-  Pending: "PENDING",
-  Read: "READ",
-  Resolved: "RESOLVED",
-};
-
-export type ContactFormStatus =
-  (typeof ContactFormStatus)[keyof typeof ContactFormStatus];
+  ContactFormStatus,
+  type ContactFormStatus as ContactFormStatusValue,
+} from "../domain/contact-form.ts";
 
 @modelOptions({ schemaOptions: { timestamps: true } })
 export class ContactForm {
@@ -22,7 +13,7 @@ export class ContactForm {
   public email!: string;
 
   @prop({ trim: true })
-  public phone?: number;
+  public phone?: string;
 
   @prop({ required: true, trim: true })
   public subject!: string;
@@ -31,7 +22,7 @@ export class ContactForm {
   public message!: string;
 
   @prop({ enum: ContactFormStatus, default: ContactFormStatus.Pending })
-  public status!: ContactFormStatus;
+  public status!: ContactFormStatusValue;
 }
 
 export const ContactFormModel = getModelForClass(ContactForm);
