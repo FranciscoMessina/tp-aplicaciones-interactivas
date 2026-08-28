@@ -3,15 +3,15 @@ import {
     createContactForm,
     getContactForms,
     deleteContacForm,
-    updateContactForm,
+    updateContactFormStatus,
 } from "../controllers/contact-form.controller.ts";
 import { authenticate } from "../middleware/authenticate.ts";
 
-const productRouter = Router();
+const contactFormRouter = Router();
 
-productRouter.get("/", getContactForms);
-productRouter.post("/", authenticate, createContactForm);
-productRouter.patch("/:id", authenticate, updateContactForm);
-productRouter.delete("/:id", authenticate, deleteContacForm);
+contactFormRouter.get("/", getContactForms);
+contactFormRouter.post("/", authenticate, createContactForm);
+contactFormRouter.patch("/:id", authenticate, updateContactFormStatus);
+contactFormRouter.delete("/:id", authenticate, deleteContacForm);
 
 export { contactFormRouter };
