@@ -1,54 +1,37 @@
 import type { Request, Response } from "express";
-import { z } from "zod";
-import * as categoryService from "../services/category.service.ts";
-import * as catalogAdministration from "../services/catalog.service.ts";
+import { handler } from "../http/handler.ts";
+import {
+  categoryIdSchema,
+  createCategorySchema,
+  updateCategorySchema,
+} from "../schemas/category.schema.ts";
+import * as catalog from "../services/catalog.service.ts";
 
-const objectIdSchema = z
-  .string()
-  .regex(/^[0-9a-fA-F]{24}$/, "Must be a valid identifier");
-const categoryBodySchema = z.object({ name: z.string().trim().min(1) });
-const createCategoryRequestSchema = z.object({ body: categoryBodySchema });
-const updateCategoryRequestSchema = z.object({
-  params: z.object({ id: objectIdSchema }),
-  body: categoryBodySchema,
-});
-const categoryIdRequestSchema = z.object({
-  params: z.object({ id: objectIdSchema }),
-});
+export const listCategories = handler(
+  {},
+  async (_req: Request, res: Response) => {
+    res.json(await catalog.listCategories());
+  },
+);
 
-export async function getCategories(
-  _req: Request,
-  res: Response,
-): Promise<void> {
-  res.json(await categoryService.listCategories());
-}
+export const createCategory = handler(
+  { schema: createCategorySchema, auth: "admin" },
+  async (_req: Request, res: Response, { input }) => {
+    res.status(201).json(await catalog.createCategory(input.body));
+  },
+);
 
-export async function createCategory(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const requestBody: unknown = req.body;
-  const { body } = createCategoryRequestSchema.parse({ body: requestBody });
-  res.status(201).json(await catalogAdministration.createCategory(body));
-}
+export const updateCategory = handler(
+  { schema: updateCategorySchema, auth: "admin" },
+  async (_req: Request, res: Response, { input }) => {
+    res.json(await catalog.updateCategory(input.params.id, input.body));
+  },
+);
 
-export async function updateCategory(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const requestBody: unknown = req.body;
-  const { params, body } = updateCategoryRequestSchema.parse({
-    params: req.params,
-    body: requestBody,
-  });
-  res.json(await catalogAdministration.updateCategory(params.id, body));
-}
-
-export async function deleteCategory(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const { params } = categoryIdRequestSchema.parse({ params: req.params });
-  await catalogAdministration.deleteCategory(params.id);
-  res.status(204).send();
-}
+export const deleteCategory = handler(
+  { schema: categoryIdSchema, auth: "admin" },
+  async (_req: Request, res: Response, { input }) => {
+    await catalog.deleteCategory(input.params.id);
+    res.status(204).send();
+  },
+);

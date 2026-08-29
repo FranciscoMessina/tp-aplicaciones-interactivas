@@ -1,10 +1,7 @@
-import {
-  getModelForClass,
-  modelOptions,
-  prop,
-} from "@typegoose/typegoose";
+import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { baseModelOptions } from "./model-options.ts";
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions(baseModelOptions)
 export class BusinessInfo {
   @prop({ required: true, trim: true })
   public name!: string;

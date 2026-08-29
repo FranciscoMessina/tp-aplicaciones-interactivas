@@ -1,123 +1,44 @@
 import type { Request, Response } from "express";
-import { z } from "zod";
-import * as catalogAdministration from "../services/catalog.service.ts";
-import type {
-  CreateProductInput,
-  UpdateProductInput,
-} from "../services/catalog.service.ts";
-import * as productService from "../services/product.service.ts";
+import { handler } from "../http/handler.ts";
+import { UserRole } from "../models/user.model.ts";
+import {
+  createProductSchema,
+  listProductsSchema,
+  productIdSchema,
+  updateProductSchema,
+} from "../schemas/product.schema.ts";
+import * as catalog from "../services/catalog.service.ts";
 
-const objectIdSchema = z
-  .string()
-  .regex(/^[0-9a-fA-F]{24}$/, "Must be a valid identifier");
-const optionalTrimmedQueryString = z.preprocess(
-  (value) =>
-    typeof value === "string" && value.trim() === "" ? undefined : value,
-  z.string().trim().optional(),
+export const getProducts = handler(
+  { schema: listProductsSchema, auth: "optional" },
+  async (_req: Request, res: Response, { input, auth }) => {
+    // Un visitante anonimo, o uno autenticado que no sea admin, siempre ve el
+    // catalogo publico: el flag se ignora en silencio en vez de responder 403.
+    const includeInactive =
+      input.query.includeInactive && auth?.role === UserRole.Admin;
+
+    res.json(await catalog.listProducts({ ...input.query, includeInactive }));
+  },
 );
-const optionalCategoryQuery = z.preprocess(
-  (value) =>
-    typeof value === "string" && value.trim() === "" ? undefined : value,
-  objectIdSchema.optional(),
+
+export const createProduct = handler(
+  { schema: createProductSchema, auth: "admin" },
+  async (_req: Request, res: Response, { input }) => {
+    res.status(201).json(await catalog.createProduct(input.body));
+  },
 );
-const productFields = {
-  name: z.string().trim().min(1),
-  category: objectIdSchema,
-  description: z.string().trim().min(1),
-  images: z.array(z.url()).min(1),
-  price: z.number().nonnegative().optional(),
-};
-const listProductsRequestSchema = z.object({
-  query: z.object({
-    search: optionalTrimmedQueryString,
-    category: optionalCategoryQuery,
-  }),
-});
-const createProductRequestSchema = z.object({
-  body: z.object(productFields),
-});
-const updateProductRequestSchema = z.object({
-  params: z.object({ id: objectIdSchema }),
-  body: z
-    .object(productFields)
-    .partial()
-    .refine((value) => Object.keys(value).length > 0, {
-      message: "Provide at least one field",
-    }),
-});
-const productIdRequestSchema = z.object({
-  params: z.object({ id: objectIdSchema }),
-});
-const productStatusRequestSchema = z.object({
-  params: z.object({ id: objectIdSchema }),
-  body: z.object({ isActive: z.boolean() }),
-});
 
-export async function getProducts(req: Request, res: Response): Promise<void> {
-  const { query } = listProductsRequestSchema.parse({ query: req.query });
-  const products = await productService.listProducts({
-    ...(query.search ? { search: query.search } : {}),
-    ...(query.category ? { category: query.category } : {}),
-  });
-  res.json(products);
-}
+export const updateProduct = handler(
+  { schema: updateProductSchema, auth: "admin" },
+  async (_req: Request, res: Response, { input }) => {
+    res.json(await catalog.updateProduct(input.params.id, input.body));
+  },
+);
 
-export async function createProduct(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const requestBody: unknown = req.body;
-  const { body } = createProductRequestSchema.parse({ body: requestBody });
-  const input: CreateProductInput = {
-    name: body.name,
-    category: body.category,
-    description: body.description,
-    images: body.images,
-    ...(body.price !== undefined ? { price: body.price } : {}),
-  };
-  res.status(201).json(await catalogAdministration.createProduct(input));
-}
-
-export async function updateProduct(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const requestBody: unknown = req.body;
-  const { params, body } = updateProductRequestSchema.parse({
-    params: req.params,
-    body: requestBody,
-  });
-  const updates: UpdateProductInput = {
-    ...(body.name !== undefined ? { name: body.name } : {}),
-    ...(body.category !== undefined ? { category: body.category } : {}),
-    ...(body.description !== undefined
-      ? { description: body.description }
-      : {}),
-    ...(body.images !== undefined ? { images: body.images } : {}),
-    ...(body.price !== undefined ? { price: body.price } : {}),
-  };
-  res.json(await catalogAdministration.updateProduct(params.id, updates));
-}
-
-export async function deleteProduct(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const { params } = productIdRequestSchema.parse({ params: req.params });
-  await catalogAdministration.deleteProduct(params.id);
-  res.status(204).send();
-}
-
-export async function setProductActive(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const requestBody: unknown = req.body;
-  const { params, body } = productStatusRequestSchema.parse({
-    params: req.params,
-    body: requestBody,
-  });
-  res.json(
-    await catalogAdministration.setProductActive(params.id, body.isActive),
-  );
-}
+export const deleteProduct = handler(
+  { schema: productIdSchema, auth: "admin" },
+  async (_req: Request, res: Response, { input }) => {
+    await catalog.deleteProduct(input.params.id);
+    res.status(204).send();
+  },
+);

@@ -31,13 +31,13 @@ runtime:
     - type: after-response
       code: |-
         if (res.status === 201) {
-          bru.setVar("productId", res.body._id);
+          bru.setVar("productId", res.body.id);
         }
     - type: tests
       code: |-
         test("crea el producto", function() {
           expect(res.status).to.equal(201);
-          expect(res.body._id).to.be.a("string");
+          expect(res.body.id).to.be.a("string");
           expect(res.body.isActive).to.equal(true);
         });
 

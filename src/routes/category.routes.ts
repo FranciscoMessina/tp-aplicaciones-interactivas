@@ -2,35 +2,15 @@ import { Router } from "express";
 import {
   createCategory,
   deleteCategory,
-  getCategories,
+  listCategories,
   updateCategory,
 } from "../controllers/category.controller.ts";
-import { authenticate } from "../middleware/authenticate.ts";
-import { requireAdmin } from "../middleware/authorize.ts";
 
 const categoryRouter = Router();
 
-categoryRouter.get("/", getCategories);
-
-categoryRouter.post(
-  "/",
-  authenticate,
-  requireAdmin,
-  createCategory,
-);
-
-categoryRouter.patch(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  updateCategory,
-);
-
-categoryRouter.delete(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  deleteCategory,
-);
+categoryRouter.get("/", listCategories);
+categoryRouter.post("/", createCategory);
+categoryRouter.patch("/:id", updateCategory);
+categoryRouter.delete("/:id", deleteCategory);
 
 export { categoryRouter };

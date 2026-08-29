@@ -48,18 +48,23 @@ API REST desarrollada con Node.js, Express, TypeScript, MongoDB, Mongoose y Type
 
 La colección de productos está disponible en `/api/products`. Cada publicación
 tiene `name`, `category`, `description`, `images` (array de URLs), `price`
-(opcional) e `isActive` (estado de disponibilidad). Crear, modificar, eliminar
-y activar/desactivar publicaciones requiere estar autenticado con un usuario
-de rol `admin`.
+(opcional) e `isActive` (estado de disponibilidad). Crear, modificar y eliminar
+publicaciones requiere estar autenticado con un usuario de rol `admin`.
+Activar o desactivar una publicacion es una modificacion mas: se hace enviando
+`isActive` a `PATCH /api/products/:id`, no hay un endpoint aparte.
 
-- `GET /api/products`: obtiene la lista de productos. No requiere autenticación.
+- `GET /api/products`: obtiene la lista de productos activos. No requiere
+  autenticación. Acepta `search`, `category` e `includeInactive`. Un
+  administrador autenticado que envie `includeInactive=true` recibe tambien las
+  publicaciones desactivadas; para cualquier otro visitante el parametro se
+  ignora en silencio, porque el endpoint es publico y un 403 delataria que el
+  flag significa algo.
 - `POST /api/products`: crea un producto con `name`, `category`, `description`,
-  `images` y `price` (opcional). Solo administradores.
-- `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores. Solo
+  `images`, `price` (opcional) e `isActive` (opcional, por defecto `true`). Solo
   administradores.
+- `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores,
+  `isActive` incluido. Solo administradores.
 - `DELETE /api/products/:id`: elimina una publicación. Solo administradores.
-- `PATCH /api/products/:id/status`: activa o desactiva la publicación con
-  `isActive` (`true`/`false`). Solo administradores.
 
 Las publicaciones inactivas no se devuelven desde el listado público. Cada
 publicación debe incluir al menos una imagen con una URL válida y su categoría
@@ -74,8 +79,8 @@ debe ser el ID de una categoría existente.
 
 ### Consultas
 
-- `POST /api/contact-form`: permite a cualquier visitante enviar una consulta.
-- `GET /api/contact-form`, `PATCH /api/contact-form/:id` y `DELETE /api/contact-form/:id`:
+- `POST /api/enquiries`: permite a cualquier visitante enviar una consulta.
+- `GET /api/enquiries`, `PATCH /api/enquiries/:id` y `DELETE /api/enquiries/:id`:
   solo administradores.
 
 El estado de una consulta comienza en `PENDING`. Puede avanzar a `READ` o
@@ -95,6 +100,13 @@ estado son idempotentes.
 Los correos se normalizan a minúsculas y tienen un índice único en MongoDB. Las
 contraseñas se almacenan con bcrypt y los tokens de recuperación son de un solo
 uso, se guardan hasheados y vencen a los 15 minutos.
+
+## Respuestas
+
+Los documentos se serializan con una transformacion `toJSON` compartida por
+todos los modelos: exponen `id` en lugar de `_id` y no incluyen `__v`. Aplica
+tambien a los documentos anidados, por ejemplo la `category` que acompania a
+cada producto en el listado.
 
 ## Validación
 
