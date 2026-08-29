@@ -42,6 +42,15 @@ type Context<
   TAuth extends AuthMode | undefined,
 > = { input: Input<TSchema> } & AuthContext<TAuth>;
 
+/**
+ * Esta funcion la usamos para mejorar la experiencia de desarrollo con typescript
+ * Si usamos middlewares normales con express no sabemos los tipos de las request
+ * que son modificadas por esos middlewares, y podemos olvidarnos de poner el middleware en alguna ruta. Con este handler que se usa para definir la funcion del controller nos ahorramos el problema de poner los middlewares.
+ *
+ * @param options
+ * @param respond
+ * @returns
+ */
 export function handler<
   TSchema extends RequestSchema = Record<never, never>,
   TAuth extends AuthMode | undefined = undefined,

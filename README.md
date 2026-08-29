@@ -79,8 +79,8 @@ debe ser el ID de una categoría existente.
 
 ### Consultas
 
-- `POST /api/contact-form`: permite a cualquier visitante enviar una consulta.
-- `GET /api/contact-form`, `PATCH /api/contact-form/:id` y `DELETE /api/contact-form/:id`:
+- `POST /api/enquiries`: permite a cualquier visitante enviar una consulta.
+- `GET /api/enquiries`, `PATCH /api/enquiries/:id` y `DELETE /api/enquiries/:id`:
   solo administradores.
 
 El estado de una consulta comienza en `PENDING`. Puede avanzar a `READ` o

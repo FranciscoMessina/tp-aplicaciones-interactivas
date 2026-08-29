@@ -6,8 +6,27 @@ import {
   ApplicationErrorKind,
 } from "../domain/application-error.ts";
 
+// Para traducir los tipos de errores de la aplicacion a codigos de error HTTP
+const applicationErrorStatus: Record<ApplicationErrorKind, number> = {
+  [ApplicationErrorKind.InvalidInput]: 400,
+  [ApplicationErrorKind.Unauthenticated]: 401,
+  [ApplicationErrorKind.Forbidden]: 403,
+  [ApplicationErrorKind.NotFound]: 404,
+  [ApplicationErrorKind.Conflict]: 409,
+  [ApplicationErrorKind.Unexpected]: 500,
+};
+
+function isMongoDuplicateKeyError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === 11000
+  );
+}
+
 /**
- * Ultimo eslabon de la cadena: traduce cualquier error que salga de un
+ * Ultimo eslabon de la cadena se encarga de traducir cualquier error que salga de un
  * controller o servicio a una respuesta HTTP.
  */
 export function errorHandler(
@@ -55,22 +74,4 @@ export function errorHandler(
 
   console.error("Unhandled error:", error);
   res.status(500).json({ message: "Unexpected server error" });
-}
-
-const applicationErrorStatus: Record<ApplicationErrorKind, number> = {
-  [ApplicationErrorKind.InvalidInput]: 400,
-  [ApplicationErrorKind.Unauthenticated]: 401,
-  [ApplicationErrorKind.Forbidden]: 403,
-  [ApplicationErrorKind.NotFound]: 404,
-  [ApplicationErrorKind.Conflict]: 409,
-  [ApplicationErrorKind.Unexpected]: 500,
-};
-
-function isMongoDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === 11000
-  );
 }
