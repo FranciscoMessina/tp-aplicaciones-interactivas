@@ -48,18 +48,18 @@ API REST desarrollada con Node.js, Express, TypeScript, MongoDB, Mongoose y Type
 
 La colección de productos está disponible en `/api/products`. Cada publicación
 tiene `name`, `category`, `description`, `images` (array de URLs), `price`
-(opcional) e `isActive` (estado de disponibilidad). Crear, modificar, eliminar
-y activar/desactivar publicaciones requiere estar autenticado con un usuario
-de rol `admin`.
+(opcional) e `isActive` (estado de disponibilidad). Crear, modificar y eliminar
+publicaciones requiere estar autenticado con un usuario de rol `admin`.
+Activar o desactivar una publicacion es una modificacion mas: se hace enviando
+`isActive` a `PATCH /api/products/:id`, no hay un endpoint aparte.
 
 - `GET /api/products`: obtiene la lista de productos. No requiere autenticación.
 - `POST /api/products`: crea un producto con `name`, `category`, `description`,
-  `images` y `price` (opcional). Solo administradores.
-- `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores. Solo
+  `images`, `price` (opcional) e `isActive` (opcional, por defecto `true`). Solo
   administradores.
+- `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores,
+  `isActive` incluido. Solo administradores.
 - `DELETE /api/products/:id`: elimina una publicación. Solo administradores.
-- `PATCH /api/products/:id/status`: activa o desactiva la publicación con
-  `isActive` (`true`/`false`). Solo administradores.
 
 Las publicaciones inactivas no se devuelven desde el listado público. Cada
 publicación debe incluir al menos una imagen con una URL válida y su categoría

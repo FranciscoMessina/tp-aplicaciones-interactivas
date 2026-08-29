@@ -12,6 +12,7 @@ export interface CreateProductInput {
   description: string;
   images: string[];
   price?: number;
+  isActive?: boolean;
 }
 
 export interface UpdateProductInput {
@@ -20,6 +21,7 @@ export interface UpdateProductInput {
   description?: string;
   images?: string[];
   price?: number;
+  isActive?: boolean;
 }
 
 export interface CategoryInput {
@@ -66,26 +68,6 @@ export async function deleteProduct(productId: string): Promise<void> {
       "Product not found",
     );
   }
-}
-
-export async function setProductActive(
-  productId: string,
-  isActive: boolean,
-): Promise<DocumentType<Product>> {
-  const product = await ProductModel.findByIdAndUpdate(
-    productId,
-    { $set: { isActive } },
-    { returnDocument: "after", runValidators: true },
-  );
-
-  if (!product) {
-    throw new ApplicationError(
-      ApplicationErrorKind.NotFound,
-      "Product not found",
-    );
-  }
-
-  return product;
 }
 
 export function createCategory(

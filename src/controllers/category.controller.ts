@@ -16,7 +16,7 @@ const categoryIdRequestSchema = z.object({
   params: z.object({ id: objectIdSchema }),
 });
 
-export async function getCategories(
+export async function listCategories(
   _req: Request,
   res: Response,
 ): Promise<void> {

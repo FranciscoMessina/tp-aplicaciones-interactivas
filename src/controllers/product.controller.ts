@@ -26,6 +26,7 @@ const productFields = {
   description: z.string().trim().min(1),
   images: z.array(z.url()).min(1),
   price: z.number().nonnegative().optional(),
+  isActive: z.boolean().optional(),
 };
 const listProductsRequestSchema = z.object({
   query: z.object({
@@ -47,10 +48,6 @@ const updateProductRequestSchema = z.object({
 });
 const productIdRequestSchema = z.object({
   params: z.object({ id: objectIdSchema }),
-});
-const productStatusRequestSchema = z.object({
-  params: z.object({ id: objectIdSchema }),
-  body: z.object({ isActive: z.boolean() }),
 });
 
 export async function getProducts(req: Request, res: Response): Promise<void> {
@@ -74,6 +71,7 @@ export async function createProduct(
     description: body.description,
     images: body.images,
     ...(body.price !== undefined ? { price: body.price } : {}),
+    ...(body.isActive !== undefined ? { isActive: body.isActive } : {}),
   };
   res.status(201).json(await catalogAdministration.createProduct(input));
 }
@@ -95,6 +93,7 @@ export async function updateProduct(
       : {}),
     ...(body.images !== undefined ? { images: body.images } : {}),
     ...(body.price !== undefined ? { price: body.price } : {}),
+    ...(body.isActive !== undefined ? { isActive: body.isActive } : {}),
   };
   res.json(await catalogAdministration.updateProduct(params.id, updates));
 }
@@ -106,18 +105,4 @@ export async function deleteProduct(
   const { params } = productIdRequestSchema.parse({ params: req.params });
   await catalogAdministration.deleteProduct(params.id);
   res.status(204).send();
-}
-
-export async function setProductActive(
-  req: Request,
-  res: Response,
-): Promise<void> {
-  const requestBody: unknown = req.body;
-  const { params, body } = productStatusRequestSchema.parse({
-    params: req.params,
-    body: requestBody,
-  });
-  res.json(
-    await catalogAdministration.setProductActive(params.id, body.isActive),
-  );
 }

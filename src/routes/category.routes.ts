@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   createCategory,
   deleteCategory,
-  getCategories,
+  listCategories,
   updateCategory,
 } from "../controllers/category.controller.ts";
 import { authenticate } from "../middleware/authenticate.ts";
@@ -10,7 +10,7 @@ import { requireAdmin } from "../middleware/authorize.ts";
 
 const categoryRouter = Router();
 
-categoryRouter.get("/", getCategories);
+categoryRouter.get("/", listCategories);
 
 categoryRouter.post(
   "/",
