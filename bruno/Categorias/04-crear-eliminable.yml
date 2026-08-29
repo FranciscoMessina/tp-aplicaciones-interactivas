@@ -1,0 +1,40 @@
+info:
+  name: Crear categoria eliminable
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/categories"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "{{disposableCategoryName}}"
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        bru.setVar("disposableCategoryName", `Categoria eliminable ${Date.now()}`);
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("disposableCategoryId", res.body.id);
+        }
+    - type: tests
+      code: |-
+        test("crea una categoria para probar su eliminacion", function() {
+          expect(res.status).to.equal(201);
+          expect(res.body.id).to.be.a("string");
+        });
+
+settings:
+  encodeUrl: true

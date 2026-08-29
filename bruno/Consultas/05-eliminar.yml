@@ -1,11 +1,11 @@
 info:
-  name: Eliminar producto
+  name: Eliminar consulta
   type: http
-  seq: 7
+  seq: 5
 
 http:
   method: DELETE
-  url: "{{baseUrl}}/api/products/{{productId}}"
+  url: "{{baseUrl}}/api/enquiries/{{enquiryId}}"
   auth:
     type: bearer
     token: "{{accessToken}}"
@@ -14,7 +14,7 @@ runtime:
   scripts:
     - type: tests
       code: |-
-        test("elimina el producto", function() {
+        test("elimina la consulta", function() {
           expect(res.status).to.equal(204);
         });
 

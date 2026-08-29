@@ -1,7 +1,7 @@
 info:
   name: Productos
   type: folder
-  seq: 2
+  seq: 3
 
 docs: |-
   Consulta publica y administracion de productos.

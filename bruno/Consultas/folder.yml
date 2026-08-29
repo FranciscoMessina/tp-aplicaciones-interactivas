@@ -1,0 +1,10 @@
+info:
+  name: Consultas
+  type: folder
+  seq: 5
+
+docs: |-
+  Alta publica y gestion administrativa de consultas de visitantes.
+
+  La secuencia prueba las transiciones PENDING, READ y RESOLVED antes de
+  eliminar la consulta temporal.

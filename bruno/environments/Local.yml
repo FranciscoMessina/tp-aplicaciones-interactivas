@@ -19,6 +19,12 @@ variables:
     secret: true
   - name: productId
     value: ""
+  - name: categoryId
+    value: ""
+  - name: disposableCategoryId
+    value: ""
+  - name: enquiryId
+    value: ""
   - name: resetToken
     value: ""
     secret: true

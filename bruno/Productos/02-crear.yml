@@ -13,8 +13,8 @@ http:
     type: json
     data: |-
       {
-        "name": "Notebook Bruno",
-        "category": "Tecnologia",
+        "name": "Heladera",
+        "category": "{{categoryId}}",
         "description": "Producto creado desde la coleccion de Bruno",
         "images": [
           "https://example.com/images/notebook-front.jpg",
@@ -38,8 +38,14 @@ runtime:
         test("crea el producto", function() {
           expect(res.status).to.equal(201);
           expect(res.body.id).to.be.a("string");
+          expect(res.body.category).to.equal(bru.getVar("categoryId"));
+          expect(res.body.availableQuantity).to.equal(0);
           expect(res.body.isActive).to.equal(true);
         });
 
 settings:
   encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

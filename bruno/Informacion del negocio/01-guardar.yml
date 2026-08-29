@@ -1,0 +1,45 @@
+info:
+  name: Guardar informacion del negocio
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/business-info"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Comercio Bruno",
+        "description": "Informacion institucional cargada desde Bruno",
+        "address": "Av. Corrientes 1234, CABA",
+        "phone": "+54 11 5555-0123",
+        "socialNetworks": [
+          "https://www.instagram.com/comercio-bruno",
+          "https://www.facebook.com/comercio-bruno"
+        ],
+        "openingHours": [
+          "Lunes a viernes de 09:00 a 18:00",
+          "Sabados de 09:00 a 13:00"
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("crea o actualiza la informacion del negocio", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body.name).to.equal("Comercio Bruno");
+          expect(res.body.socialNetworks).to.be.an("array");
+          expect(res.body.openingHours).to.be.an("array");
+        });
+
+settings:
+  encodeUrl: true

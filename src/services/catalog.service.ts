@@ -31,6 +31,10 @@ export interface CategoryInput {
 export interface ProductSearchFilters {
   search?: string;
   category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: "publicationDate" | "price" | "relevance";
+  sortOrder?: "asc" | "desc";
   includeInactive?: boolean;
 }
 
@@ -42,24 +46,36 @@ export async function searchProducts(
     : ProductModel.find({ isActive: true });
 
   if (filters.search) {
-    query = query.or([
-      {
-        name: {
-          $regex: escapeRegularExpression(filters.search),
-          $options: "i",
-        },
-      },
-      {
-        description: {
-          $regex: escapeRegularExpression(filters.search),
-          $options: "i",
-        },
-      },
-    ]);
+    query = query.find({ $text: { $search: filters.search } });
   }
 
   if (filters.category) {
     query = query.where("category").equals(filters.category);
+  }
+
+  if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+    query = query.where("price");
+
+    if (filters.minPrice !== undefined) {
+      query = query.gte(filters.minPrice);
+    }
+
+    if (filters.maxPrice !== undefined) {
+      query = query.lte(filters.maxPrice);
+    }
+  }
+
+  const sortDirection = filters.sortOrder === "asc" ? 1 : -1;
+
+  switch (filters.sortBy) {
+    case "relevance":
+      query = query.sort({ score: { $meta: "textScore" } });
+      break;
+    case "price":
+      query = query.sort({ price: sortDirection, createdAt: -1 });
+      break;
+    default:
+      query = query.sort({ createdAt: sortDirection });
   }
 
   return await query.populate("category");
@@ -155,10 +171,6 @@ export async function deleteCategory(categoryId: string): Promise<void> {
       "Category not found",
     );
   }
-}
-
-function escapeRegularExpression(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 async function ensureCategoryExists(categoryId: string): Promise<void> {

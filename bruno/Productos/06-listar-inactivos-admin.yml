@@ -1,0 +1,33 @@
+info:
+  name: Listar productos inactivos como admin
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/products"
+  params:
+    - name: includeInactive
+      value: "true"
+    - name: sortBy
+      value: price
+    - name: sortOrder
+      value: asc
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("incluye productos inactivos para un administrador", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body).to.be.an("array");
+          const product = res.body.find((item) => item.id === bru.getVar("productId"));
+          expect(product).to.be.an("object");
+          expect(product.isActive).to.equal(false);
+        });
+
+settings:
+  encodeUrl: true

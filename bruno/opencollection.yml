@@ -33,14 +33,14 @@ docs:
   content: |-
     # TP APIs
 
-    Coleccion local para probar todos los endpoints de usuarios y productos.
+    Coleccion local para probar todos los endpoints de la API.
 
     1. Iniciar la API con `npm run dev`.
     2. Seleccionar el entorno `Local` en Bruno.
     3. Crear en MongoDB el usuario configurado como `adminEmail` y asignarle el rol `admin`.
     4. Ejecutar las requests individualmente o correr la coleccion completa en orden.
 
-    Las requests guardan automaticamente los tokens e identificadores necesarios como variables de runtime.
+    Las requests guardan automaticamente los tokens e identificadores necesarios como variables de runtime. Los productos, las consultas y la categoria auxiliar se eliminan durante la corrida.
   type: text/markdown
 bundled: false
 extensions:

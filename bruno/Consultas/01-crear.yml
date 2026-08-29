@@ -1,0 +1,41 @@
+info:
+  name: Crear consulta
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/enquiries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Visitante Bruno",
+        "email": "visitante.bruno@example.com",
+        "phone": "+54 11 5555-0144",
+        "subject": "Consulta por Notebook Bruno",
+        "message": "Quisiera recibir mas informacion sobre el producto."
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("enquiryId", res.body.id);
+        }
+    - type: tests
+      code: |-
+        test("crea una consulta pendiente", function() {
+          expect(res.status).to.equal(201);
+          expect(res.body.id).to.be.a("string");
+          expect(res.body.status).to.equal("PENDING");
+        });
+
+settings:
+  encodeUrl: true

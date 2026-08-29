@@ -1,0 +1,7 @@
+info:
+  name: Informacion del negocio
+  type: folder
+  seq: 4
+
+docs: |-
+  Lectura publica y actualizacion administrativa de la informacion institucional.

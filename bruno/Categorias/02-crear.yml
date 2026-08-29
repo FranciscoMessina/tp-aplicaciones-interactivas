@@ -1,0 +1,41 @@
+info:
+  name: Crear categoria
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/categories"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "{{categoryName}}"
+      }
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        bru.setVar("categoryName", `Tecnologia Bruno ${Date.now()}`);
+    - type: after-response
+      code: |-
+        if (res.status === 201) {
+          bru.setVar("categoryId", res.body.id);
+        }
+    - type: tests
+      code: |-
+        test("crea una categoria", function() {
+          expect(res.status).to.equal(201);
+          expect(res.body.id).to.be.a("string");
+          expect(res.body.name).to.equal(bru.getVar("categoryName"));
+        });
+
+settings:
+  encodeUrl: true

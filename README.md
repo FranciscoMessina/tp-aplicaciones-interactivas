@@ -54,11 +54,14 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 `isActive` a `PATCH /api/products/:id`, no hay un endpoint aparte.
 
 - `GET /api/products`: obtiene la lista de productos activos. No requiere
-  autenticación. Acepta `search`, `category` e `includeInactive`. Un
-  administrador autenticado que envie `includeInactive=true` recibe tambien las
-  publicaciones desactivadas; para cualquier otro visitante el parametro se
-  ignora en silencio, porque el endpoint es publico y un 403 delataria que el
-  flag significa algo.
+  autenticación. Acepta `search` (full-text sobre `name` y `description`),
+  `category`, `minPrice`, `maxPrice`, `sortBy` (`publicationDate`, `price` o
+  `relevance`), `sortOrder` (`asc` o `desc`) e `includeInactive`. El orden por
+  defecto es fecha de publicación descendente y `relevance` requiere `search`.
+  Un administrador autenticado que envie `includeInactive=true` recibe tambien
+  las publicaciones desactivadas; para cualquier otro visitante el parametro
+  se ignora en silencio, porque el endpoint es publico y un 403 delataria que
+  el flag significa algo.
 - `POST /api/products`: crea un producto con `name`, `category`, `description`,
   `images`, `price` (opcional) e `isActive` (opcional, por defecto `true`). Solo
   administradores.

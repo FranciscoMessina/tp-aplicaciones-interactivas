@@ -1,0 +1,24 @@
+info:
+  name: Listar consultas
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/enquiries"
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("lista las consultas como administrador", function() {
+          expect(res.status).to.equal(200);
+          expect(res.body).to.be.an("array");
+          expect(res.body.some((enquiry) => enquiry.id === bru.getVar("enquiryId"))).to.equal(true);
+        });
+
+settings:
+  encodeUrl: true

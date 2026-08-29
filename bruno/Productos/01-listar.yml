@@ -5,9 +5,11 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/products"
-  auth:
-    type: none
+  url: "{{baseUrl}}/api/products?search=notebook"
+  params:
+    - name: search
+      value: notebook
+      type: query
 
 runtime:
   scripts:
@@ -20,3 +22,7 @@ runtime:
 
 settings:
   encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
