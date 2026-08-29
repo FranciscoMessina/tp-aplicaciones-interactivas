@@ -28,6 +28,43 @@ export interface CategoryInput {
   name: string;
 }
 
+export interface ProductFilters {
+  search?: string;
+  category?: string;
+  includeInactive?: boolean;
+}
+
+export async function listProducts(
+  filters: ProductFilters = {},
+): Promise<DocumentType<Product>[]> {
+  let query = filters.includeInactive
+    ? ProductModel.find()
+    : ProductModel.find({ isActive: true });
+
+  if (filters.search) {
+    query = query.or([
+      {
+        name: {
+          $regex: escapeRegularExpression(filters.search),
+          $options: "i",
+        },
+      },
+      {
+        description: {
+          $regex: escapeRegularExpression(filters.search),
+          $options: "i",
+        },
+      },
+    ]);
+  }
+
+  if (filters.category) {
+    query = query.where("category").equals(filters.category);
+  }
+
+  return await query.populate("category");
+}
+
 export async function createProduct(
   input: CreateProductInput,
 ): Promise<DocumentType<Product>> {
@@ -68,6 +105,10 @@ export async function deleteProduct(productId: string): Promise<void> {
       "Product not found",
     );
   }
+}
+
+export function listCategories(): Promise<DocumentType<Category>[]> {
+  return CategoryModel.find();
 }
 
 export function createCategory(
@@ -114,6 +155,10 @@ export async function deleteCategory(categoryId: string): Promise<void> {
       "Category not found",
     );
   }
+}
+
+function escapeRegularExpression(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 async function ensureCategoryExists(categoryId: string): Promise<void> {

@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import * as categoryService from "../services/category.service.ts";
-import * as catalogAdministration from "../services/catalog.service.ts";
+import * as catalog from "../services/catalog.service.ts";
 
 const objectIdSchema = z
   .string()
@@ -20,7 +19,7 @@ export async function listCategories(
   _req: Request,
   res: Response,
 ): Promise<void> {
-  res.json(await categoryService.listCategories());
+  res.json(await catalog.listCategories());
 }
 
 export async function createCategory(
@@ -29,7 +28,7 @@ export async function createCategory(
 ): Promise<void> {
   const requestBody: unknown = req.body;
   const { body } = createCategoryRequestSchema.parse({ body: requestBody });
-  res.status(201).json(await catalogAdministration.createCategory(body));
+  res.status(201).json(await catalog.createCategory(body));
 }
 
 export async function updateCategory(
@@ -41,7 +40,7 @@ export async function updateCategory(
     params: req.params,
     body: requestBody,
   });
-  res.json(await catalogAdministration.updateCategory(params.id, body));
+  res.json(await catalog.updateCategory(params.id, body));
 }
 
 export async function deleteCategory(
@@ -49,6 +48,6 @@ export async function deleteCategory(
   res: Response,
 ): Promise<void> {
   const { params } = categoryIdRequestSchema.parse({ params: req.params });
-  await catalogAdministration.deleteCategory(params.id);
+  await catalog.deleteCategory(params.id);
   res.status(204).send();
 }

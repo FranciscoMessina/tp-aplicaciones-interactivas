@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
-import * as catalogAdministration from "../services/catalog.service.ts";
+import * as catalog from "../services/catalog.service.ts";
 import type {
   CreateProductInput,
   UpdateProductInput,
 } from "../services/catalog.service.ts";
-import * as productService from "../services/product.service.ts";
 
 const objectIdSchema = z
   .string()
@@ -52,7 +51,7 @@ const productIdRequestSchema = z.object({
 
 export async function getProducts(req: Request, res: Response): Promise<void> {
   const { query } = listProductsRequestSchema.parse({ query: req.query });
-  const products = await productService.listProducts({
+  const products = await catalog.listProducts({
     ...(query.search ? { search: query.search } : {}),
     ...(query.category ? { category: query.category } : {}),
   });
@@ -73,7 +72,7 @@ export async function createProduct(
     ...(body.price !== undefined ? { price: body.price } : {}),
     ...(body.isActive !== undefined ? { isActive: body.isActive } : {}),
   };
-  res.status(201).json(await catalogAdministration.createProduct(input));
+  res.status(201).json(await catalog.createProduct(input));
 }
 
 export async function updateProduct(
@@ -95,7 +94,7 @@ export async function updateProduct(
     ...(body.price !== undefined ? { price: body.price } : {}),
     ...(body.isActive !== undefined ? { isActive: body.isActive } : {}),
   };
-  res.json(await catalogAdministration.updateProduct(params.id, updates));
+  res.json(await catalog.updateProduct(params.id, updates));
 }
 
 export async function deleteProduct(
@@ -103,6 +102,6 @@ export async function deleteProduct(
   res: Response,
 ): Promise<void> {
   const { params } = productIdRequestSchema.parse({ params: req.params });
-  await catalogAdministration.deleteProduct(params.id);
+  await catalog.deleteProduct(params.id);
   res.status(204).send();
 }
