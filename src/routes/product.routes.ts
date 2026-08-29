@@ -2,13 +2,13 @@ import { Router } from "express";
 import {
   createProduct,
   deleteProduct,
-  getProducts,
+  searchProducts,
   updateProduct,
 } from "../controllers/product.controller.ts";
 
 const productRouter = Router();
 
-productRouter.get("/", getProducts);
+productRouter.get("/", searchProducts);
 productRouter.post("/", createProduct);
 productRouter.patch("/:id", updateProduct);
 productRouter.delete("/:id", deleteProduct);

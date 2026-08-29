@@ -28,14 +28,14 @@ export interface CategoryInput {
   name: string;
 }
 
-export interface ProductFilters {
+export interface ProductSearchFilters {
   search?: string;
   category?: string;
   includeInactive?: boolean;
 }
 
-export async function listProducts(
-  filters: ProductFilters = {},
+export async function searchProducts(
+  filters: ProductSearchFilters = {},
 ): Promise<DocumentType<Product>[]> {
   let query = filters.includeInactive
     ? ProductModel.find()

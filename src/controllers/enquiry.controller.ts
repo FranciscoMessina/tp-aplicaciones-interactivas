@@ -7,7 +7,7 @@ import {
 } from "../schemas/enquiry.schema.ts";
 import * as enquiryService from "../services/enquiry.service.ts";
 
-export const getEnquiries = handler(
+export const listEnquiries = handler(
   { auth: "admin" },
   async (_req: Request, res: Response) => {
     res.json(await enquiryService.listEnquiries());

@@ -15,7 +15,7 @@ const productFields = {
 
 const productParams = z.object({ id: objectIdSchema });
 
-export const listProductsSchema = {
+export const searchProductsSchema = {
   query: z.object({
     search: z.preprocess(emptyStringAsUndefined, z.string().trim().optional()),
     category: z.preprocess(emptyStringAsUndefined, objectIdSchema.optional()),

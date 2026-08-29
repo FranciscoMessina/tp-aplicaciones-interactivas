@@ -3,21 +3,21 @@ import { handler } from "../http/handler.ts";
 import { UserRole } from "../models/user.model.ts";
 import {
   createProductSchema,
-  listProductsSchema,
   productIdSchema,
+  searchProductsSchema,
   updateProductSchema,
 } from "../schemas/product.schema.ts";
 import * as catalog from "../services/catalog.service.ts";
 
-export const getProducts = handler(
-  { schema: listProductsSchema, auth: "optional" },
+export const searchProducts = handler(
+  { schema: searchProductsSchema, auth: "optional" },
   async (_req: Request, res: Response, { input, auth }) => {
     // Un visitante anonimo, o uno autenticado que no sea admin, siempre ve el
     // catalogo publico: el flag se ignora en silencio en vez de responder 403.
     const includeInactive =
       input.query.includeInactive && auth?.role === UserRole.Admin;
 
-    res.json(await catalog.listProducts({ ...input.query, includeInactive }));
+    res.json(await catalog.searchProducts({ ...input.query, includeInactive }));
   },
 );
 
