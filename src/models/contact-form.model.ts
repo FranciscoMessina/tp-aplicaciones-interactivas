@@ -1,10 +1,11 @@
 import { getModelForClass, modelOptions, prop } from "@typegoose/typegoose";
+import { baseModelOptions } from "./model-options.ts";
 import {
   ContactFormStatus,
   type ContactFormStatus as ContactFormStatusValue,
 } from "../domain/contact-form.ts";
 
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions(baseModelOptions)
 export class ContactForm {
   @prop({ required: true, trim: true })
   public name!: string;

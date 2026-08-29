@@ -4,6 +4,7 @@ import {
   modelOptions,
   prop,
 } from "@typegoose/typegoose";
+import { baseModelOptions } from "./model-options.ts";
 
 export const UserRole = {
   Customer: "customer",
@@ -13,7 +14,7 @@ export const UserRole = {
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 @index({ email: 1 }, { unique: true })
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions(baseModelOptions)
 export class User {
   @prop({ required: true, trim: true })
   public fullName!: string;

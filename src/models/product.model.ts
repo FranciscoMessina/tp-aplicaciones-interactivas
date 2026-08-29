@@ -4,6 +4,7 @@ import {
   prop,
   type Ref,
 } from "@typegoose/typegoose";
+import { baseModelOptions } from "./model-options.ts";
 
 import { Category } from "./category.model.ts";
 
@@ -11,7 +12,7 @@ import { Category } from "./category.model.ts";
 // Bueno es una forma de definir los modelos de Mongoose con typescript,
 // evita tener codigo extra y duplicado.
 // En este primer decorator se configuran opciones del schema.
-@modelOptions({ schemaOptions: { timestamps: true } })
+@modelOptions(baseModelOptions)
 export class Product {
   // En cada prop decorator se configura el campo del documento en si.
   @prop({ required: true, trim: true })

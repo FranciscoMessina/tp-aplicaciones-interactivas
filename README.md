@@ -96,6 +96,13 @@ Los correos se normalizan a minúsculas y tienen un índice único en MongoDB. L
 contraseñas se almacenan con bcrypt y los tokens de recuperación son de un solo
 uso, se guardan hasheados y vencen a los 15 minutos.
 
+## Respuestas
+
+Los documentos se serializan con una transformacion `toJSON` compartida por
+todos los modelos: exponen `id` en lugar de `_id` y no incluyen `__v`. Aplica
+tambien a los documentos anidados, por ejemplo la `category` que acompania a
+cada producto en el listado.
+
 ## Validación
 
 Los cuerpos de las solicitudes se validan con Zod. Cuando son inválidos, la API
