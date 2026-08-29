@@ -19,7 +19,7 @@ request:
     - name: baseUrl
       value: http://localhost:8080
     - name: userEmail
-      value: test@example.com
+      value: cliente.bruno.1787590284355@example.com
     - name: userPassword
       value: "12345678"
     - name: accessToken

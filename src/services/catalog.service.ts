@@ -5,6 +5,7 @@ import {
 } from "../domain/application-error.ts";
 import { Category, CategoryModel } from "../models/category.model.ts";
 import { Product, ProductModel } from "../models/product.model.ts";
+import { Types, type PipelineStage } from "mongoose";
 
 export interface CreateProductInput {
   name: string;
@@ -41,27 +42,95 @@ export interface ProductSearchFilters {
 export async function searchProducts(
   filters: ProductSearchFilters = {},
 ): Promise<DocumentType<Product>[]> {
-  let query = filters.includeInactive
-    ? ProductModel.find()
-    : ProductModel.find({ isActive: true });
+  const pipeline: PipelineStage[] = [];
 
   if (filters.search) {
-    query = query.find({ $text: { $search: filters.search } });
-  }
+    const searchFilter: Record<string, unknown>[] = [];
 
-  if (filters.category) {
-    query = query.where("category").equals(filters.category);
-  }
-
-  if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-    query = query.where("price");
-
-    if (filters.minPrice !== undefined) {
-      query = query.gte(filters.minPrice);
+    if (!filters.includeInactive) {
+      searchFilter.push({ equals: { path: "isActive", value: true } });
     }
 
-    if (filters.maxPrice !== undefined) {
-      query = query.lte(filters.maxPrice);
+    if (filters.category) {
+      searchFilter.push({
+        equals: {
+          path: "category",
+          value: new Types.ObjectId(filters.category),
+        },
+      });
+    }
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      searchFilter.push({
+        range: {
+          path: "price",
+          ...(filters.minPrice !== undefined && { gte: filters.minPrice }),
+          ...(filters.maxPrice !== undefined && { lte: filters.maxPrice }),
+        },
+      });
+    }
+
+    pipeline.push({
+      $search: {
+        index: "productSearch",
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: filters.search,
+                path: "name",
+                fuzzy: { maxEdits: 1 },
+                score: { boost: { value: 5 } },
+              },
+            },
+            {
+              text: {
+                query: filters.search,
+                path: "name",
+                fuzzy: { maxEdits: 2 },
+                score: { boost: { value: 3 } },
+              },
+            },
+            {
+              text: {
+                query: filters.search,
+                path: "description",
+                fuzzy: { maxEdits: 2 },
+              },
+            },
+          ],
+          minimumShouldMatch: 1,
+          ...(searchFilter.length > 0 && { filter: searchFilter }),
+        },
+      },
+    });
+  } else {
+    const match: Record<string, unknown> = {};
+
+    if (!filters.includeInactive) {
+      match.isActive = true;
+    }
+
+    if (filters.category) {
+      match.category = new Types.ObjectId(filters.category);
+    }
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      const price: Record<string, number> = {};
+
+      if (filters.minPrice !== undefined) {
+        price.$gte = filters.minPrice;
+      }
+
+      if (filters.maxPrice !== undefined) {
+        price.$lte = filters.maxPrice;
+      }
+
+      match.price = price;
+    }
+
+    if (Object.keys(match).length > 0) {
+      pipeline.push({ $match: match });
     }
   }
 
@@ -69,16 +138,25 @@ export async function searchProducts(
 
   switch (filters.sortBy) {
     case "relevance":
-      query = query.sort({ score: { $meta: "textScore" } });
+      pipeline.push(
+        { $set: { searchScore: { $meta: "searchScore" } } },
+        { $sort: { searchScore: sortDirection, createdAt: -1 } },
+        { $unset: "searchScore" },
+      );
       break;
     case "price":
-      query = query.sort({ price: sortDirection, createdAt: -1 });
+      pipeline.push({ $sort: { price: sortDirection, createdAt: -1 } });
       break;
     default:
-      query = query.sort({ createdAt: sortDirection });
+      pipeline.push({ $sort: { createdAt: sortDirection } });
   }
 
-  return await query.populate("category");
+  const products = await ProductModel.aggregate(pipeline);
+  const hydratedProducts = products.map((product) =>
+    ProductModel.hydrate(product),
+  );
+
+  return ProductModel.populate(hydratedProducts, { path: "category" });
 }
 
 export async function createProduct(
