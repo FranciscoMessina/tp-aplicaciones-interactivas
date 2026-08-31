@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/products?search=heladera"
+  url: "{{baseUrl}}/api/products?search=brun"
   params:
     - name: search
-      value: heladera
+      value: brun
       type: query
 
 runtime:
