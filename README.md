@@ -39,10 +39,29 @@ API REST desarrollada con Node.js, Express, TypeScript, MongoDB, Mongoose y Type
 - `npm run typecheck`: verifica los tipos de TypeScript sin generar archivos.
 - `npm run build`: limpia y compila el proyecto en `dist`.
 - `npm start`: ejecuta la aplicación compilada.
+- `npm run seed`: elimina usuarios, categorías y productos existentes, crea los
+  datos de demostración y crea el índice de MongoDB Search si todavía no existe.
 - `npm run lint`: analiza el código con ESLint.
 - `npm run lint:fix`: corrige automáticamente los problemas de lint que sea posible resolver.
 - `npm run format`: formatea el proyecto con Prettier.
 - `npm run format:check`: verifica el formato sin modificar archivos.
+
+## Datos de demostración
+
+Con la conexión a MongoDB Atlas y las variables de entorno configuradas, ejecutar:
+
+```bash
+npm run seed
+```
+
+El seed elimina todos los productos, categorías y usuarios existentes antes de
+crear 40 productos, 5 categorías, un administrador y un cliente. No elimina la
+información institucional ni las consultas recibidas. También comprueba si el
+índice de MongoDB Search `productSearch` ya existe antes de crearlo.
+
+Las cuentas creadas son `admin@example.com` y `cliente@example.com`. Sus
+contraseñas se configuran mediante `SEED_ADMIN_PASSWORD` y
+`SEED_CUSTOMER_PASSWORD`; los valores de demostración están en `.env.example`.
 
 ## API
 
