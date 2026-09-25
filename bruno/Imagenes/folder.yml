@@ -1,0 +1,14 @@
+info:
+  name: Imagenes
+  type: folder
+  seq: 6
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Subida de imagenes para los productos.
+
+    Requiere haber iniciado sesion como admin.
+  type: text/markdown

@@ -2,3 +2,6 @@ node_modules/
 .env
 dist/
 .idea/
+
+# Imagenes subidas desde la API
+public/uploads/

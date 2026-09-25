@@ -1,0 +1,41 @@
+info:
+  name: Subir imagen
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/images"
+  body:
+    type: multipart-form
+    data:
+      - name: image
+        type: file
+        value:
+          - C:\Users\fm230\Pictures\qUw4u9E5_400x400.jpg
+        contentType: image/jpeg
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+docs: |-
+  Sube una imagen y devuelve su URL, para usarla en el array `images` de "Crear producto" o "Actualizar producto".
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Body `multipart/form-data`:
+  - `image`: el archivo. JPG, PNG, WEBP o GIF de hasta 5 MB. Viene cargada una imagen de ejemplo; se puede elegir otra desde la pestaña Body.
+
+  **Devuelve**
+
+  - `201` con `data.url`, la URL pública de la imagen (se sirve desde `/uploads`).
+  - `400` si falta la imagen, no es de un formato aceptado o pesa más de 5 MB; `error.fields.image` trae el mensaje.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.

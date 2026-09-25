@@ -13,6 +13,7 @@ import { userRouter } from "./routes/user.routes.ts";
 import { categoryRouter } from "./routes/category.routes.ts";
 import { businessInfoRouter } from "./routes/business-info.routes.ts";
 import { enquiryRouter } from "./routes/enquiry.routes.ts";
+import { imageRouter } from "./routes/image.routes.ts";
 
 const app = express();
 
@@ -29,12 +30,18 @@ app.use(morgan(env.isProduction ? "combined" : "dev"));
 app.use(cors());
 // Convierte el cuerpo JSON del request en un objeto disponible en `req.body`.
 app.use(express.json());
+// Sirve tal cual los archivos de la carpeta `public`: `public/uploads/foto.jpg`
+// queda disponible en `/uploads/foto.jpg`. Ahi se guardan las imagenes subidas.
+app.use(express.static("public"));
+
+// Cuando tengamos el front con IP/dominio agregamos un middleware para que solo permita requests desde esa IP/dominio.
 
 app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
 app.use("/api/users", userRouter);
 app.use("/api/business-info", businessInfoRouter);
 app.use("/api/enquiries", enquiryRouter);
+app.use("/api/images", imageRouter);
 
 // Si el request llego hasta aca, ninguna ruta coincidio.
 app.use(() => {

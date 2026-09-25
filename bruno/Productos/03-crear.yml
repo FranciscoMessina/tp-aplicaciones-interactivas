@@ -14,7 +14,8 @@ http:
     data: |-
       {
         "name": "Notebook ASUS Vivobook 15 Core i5",
-        "category": "COMPLETAR con el id de Computadoras, sale de Listar categorias",
+        // Completar con ID obtenido de listar categorias
+        "category": "",
         "description": "Notebook de 15,6\" Full HD con Intel Core i5 de 12.ª generación, 16GB de RAM y SSD de 512GB. Ideal para trabajo y estudio.",
         "images": [
           "https://picsum.photos/seed/asus-vivobook-15-main/800/600",
@@ -24,6 +25,13 @@ http:
         "availableQuantity": 8
       }
   auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
 
 docs: |-
   Crea un producto.
@@ -47,6 +55,3 @@ docs: |-
   - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo. También si la categoría no existe.
   - `401` si falta el token o está vencido.
   - `403` si el usuario no es administrador.
-
-settings:
-  encodeUrl: true

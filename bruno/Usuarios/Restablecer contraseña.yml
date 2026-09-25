@@ -13,9 +13,17 @@ http:
     type: json
     data: |-
       {
-        "token": "COMPLETAR con el token que escribe la consola del servidor",
+        // Completar con el token que devuelve el servidor, por ahora lo muestra en consola
+        "token": "",
         "password": "Customer123!"
       }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
 
 docs: |-
   Cambia la contraseña usando el token de recuperación. El body deja la contraseña del cliente del seed como estaba.
@@ -32,10 +40,3 @@ docs: |-
 
   - `200` con `data.message`.
   - `400` si el token es inválido, ya se usó o venció.
-
-settings:
-  encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-  forwardAuthorizationHeader: true
