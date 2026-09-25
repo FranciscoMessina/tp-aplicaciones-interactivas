@@ -5,20 +5,16 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/enquiries"
-  auth:
-    type: bearer
-    token: "{{accessToken}}"
+  url: "{{baseUrl}}/api/enquiries?status=PENDING"
+  params:
+    - name: status
+      value: "PENDING"
+      type: query
+      description: PENDING, READ o RESOLVED (opcional)
+  auth: inherit
 
-runtime:
-  scripts:
-    - type: tests
-      code: |-
-        test("lista las consultas como administrador", function() {
-          expect(res.status).to.equal(200);
-          expect(res.body.data).to.be.an("array");
-          expect(res.body.data.some((enquiry) => enquiry.id === bru.getVar("enquiryId"))).to.equal(true);
-        });
+docs: |-
+  `status` es opcional: `PENDING`, `READ` o `RESOLVED`. Sin el, lista todas.
 
 settings:
   encodeUrl: true

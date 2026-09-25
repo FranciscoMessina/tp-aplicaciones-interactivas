@@ -5,7 +5,12 @@ info:
 
 http:
   method: PATCH
-  url: "{{baseUrl}}/api/products/{{productId}}"
+  url: "{{baseUrl}}/api/products/:id"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: Id del producto, copiarlo de "Listar productos"
   headers:
     - name: Content-Type
       value: application/json
@@ -13,23 +18,10 @@ http:
     type: json
     data: |-
       {
-        "name": "Notebook Bruno Pro",
-        "description": "Producto actualizado desde Bruno",
-        "price": 1499.99
+        "price": 899999,
+        "availableQuantity": 5
       }
-  auth:
-    type: bearer
-    token: "{{accessToken}}"
-
-runtime:
-  scripts:
-    - type: tests
-      code: |-
-        test("actualiza el producto", function() {
-          expect(res.status).to.equal(200);
-          expect(res.body.data.name).to.equal("Notebook Bruno Pro");
-          expect(res.body.data.price).to.equal(1499.99);
-        });
+  auth: inherit
 
 settings:
   encodeUrl: true

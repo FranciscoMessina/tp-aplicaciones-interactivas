@@ -3,8 +3,12 @@ info:
   type: folder
   seq: 2
 
-docs: |-
-  Listado publico y administracion de categorias.
+request:
+  auth: inherit
 
-  Las operaciones de escritura usan el token del administrador obtenido al
-  finalizar la carpeta Usuarios.
+docs:
+  content: |-
+    Listado publico y administracion de categorias.
+
+    Las operaciones de escritura requieren haber iniciado sesion como admin.
+  type: text/markdown

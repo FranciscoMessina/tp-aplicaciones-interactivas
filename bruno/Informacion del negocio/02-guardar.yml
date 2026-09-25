@@ -1,0 +1,33 @@
+info:
+  name: Guardar informacion del negocio
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{baseUrl}}/api/business-info"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Pixel Store",
+        "description": "Tienda de tecnología con consolas, computadoras, celulares, videojuegos y accesorios. Asesoramiento personalizado y garantía oficial en todos los productos.",
+        "address": "Av. Corrientes 1234, CABA, Buenos Aires",
+        "phone": "+54 11 5555 0100",
+        "socialNetworks": [
+          "https://www.instagram.com/pixelstore",
+          "https://www.facebook.com/pixelstore",
+          "https://wa.me/5491155550100"
+        ],
+        "openingHours": [
+          "Lunes a viernes de 10 a 20 hs",
+          "Sábados de 10 a 14 hs"
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true

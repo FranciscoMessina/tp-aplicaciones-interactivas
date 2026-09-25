@@ -1,10 +1,10 @@
 info:
-  name: Eliminar producto
+  name: Obtener producto
   type: http
-  seq: 6
+  seq: 2
 
 http:
-  method: DELETE
+  method: GET
   url: "{{baseUrl}}/api/products/:id"
   params:
     - name: id

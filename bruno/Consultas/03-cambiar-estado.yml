@@ -1,16 +1,16 @@
 info:
-  name: Desactivar producto
+  name: Cambiar estado de consulta
   type: http
-  seq: 5
+  seq: 3
 
 http:
   method: PATCH
-  url: "{{baseUrl}}/api/products/:id"
+  url: "{{baseUrl}}/api/enquiries/:id"
   params:
     - name: id
       value: ""
       type: path
-      description: Id del producto, copiarlo de "Listar productos"
+      description: Id de la consulta, copiarlo de "Listar consultas"
   headers:
     - name: Content-Type
       value: application/json
@@ -18,12 +18,12 @@ http:
     type: json
     data: |-
       {
-        "isActive": false
+        "status": "READ"
       }
   auth: inherit
 
 docs: |-
-  Con `"isActive": true` se vuelve a activar.
+  `status` puede ser `PENDING`, `READ` o `RESOLVED`.
 
 settings:
   encodeUrl: true

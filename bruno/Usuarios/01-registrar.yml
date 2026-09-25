@@ -13,32 +13,13 @@ http:
     type: json
     data: |-
       {
-        "fullName": "Cliente Bruno",
-        "email": "{{userEmail}}",
-        "phone": "+54 11 5555-0101",
-        "password": "{{userPassword}}"
+        "fullName": "Juan Pérez",
+        "email": "juan.perez@example.com",
+        "phone": "+54 11 4567 8901",
+        "password": "JuanPerez123!"
       }
   auth:
     type: none
-
-runtime:
-  scripts:
-    - type: before-request
-      code: |-
-        bru.setVar("userEmail", `cliente.bruno.${Date.now()}@example.com`);
-    - type: after-response
-      code: |-
-        if (res.status === 201) {
-          bru.setVar("accessToken", res.body.data.accessToken);
-          bru.setVar("userEmail", res.body.data.user.email);
-        }
-    - type: tests
-      code: |-
-        test("registra el usuario", function() {
-          expect(res.status).to.equal(201);
-          expect(res.body.data.accessToken).to.be.a("string");
-          expect(res.body.data.user.role).to.equal("customer");
-        });
 
 settings:
   encodeUrl: true

@@ -15,32 +15,32 @@ config:
       bypassProxy: ""
 
 request:
+  auth:
+    type: bearer
+    token: "{{accessToken}}"
   variables:
     - name: baseUrl
       value: http://localhost:8080
-    - name: userEmail
-      value: cliente.bruno.1787590284355@example.com
-    - name: userPassword
-      value: "12345678"
-    - name: accessToken
-      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWNjZXNzIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzg3NTkwNDgwLCJleHAiOjE3ODc1OTQwODAsInN1YiI6IjZhOGM3NjhjZGMyYzc0ZDNlMmY2N2ZiMyIsImp0aSI6IjAyMDRkM2E2LWE2YTItNDBiYS1hNTZmLTNlZjQ4YjhiZDFiZiJ9.DAkaeQ-iTRPcsBaw26r35e9id29870tybd4RJWiDKUk
-    - name: adminEmail
-      value: admin@example.com
-    - name: adminPassword
-      value: "12345678"
 
 docs:
   content: |-
     # TP APIs
 
-    Coleccion local para probar todos los endpoints de la API.
+    Coleccion para probar los endpoints de la API.
 
-    1. Iniciar la API con `npm run dev`.
-    2. Seleccionar el entorno `Local` en Bruno.
-    3. Correr `npm run seed`, que crea el administrador `adminEmail`. Su contraseña es `SEED_ADMIN_PASSWORD`.
-    4. Ejecutar las requests individualmente o correr la coleccion completa en orden.
+    1. Correr `npm run seed` para cargar los datos de demostracion.
+    2. Iniciar la API con `npm run dev`.
+    3. Seleccionar el entorno `Local` en Bruno.
+    4. Iniciar sesion con alguna de las requests de la carpeta Usuarios. El
+       token se guarda solo y se manda en todas las requests siguientes.
 
-    Las requests guardan automaticamente los tokens e identificadores necesarios como variables de runtime. Los productos, las consultas y la categoria auxiliar se eliminan durante la corrida.
+    Los ids no se guardan: se completan a mano en los parametros o en el body
+    de cada request, copiandolos de los listados.
+
+    Usuarios del seed:
+
+    - Administrador: `admin@example.com` / `Admin123!`
+    - Cliente: `cliente@example.com` / `Customer123!`
   type: text/markdown
 bundled: false
 extensions:

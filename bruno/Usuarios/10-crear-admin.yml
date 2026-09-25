@@ -13,24 +13,15 @@ http:
     type: json
     data: |-
       {
-        "fullName": "Admin Bruno",
-        "email": "admin.bruno.{{$timestamp}}@example.com",
-        "phone": "+54 11 5555-0102",
-        "password": "{{adminPassword}}"
+        "fullName": "Sofía Martínez",
+        "email": "sofia.martinez@pixelstore.com",
+        "phone": "+54 11 5555 0103",
+        "password": "Sofia12345!"
       }
-  auth:
-    type: bearer
-    token: "{{accessToken}}"
+  auth: inherit
 
-runtime:
-  scripts:
-    - type: tests
-      code: |-
-        test("crea un administrador sin devolver token", function() {
-          expect(res.status).to.equal(201);
-          expect(res.body.data.role).to.equal("admin");
-          expect(res.body.data.accessToken).to.equal(undefined);
-        });
+docs: |-
+  Requiere haber iniciado sesion como admin.
 
 settings:
   encodeUrl: true

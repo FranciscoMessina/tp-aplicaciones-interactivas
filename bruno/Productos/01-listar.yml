@@ -5,25 +5,29 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/products?search=brun"
+  url: "{{baseUrl}}/api/products?search=notebook&sortBy=relevance&page=1&pageSize=20"
   params:
     - name: search
-      value: brun
+      value: "notebook"
       type: query
+      description: Texto a buscar en nombre y descripcion (opcional)
+    - name: sortBy
+      value: "relevance"
+      type: query
+      description: publicationDate, price o relevance (relevance requiere search)
+    - name: page
+      value: "1"
+      type: query
+      description: Numero de pagina, desde 1
+    - name: pageSize
+      value: "20"
+      type: query
+      description: Productos por pagina, de 1 a 100
+  auth: inherit
 
-runtime:
-  scripts:
-    - type: tests
-      code: |-
-        test("lista los productos", function() {
-          expect(res.status).to.equal(200);
-          expect(res.body.data.items).to.be.an("array");
-          expect(res.body.data.total).to.be.a("number");
-        });
+docs: |-
+  Tambien acepta `category`, `minPrice`, `maxPrice`, `sortOrder` e
+  `includeInactive` (este ultimo solo tiene efecto logueado como admin).
 
 settings:
   encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-  forwardAuthorizationHeader: true

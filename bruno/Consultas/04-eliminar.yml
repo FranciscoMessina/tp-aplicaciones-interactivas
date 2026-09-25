@@ -1,16 +1,16 @@
 info:
-  name: Eliminar producto
+  name: Eliminar consulta
   type: http
-  seq: 6
+  seq: 4
 
 http:
   method: DELETE
-  url: "{{baseUrl}}/api/products/:id"
+  url: "{{baseUrl}}/api/enquiries/:id"
   params:
     - name: id
       value: ""
       type: path
-      description: Id del producto, copiarlo de "Listar productos"
+      description: Id de la consulta, copiarlo de "Listar consultas"
   auth: inherit
 
 settings:

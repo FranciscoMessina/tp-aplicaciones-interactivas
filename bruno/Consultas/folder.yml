@@ -3,8 +3,12 @@ info:
   type: folder
   seq: 5
 
-docs: |-
-  Alta publica y gestion administrativa de consultas de visitantes.
+request:
+  auth: inherit
 
-  La secuencia prueba las transiciones PENDING, READ y RESOLVED antes de
-  eliminar la consulta temporal.
+docs:
+  content: |-
+    Envio publico de consultas y su gestion.
+
+    Listar, cambiar estado y eliminar requieren haber iniciado sesion como admin.
+  type: text/markdown

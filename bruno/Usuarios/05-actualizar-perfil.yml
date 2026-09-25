@@ -1,11 +1,11 @@
 info:
-  name: Crear categoria
+  name: Actualizar perfil
   type: http
-  seq: 2
+  seq: 5
 
 http:
-  method: POST
-  url: "{{baseUrl}}/api/categories"
+  method: PATCH
+  url: "{{baseUrl}}/api/users/me"
   headers:
     - name: Content-Type
       value: application/json
@@ -13,7 +13,8 @@ http:
     type: json
     data: |-
       {
-        "name": "Impresoras"
+        "fullName": "Cliente Demo",
+        "phone": "+54 11 5555 0199"
       }
   auth: inherit
 

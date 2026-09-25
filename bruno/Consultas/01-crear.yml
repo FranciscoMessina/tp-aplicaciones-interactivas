@@ -13,29 +13,14 @@ http:
     type: json
     data: |-
       {
-        "name": "Visitante Bruno",
-        "email": "visitante.bruno@example.com",
-        "phone": "+54 11 5555-0144",
-        "subject": "Consulta por Notebook Bruno",
-        "message": "Quisiera recibir mas informacion sobre el producto."
+        "name": "Tomás Herrera",
+        "email": "tomas.herrera@example.com",
+        "phone": "+54 11 4444 2020",
+        "subject": "Consulta por Nintendo Switch 2",
+        "message": "Hola, ¿la Nintendo Switch 2 viene con algún juego incluido? ¿Tienen stock para retirar esta semana?"
       }
   auth:
     type: none
-
-runtime:
-  scripts:
-    - type: after-response
-      code: |-
-        if (res.status === 201) {
-          bru.setVar("enquiryId", res.body.data.id);
-        }
-    - type: tests
-      code: |-
-        test("crea una consulta pendiente", function() {
-          expect(res.status).to.equal(201);
-          expect(res.body.data.id).to.be.a("string");
-          expect(res.body.data.status).to.equal("PENDING");
-        });
 
 settings:
   encodeUrl: true

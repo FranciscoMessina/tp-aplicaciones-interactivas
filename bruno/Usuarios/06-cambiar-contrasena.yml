@@ -1,0 +1,26 @@
+info:
+  name: Cambiar contrasena
+  type: http
+  seq: 6
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/users/me/password"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "currentPassword": "Customer123!",
+        "newPassword": "Customer456!"
+      }
+  auth: inherit
+
+docs: |-
+  Cambia la contraseña del usuario logueado. Si se usa con el cliente del
+  seed, despues hay que iniciar sesion con la contraseña nueva.
+
+settings:
+  encodeUrl: true

@@ -1,7 +1,7 @@
 info:
-  name: Iniciar sesion como admin
+  name: Iniciar sesion como cliente
   type: http
-  seq: 9
+  seq: 2
 
 http:
   method: POST
@@ -13,8 +13,8 @@ http:
     type: json
     data: |-
       {
-        "email": "{{adminEmail}}",
-        "password": "{{adminPassword}}"
+        "email": "cliente@example.com",
+        "password": "Customer123!"
       }
   auth:
     type: none
@@ -26,12 +26,6 @@ runtime:
         if (res.status === 200) {
           bru.setVar("accessToken", res.body.data.accessToken);
         }
-    - type: tests
-      code: |-
-        test("inicia sesion con un administrador", function() {
-          expect(res.status).to.equal(200);
-          expect(res.body.data.user.role).to.equal("admin");
-        });
 
 settings:
   encodeUrl: true

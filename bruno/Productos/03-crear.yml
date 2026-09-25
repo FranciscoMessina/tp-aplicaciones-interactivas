@@ -1,0 +1,29 @@
+info:
+  name: Crear producto
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/products"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Notebook ASUS Vivobook 15 Core i5",
+        "category": "COMPLETAR con el id de Computadoras, sale de Listar categorias",
+        "description": "Notebook de 15,6\" Full HD con Intel Core i5 de 12.ª generación, 16GB de RAM y SSD de 512GB. Ideal para trabajo y estudio.",
+        "images": [
+          "https://picsum.photos/seed/asus-vivobook-15-main/800/600",
+          "https://picsum.photos/seed/asus-vivobook-15-detail/800/600"
+        ],
+        "price": 949999,
+        "availableQuantity": 8
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true

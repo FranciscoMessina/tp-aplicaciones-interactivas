@@ -3,11 +3,14 @@ info:
   type: folder
   seq: 1
 
-docs: |-
-  Registro, autenticacion, perfil, cambio y recuperacion de contrasena, y alta
-  de administradores.
+request:
+  auth: inherit
 
-  Restablecer contrasena necesita el token que el servidor escribe en su consola.
+docs:
+  content: |-
+    Registro, inicio y cierre de sesion, perfil, contraseña y alta de
+    administradores.
 
-  La ultima request inicia sesion como administrador y deja `accessToken`
-  preparado para ejecutar la carpeta Productos.
+    Las dos requests de inicio de sesion guardan el token, que despues se manda
+    solo en el resto de la coleccion.
+  type: text/markdown

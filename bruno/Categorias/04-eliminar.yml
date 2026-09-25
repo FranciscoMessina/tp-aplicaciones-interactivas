@@ -1,26 +1,20 @@
 info:
-  name: Actualizar categoria
+  name: Eliminar categoria
   type: http
-  seq: 3
+  seq: 4
 
 http:
-  method: PATCH
+  method: DELETE
   url: "{{baseUrl}}/api/categories/:id"
   params:
     - name: id
       value: ""
       type: path
       description: Id de la categoria, copiarlo de "Listar categorias"
-  headers:
-    - name: Content-Type
-      value: application/json
-  body:
-    type: json
-    data: |-
-      {
-        "name": "Impresoras y escáneres"
-      }
   auth: inherit
+
+docs: |-
+  Una categoria con productos no se puede eliminar.
 
 settings:
   encodeUrl: true
