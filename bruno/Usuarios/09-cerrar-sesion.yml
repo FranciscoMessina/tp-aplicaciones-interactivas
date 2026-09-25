@@ -8,6 +8,18 @@ http:
   url: "{{baseUrl}}/api/users/logout"
   auth: inherit
 
+runtime:
+  scripts:
+    - type: after-response
+      code: bru.deleteVar("accessToken")
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
 docs: |-
   Cierra la sesión. Con JWT el servidor no guarda sesiones: solo valida el token, y quien lo descarta es el cliente. El token sigue valiendo hasta que vence.
 
@@ -21,6 +33,3 @@ docs: |-
 
   - `204` sin cuerpo.
   - `401` si falta el token o está vencido.
-
-settings:
-  encodeUrl: true
