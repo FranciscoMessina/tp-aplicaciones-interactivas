@@ -36,9 +36,9 @@ runtime:
       code: |-
         test("crea o actualiza la informacion del negocio", function() {
           expect(res.status).to.equal(200);
-          expect(res.body.name).to.equal("Comercio Bruno");
-          expect(res.body.socialNetworks).to.be.an("array");
-          expect(res.body.openingHours).to.be.an("array");
+          expect(res.body.data.name).to.equal("Comercio Bruno");
+          expect(res.body.data.socialNetworks).to.be.an("array");
+          expect(res.body.data.openingHours).to.be.an("array");
         });
 
 settings:

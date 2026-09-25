@@ -28,8 +28,8 @@ runtime:
       code: |-
         test("busca y filtra productos", function() {
           expect(res.status).to.equal(200);
-          expect(res.body).to.be.an("array");
-          expect(res.body.some((product) => product.id === bru.getVar("productId"))).to.equal(true);
+          expect(res.body.data).to.be.an("array");
+          expect(res.body.data.some((product) => product.id === bru.getVar("productId"))).to.equal(true);
         });
 
 settings:

@@ -8,15 +8,16 @@ import {
   resetPassword,
   updateProfile,
 } from "../controllers/user.controller.ts";
+import { authenticate } from "../middleware/auth.ts";
 
 const userRouter = Router();
 
 userRouter.post("/register", register);
 userRouter.post("/login", login);
-userRouter.post("/logout", logout);
+userRouter.post("/logout", authenticate, logout);
 userRouter.post("/forgot-password", requestPasswordReset);
 userRouter.post("/reset-password", resetPassword);
-userRouter.get("/me", getProfile);
-userRouter.patch("/me", updateProfile);
+userRouter.get("/me", authenticate, getProfile);
+userRouter.patch("/me", authenticate, updateProfile);
 
 export { userRouter };

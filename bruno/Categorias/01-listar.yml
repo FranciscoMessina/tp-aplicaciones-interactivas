@@ -15,7 +15,7 @@ runtime:
       code: |-
         test("lista las categorias", function() {
           expect(res.status).to.equal(200);
-          expect(res.body).to.be.an("array");
+          expect(res.body.data).to.be.an("array");
         });
 
 settings:

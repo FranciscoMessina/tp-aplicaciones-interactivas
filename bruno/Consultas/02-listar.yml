@@ -16,8 +16,8 @@ runtime:
       code: |-
         test("lista las consultas como administrador", function() {
           expect(res.status).to.equal(200);
-          expect(res.body).to.be.an("array");
-          expect(res.body.some((enquiry) => enquiry.id === bru.getVar("enquiryId"))).to.equal(true);
+          expect(res.body.data).to.be.an("array");
+          expect(res.body.data.some((enquiry) => enquiry.id === bru.getVar("enquiryId"))).to.equal(true);
         });
 
 settings:

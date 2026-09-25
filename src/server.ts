@@ -11,6 +11,9 @@ try {
     console.log(`Server listening on port ${env.port}`);
   });
 
+  // Al cortar el servidor (Ctrl+C o un deploy) primero se deja de aceptar
+  // requests nuevos, se espera a que terminen los que estan en curso y recien
+  // despues se cierra la conexion a MongoDB.
   const shutdown = (signal: NodeJS.Signals): void => {
     console.log(`${signal} received. Shutting down...`);
 

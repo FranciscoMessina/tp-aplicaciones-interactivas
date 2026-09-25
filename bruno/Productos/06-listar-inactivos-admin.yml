@@ -23,8 +23,8 @@ runtime:
       code: |-
         test("incluye productos inactivos para un administrador", function() {
           expect(res.status).to.equal(200);
-          expect(res.body).to.be.an("array");
-          const product = res.body.find((item) => item.id === bru.getVar("productId"));
+          expect(res.body.data).to.be.an("array");
+          const product = res.body.data.find((item) => item.id === bru.getVar("productId"));
           expect(product).to.be.an("object");
           expect(product.isActive).to.equal(false);
         });

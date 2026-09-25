@@ -1,44 +1,52 @@
 import type { Request, Response } from "express";
-import { handler } from "../http/handler.ts";
+import { sendSuccess } from "../http/responses.ts";
+import { validate } from "../http/validate.ts";
 import { UserRole } from "../models/user.model.ts";
+import { idParamsSchema } from "../schemas/common.schema.ts";
 import {
   createProductSchema,
-  productIdSchema,
   searchProductsSchema,
   updateProductSchema,
 } from "../schemas/product.schema.ts";
 import * as catalog from "../services/catalog.service.ts";
 
-export const searchProducts = handler(
-  { schema: searchProductsSchema, auth: "optional" },
-  async (_req: Request, res: Response, { input, auth }) => {
-    // Un visitante anonimo, o uno autenticado que no sea admin, siempre ve el
-    // catalogo publico: el flag se ignora en silencio en vez de responder 403.
-    const includeInactive =
-      input.query.includeInactive && auth?.role === UserRole.Admin;
+export async function searchProducts(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const query = validate(searchProductsSchema, req.query);
+  // La ruta usa `optionalAuthenticate`, asi que `req.user` solo existe si el
+  // visitante mando un token valido. Un visitante anonimo, o uno autenticado
+  // que no sea admin, siempre ve el catalogo publico: el flag se ignora en
+  // silencio en vez de responder 403.
+  const includeInactive =
+    query.includeInactive === true && req.user?.role === UserRole.Admin;
 
-    res.json(await catalog.searchProducts({ ...input.query, includeInactive }));
-  },
-);
+  sendSuccess(res, await catalog.searchProducts({ ...query, includeInactive }));
+}
 
-export const createProduct = handler(
-  { schema: createProductSchema, auth: "admin" },
-  async (_req: Request, res: Response, { input }) => {
-    res.status(201).json(await catalog.createProduct(input.body));
-  },
-);
+export async function createProduct(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const body = validate(createProductSchema, req.body);
+  sendSuccess(res, await catalog.createProduct(body), 201);
+}
 
-export const updateProduct = handler(
-  { schema: updateProductSchema, auth: "admin" },
-  async (_req: Request, res: Response, { input }) => {
-    res.json(await catalog.updateProduct(input.params.id, input.body));
-  },
-);
+export async function updateProduct(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { id } = validate(idParamsSchema, req.params);
+  const body = validate(updateProductSchema, req.body);
+  sendSuccess(res, await catalog.updateProduct(id, body));
+}
 
-export const deleteProduct = handler(
-  { schema: productIdSchema, auth: "admin" },
-  async (_req: Request, res: Response, { input }) => {
-    await catalog.deleteProduct(input.params.id);
-    res.status(204).send();
-  },
-);
+export async function deleteProduct(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { id } = validate(idParamsSchema, req.params);
+  await catalog.deleteProduct(id);
+  res.status(204).send();
+}

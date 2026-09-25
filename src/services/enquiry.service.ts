@@ -69,8 +69,13 @@ export async function deleteEnquiry(enquiryId: string): Promise<void> {
   }
 }
 
+/**
+ * A que estados puede pasar una consulta desde cada estado. Siempre se puede
+ * volver a pendiente, por ejemplo para retomar una consulta; lo unico que no
+ * se permite es "des-responder" una consulta y dejarla como solo leida.
+ */
 const allowedTransitions: Record<EnquiryStatusValue, EnquiryStatusValue[]> = {
   [EnquiryStatus.Pending]: [EnquiryStatus.Read, EnquiryStatus.Resolved],
-  [EnquiryStatus.Read]: [EnquiryStatus.Resolved],
-  [EnquiryStatus.Resolved]: [],
+  [EnquiryStatus.Read]: [EnquiryStatus.Pending, EnquiryStatus.Resolved],
+  [EnquiryStatus.Resolved]: [EnquiryStatus.Pending],
 };

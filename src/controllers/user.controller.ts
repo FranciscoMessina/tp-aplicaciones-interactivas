@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
-import { handler } from "../http/handler.ts";
+import { sendSuccess } from "../http/responses.ts";
+import { validate } from "../http/validate.ts";
+import { getAuthenticatedUser } from "../middleware/auth.ts";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -9,59 +11,57 @@ import {
 } from "../schemas/user.schema.ts";
 import * as userService from "../services/user.service.ts";
 
-export const register = handler(
-  { schema: registerSchema },
-  async (_req: Request, res: Response, { input }) => {
-    res.status(201).json(await userService.registerUser(input.body));
-  },
-);
+export async function register(req: Request, res: Response): Promise<void> {
+  const body = validate(registerSchema, req.body);
+  sendSuccess(res, await userService.registerUser(body), 201);
+}
 
-export const login = handler(
-  { schema: loginSchema },
-  async (_req: Request, res: Response, { input }) => {
-    res.json(await userService.loginUser(input.body));
-  },
-);
+export async function login(req: Request, res: Response): Promise<void> {
+  const body = validate(loginSchema, req.body);
+  sendSuccess(res, await userService.loginUser(body));
+}
 
-export const logout = handler(
-  { auth: "user" },
-  (_req: Request, res: Response) => {
-    res.status(204).send();
-  },
-);
+/**
+ * Con JWT el servidor no guarda sesiones, asi que no hay nada que borrar aca:
+ * cerrar sesion es que el front descarte el token. El endpoint existe para que
+ * el front tenga donde avisar y para confirmar que el token era valido.
+ */
+export function logout(_req: Request, res: Response): void {
+  res.status(204).send();
+}
 
-export const getProfile = handler(
-  { auth: "user" },
-  async (_req: Request, res: Response, { auth }) => {
-    res.json({ user: await userService.getUserProfile(auth.sub) });
-  },
-);
+export async function getProfile(req: Request, res: Response): Promise<void> {
+  const { sub: userId } = getAuthenticatedUser(req);
+  sendSuccess(res, await userService.getUserProfile(userId));
+}
 
-export const updateProfile = handler(
-  { schema: updateProfileSchema, auth: "user" },
-  async (_req: Request, res: Response, { input, auth }) => {
-    res.json({
-      user: await userService.updateUserProfile(auth.sub, input.body),
-    });
-  },
-);
+export async function updateProfile(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { sub: userId } = getAuthenticatedUser(req);
+  const body = validate(updateProfileSchema, req.body);
+  sendSuccess(res, await userService.updateUserProfile(userId, body));
+}
 
-export const requestPasswordReset = handler(
-  { schema: forgotPasswordSchema },
-  async (_req: Request, res: Response, { input }) => {
-    const message =
-      "If the account exists, password reset instructions have been generated";
-    const { resetToken } = await userService.requestPasswordReset(
-      input.body.email,
-    );
-    res.json(resetToken ? { message, resetToken } : { message });
-  },
-);
+export async function requestPasswordReset(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { email } = validate(forgotPasswordSchema, req.body);
+  // El mensaje es el mismo exista o no la cuenta, para que nadie pueda usar
+  // este endpoint para averiguar que emails estan registrados.
+  const message =
+    "If the account exists, password reset instructions have been generated";
+  const { resetToken } = await userService.requestPasswordReset(email);
+  sendSuccess(res, resetToken ? { message, resetToken } : { message });
+}
 
-export const resetPassword = handler(
-  { schema: resetPasswordSchema },
-  async (_req: Request, res: Response, { input }) => {
-    await userService.resetPassword(input.body.token, input.body.password);
-    res.json({ message: "Password updated successfully" });
-  },
-);
+export async function resetPassword(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { token, password } = validate(resetPasswordSchema, req.body);
+  await userService.resetPassword(token, password);
+  sendSuccess(res, { message: "Password updated successfully" });
+}

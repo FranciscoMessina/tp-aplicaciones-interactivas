@@ -28,8 +28,8 @@ runtime:
       code: |-
         test("actualiza una categoria", function() {
           expect(res.status).to.equal(200);
-          expect(res.body.id).to.equal(bru.getVar("categoryId"));
-          expect(res.body.name).to.equal(bru.getVar("updatedCategoryName"));
+          expect(res.body.data.id).to.equal(bru.getVar("categoryId"));
+          expect(res.body.data.name).to.equal(bru.getVar("updatedCategoryName"));
         });
 
 settings:

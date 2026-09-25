@@ -1,18 +1,20 @@
 import type { Request, Response } from "express";
-import { handler } from "../http/handler.ts";
+import { sendSuccess } from "../http/responses.ts";
+import { validate } from "../http/validate.ts";
 import { saveBusinessInfoSchema } from "../schemas/business-info.schema.ts";
 import * as businessInfoService from "../services/business-info.service.ts";
 
-export const getBusinessInfo = handler(
-  {},
-  async (_req: Request, res: Response) => {
-    res.json(await businessInfoService.getBusinessInfo());
-  },
-);
+export async function getBusinessInfo(
+  _req: Request,
+  res: Response,
+): Promise<void> {
+  sendSuccess(res, await businessInfoService.getBusinessInfo());
+}
 
-export const saveBusinessInfo = handler(
-  { schema: saveBusinessInfoSchema, auth: "admin" },
-  async (_req: Request, res: Response, { input }) => {
-    res.json(await businessInfoService.upsertBusinessInfo(input.body));
-  },
-);
+export async function saveBusinessInfo(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const body = validate(saveBusinessInfoSchema, req.body);
+  sendSuccess(res, await businessInfoService.upsertBusinessInfo(body));
+}

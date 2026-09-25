@@ -24,13 +24,13 @@ runtime:
     - type: after-response
       code: |-
         if (res.status === 200) {
-          bru.setVar("accessToken", res.body.accessToken);
+          bru.setVar("accessToken", res.body.data.accessToken);
         }
     - type: tests
       code: |-
         test("inicia sesion con un administrador", function() {
           expect(res.status).to.equal(200);
-          expect(res.body.user.role).to.equal("admin");
+          expect(res.body.data.user.role).to.equal("admin");
         });
 
 settings:

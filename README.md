@@ -55,7 +55,9 @@ npm run seed
 ```
 
 El seed elimina todos los productos, categorías y usuarios existentes antes de
-crear 40 productos, 5 categorías, un administrador y un cliente. No elimina la
+crear 108 productos de tecnología en 11 categorías (consolas, computadoras,
+celulares, videojuegos, etc.), un administrador y un cliente. El catálogo está
+en `src/scripts/seed-catalog.ts`. No elimina la
 información institucional ni las consultas recibidas. También comprueba si el
 índice de MongoDB Search `productSearch` ya existe antes de crearlo.
 
@@ -66,8 +68,9 @@ contraseñas se configuran mediante `SEED_ADMIN_PASSWORD` y
 ## API
 
 La colección de productos está disponible en `/api/products`. Cada publicación
-tiene `name`, `category`, `description`, `images` (array de URLs), `price`
-(opcional) e `isActive` (estado de disponibilidad). Crear, modificar y eliminar
+tiene `name`, `category`, `description`, `images` (array de URLs), `price` e
+`isActive` (estado de disponibilidad). La consigna deja el precio como opcional
+según el rubro; en el nuestro es obligatorio. Crear, modificar y eliminar
 publicaciones requiere estar autenticado con un usuario de rol `admin`.
 Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 `isActive` a `PATCH /api/products/:id`, no hay un endpoint aparte.
@@ -82,7 +85,7 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
   se ignora en silencio, porque el endpoint es publico y un 403 delataria que
   el flag significa algo.
 - `POST /api/products`: crea un producto con `name`, `category`, `description`,
-  `images`, `price` (opcional) e `isActive` (opcional, por defecto `true`). Solo
+  `images`, `price` e `isActive` (opcional, por defecto `true`). Solo
   administradores.
 - `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores,
   `isActive` incluido. Solo administradores.
@@ -105,9 +108,10 @@ debe ser el ID de una categoría existente.
 - `GET /api/enquiries`, `PATCH /api/enquiries/:id` y `DELETE /api/enquiries/:id`:
   solo administradores.
 
-El estado de una consulta comienza en `PENDING`. Puede avanzar a `READ` o
-`RESOLVED`, y desde `READ` sólo puede avanzar a `RESOLVED`; los cambios al mismo
-estado son idempotentes.
+El estado de una consulta comienza en `PENDING`. Puede pasar a `READ` o
+`RESOLVED`, y desde cualquier estado puede volver a `PENDING`. Lo único que no
+se permite es pasar de `RESOLVED` a `READ`. Los cambios al mismo estado son
+idempotentes.
 
 ### Usuarios y autenticación
 
@@ -125,6 +129,37 @@ uso, se guardan hasheados y vencen a los 15 minutos.
 
 ## Respuestas
 
+Todas las respuestas tienen la misma forma. Si la operación salió bien:
+
+```json
+{ "success": true, "data": { "id": "...", "name": "..." } }
+```
+
+Si falló:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_INPUT",
+    "message": "Some fields are invalid",
+    "fields": {
+      "email": ["Invalid email address"],
+      "images.0": ["Invalid URL"]
+    }
+  }
+}
+```
+
+`code` es uno de `INVALID_INPUT` (400), `UNAUTHENTICATED` (401), `FORBIDDEN`
+(403), `NOT_FOUND` (404), `CONFLICT` (409) o `UNEXPECTED` (500). `fields` solo
+aparece cuando el error se puede asociar a campos concretos: la clave es el
+nombre del campo (o su ruta, como `images.0`) y el valor la lista de mensajes.
+Así el front puede mostrar cada error debajo de su input. Un email ya
+registrado, por ejemplo, responde `409` con `fields.email`.
+
+Las eliminaciones y el cierre de sesión responden `204` sin cuerpo.
+
 Los documentos se serializan con una transformacion `toJSON` compartida por
 todos los modelos: exponen `id` en lugar de `_id` y no incluyen `__v`. Aplica
 tambien a los documentos anidados, por ejemplo la `category` que acompania a
@@ -132,5 +167,23 @@ cada producto en el listado.
 
 ## Validación
 
-Los cuerpos de las solicitudes se validan con Zod. Cuando son inválidos, la API
-responde `400` con el campo y el motivo de cada error.
+El body, los parámetros de la URL y el query string se validan con Zod al
+principio de cada controller, con `validate(schema, req.body)`. Cuando son
+inválidos, la API responde `400` con los errores por campo en `error.fields`.
+
+## Autenticación en el código
+
+Las rutas protegidas encadenan los middlewares de `src/middleware/auth.ts`
+antes del controller:
+
+```ts
+productRouter.post("/", authenticate, requireAdmin, createProduct);
+```
+
+- `authenticate`: exige el header `Authorization: Bearer <token>` y deja el
+  usuario en `req.user`.
+- `optionalAuthenticate`: igual, pero si no hay token sigue como visitante.
+- `requireAdmin`: solo deja pasar usuarios con rol `admin`.
+
+La API habilita CORS para que el front, que corre en otro origen, pueda
+consumirla desde el navegador.

@@ -12,7 +12,7 @@ export interface CreateProductInput {
   category: string;
   description: string;
   images: string[];
-  price?: number;
+  price: number;
   isActive?: boolean;
 }
 
@@ -39,6 +39,19 @@ export interface ProductSearchFilters {
   includeInactive?: boolean;
 }
 
+/**
+ * Arma la consulta como un "pipeline de agregacion" de MongoDB: una lista de
+ * etapas que se aplican en orden (filtrar, ordenar...), como una cadena.
+ *
+ * Hay dos caminos segun si el usuario escribio algo en el buscador:
+ * - Con `search` se usa `$search` de Atlas Search, que busca por texto
+ *   tolerando errores de tipeo y calcula que tan relevante es cada resultado.
+ *   Tiene su propia sintaxis de filtros (`equals`, `range`) y tiene que ser la
+ *   primera etapa del pipeline.
+ * - Sin `search` alcanza con un `$match`, el filtro comun de MongoDB.
+ *
+ * En los dos casos despues se ordena y se completa la categoria de cada producto.
+ */
 export async function searchProducts(
   filters: ProductSearchFilters = {},
 ): Promise<DocumentType<Product>[]> {
@@ -151,6 +164,9 @@ export async function searchProducts(
       pipeline.push({ $sort: { createdAt: sortDirection } });
   }
 
+  // `aggregate` devuelve objetos planos. `hydrate` los convierte en documentos
+  // de Mongoose, para que se serialicen igual que en el resto de la API (con
+  // `id` en vez de `_id`) y para poder completar la categoria con `populate`.
   const products = await ProductModel.aggregate(pipeline);
   const hydratedProducts = products.map((product) =>
     ProductModel.hydrate(product),

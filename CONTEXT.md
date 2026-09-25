@@ -25,7 +25,8 @@ _Avoid_: Rubro, Tipo, Seccion
 
 **Contact Form**:
 Una consulta que un visitante deja para el comercio. Avanza de `PENDING` a
-`READ` o `RESOLVED`, y de `READ` solo a `RESOLVED`; nunca retrocede.
+`READ` o `RESOLVED`, y siempre puede volver a `PENDING`. Una consulta
+`RESOLVED` no pasa a `READ`.
 _Avoid_: Mensaje, Consulta, Inquiry
 
 **Business Info**:

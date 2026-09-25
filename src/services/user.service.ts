@@ -143,6 +143,11 @@ export async function requestPasswordReset(email: string): Promise<{
   };
 }
 
+/**
+ * Busca al usuario por el hash del token y verifica que no este vencido, todo
+ * en la misma consulta. Al cambiar la contraseña borra el token, asi no se
+ * puede usar dos veces.
+ */
 export async function resetPassword(
   token: string,
   password: string,

@@ -5,71 +5,11 @@ import { CategoryModel } from "../models/category.model.ts";
 import { ProductModel } from "../models/product.model.ts";
 import { UserModel, UserRole } from "../models/user.model.ts";
 import { hashPassword } from "../services/auth.service.ts";
+import { catalogSeed } from "./seed-catalog.ts";
 
 const SEARCH_INDEX_NAME = "productSearch";
 const DEFAULT_ADMIN_PASSWORD = "Admin123!";
 const DEFAULT_CUSTOMER_PASSWORD = "Customer123!";
-
-const categorySeeds = [
-  "Tecnologia",
-  "Hogar",
-  "Indumentaria",
-  "Deportes",
-  "Accesorios",
-] as const;
-
-const productNamesByCategory = [
-  [
-    "Auriculares Bluetooth",
-    "Teclado mecanico",
-    "Mouse inalambrico",
-    "Cargador USB-C",
-    "Parlante portatil",
-    "Webcam Full HD",
-    "Soporte para notebook",
-    "Lampara LED inteligente",
-  ],
-  [
-    "Juego de sabanas",
-    "Organizador de escritorio",
-    "Set de vasos",
-    "Almohadon decorativo",
-    "Tabla de cocina",
-    "Termo de acero",
-    "Maceta de ceramica",
-    "Difusor de aromas",
-  ],
-  [
-    "Remera clasica",
-    "Buzo con capucha",
-    "Pantalon jogger",
-    "Campera liviana",
-    "Gorra urbana",
-    "Medias deportivas",
-    "Camisa de lino",
-    "Short de algodon",
-  ],
-  [
-    "Pelota de futbol",
-    "Botella deportiva",
-    "Colchoneta de yoga",
-    "Banda elastica",
-    "Mancuernas ajustables",
-    "Soga para saltar",
-    "Bolso deportivo",
-    "Guantes de entrenamiento",
-  ],
-  [
-    "Mochila urbana",
-    "Billetera compacta",
-    "Reloj analogico",
-    "Anteojos de sol",
-    "Cinturon de cuero",
-    "Bolso bandolera",
-    "Llavero metalico",
-    "Paraguas plegable",
-  ],
-] as const;
 
 async function ensureProductSearchIndex(): Promise<void> {
   const indexes = await ProductModel.listSearchIndexes();
@@ -119,37 +59,38 @@ async function seedUsers(): Promise<void> {
   ]);
 }
 
-async function seedCatalog(): Promise<void> {
-  const categories = await CategoryModel.create(
-    categorySeeds.map((name) => ({ name })),
-  );
+async function seedCatalog(): Promise<{
+  categoryCount: number;
+  productCount: number;
+}> {
+  const products = [];
+  // Numero correlativo de cada producto, para generar imagenes, stock y
+  // productos inactivos de forma variada pero siempre igual en cada corrida.
+  let sequence = 0;
 
-  const products = categories.flatMap((category, categoryIndex) => {
-    const productNames = productNamesByCategory[categoryIndex];
+  for (const categorySeed of catalogSeed) {
+    const category = await CategoryModel.create({ name: categorySeed.name });
 
-    if (!productNames) {
-      throw new Error(`Missing products for category ${category.name}`);
-    }
+    for (const productSeed of categorySeed.products) {
+      sequence += 1;
 
-    return productNames.map((name, productIndex) => {
-      const sequence = categoryIndex * productNames.length + productIndex + 1;
-
-      return {
-        name,
+      products.push({
+        ...productSeed,
         category: category.id,
-        description: `${name}, producto de demostracion de la categoria ${category.name}.`,
         images: [
           `https://picsum.photos/seed/product-${sequence}-main/800/600`,
           `https://picsum.photos/seed/product-${sequence}-detail/800/600`,
         ],
-        price: 10_000 + sequence * 1_250,
         availableQuantity: sequence % 9,
+        // Uno de cada diez queda desactivado, para probar el filtro del admin.
         isActive: sequence % 10 !== 0,
-      };
-    });
-  });
+      });
+    }
+  }
 
   await ProductModel.create(products);
+
+  return { categoryCount: catalogSeed.length, productCount: products.length };
 }
 
 async function runSeed(): Promise<void> {
@@ -158,11 +99,11 @@ async function runSeed(): Promise<void> {
   try {
     await clearSeededCollections();
     await seedUsers();
-    await seedCatalog();
+    const { categoryCount, productCount } = await seedCatalog();
     await ensureProductSearchIndex();
 
     console.log(
-      "Seed completed: 2 users, 5 categories and 40 products created",
+      `Seed completed: 2 users, ${categoryCount} categories and ${productCount} products created`,
     );
   } finally {
     await disconnectDatabase();

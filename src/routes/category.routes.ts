@@ -5,12 +5,13 @@ import {
   listCategories,
   updateCategory,
 } from "../controllers/category.controller.ts";
+import { authenticate, requireAdmin } from "../middleware/auth.ts";
 
 const categoryRouter = Router();
 
 categoryRouter.get("/", listCategories);
-categoryRouter.post("/", createCategory);
-categoryRouter.patch("/:id", updateCategory);
-categoryRouter.delete("/:id", deleteCategory);
+categoryRouter.post("/", authenticate, requireAdmin, createCategory);
+categoryRouter.patch("/:id", authenticate, requireAdmin, updateCategory);
+categoryRouter.delete("/:id", authenticate, requireAdmin, deleteCategory);
 
 export { categoryRouter };

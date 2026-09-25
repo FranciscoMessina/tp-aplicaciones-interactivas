@@ -29,15 +29,15 @@ runtime:
     - type: after-response
       code: |-
         if (res.status === 201) {
-          bru.setVar("accessToken", res.body.accessToken);
-          bru.setVar("userEmail", res.body.user.email);
+          bru.setVar("accessToken", res.body.data.accessToken);
+          bru.setVar("userEmail", res.body.data.user.email);
         }
     - type: tests
       code: |-
         test("registra el usuario", function() {
           expect(res.status).to.equal(201);
-          expect(res.body.accessToken).to.be.a("string");
-          expect(res.body.user.role).to.equal("customer");
+          expect(res.body.data.accessToken).to.be.a("string");
+          expect(res.body.data.user.role).to.equal("customer");
         });
 
 settings:

@@ -1,42 +1,42 @@
 import type { Request, Response } from "express";
-import { handler } from "../http/handler.ts";
+import { sendSuccess } from "../http/responses.ts";
+import { validate } from "../http/validate.ts";
+import { idParamsSchema } from "../schemas/common.schema.ts";
 import {
   createEnquirySchema,
-  enquiryIdSchema,
   updateEnquiryStatusSchema,
 } from "../schemas/enquiry.schema.ts";
 import * as enquiryService from "../services/enquiry.service.ts";
 
-export const listEnquiries = handler(
-  { auth: "admin" },
-  async (_req: Request, res: Response) => {
-    res.json(await enquiryService.listEnquiries());
-  },
-);
+export async function listEnquiries(
+  _req: Request,
+  res: Response,
+): Promise<void> {
+  sendSuccess(res, await enquiryService.listEnquiries());
+}
 
-export const createEnquiry = handler(
-  { schema: createEnquirySchema },
-  async (_req: Request, res: Response, { input }) => {
-    res.status(201).json(await enquiryService.createEnquiry(input.body));
-  },
-);
+export async function createEnquiry(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const body = validate(createEnquirySchema, req.body);
+  sendSuccess(res, await enquiryService.createEnquiry(body), 201);
+}
 
-export const updateEnquiryStatus = handler(
-  { schema: updateEnquiryStatusSchema, auth: "admin" },
-  async (_req: Request, res: Response, { input }) => {
-    res.json(
-      await enquiryService.updateEnquiryStatus(
-        input.params.id,
-        input.body.status,
-      ),
-    );
-  },
-);
+export async function updateEnquiryStatus(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { id } = validate(idParamsSchema, req.params);
+  const { status } = validate(updateEnquiryStatusSchema, req.body);
+  sendSuccess(res, await enquiryService.updateEnquiryStatus(id, status));
+}
 
-export const deleteEnquiry = handler(
-  { schema: enquiryIdSchema, auth: "admin" },
-  async (_req: Request, res: Response, { input }) => {
-    await enquiryService.deleteEnquiry(input.params.id);
-    res.status(204).send();
-  },
-);
+export async function deleteEnquiry(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { id } = validate(idParamsSchema, req.params);
+  await enquiryService.deleteEnquiry(id);
+  res.status(204).send();
+}

@@ -1,10 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
-import { ZodError } from "zod";
 import {
   ApplicationError,
   ApplicationErrorKind,
+  type FieldErrors,
 } from "../domain/application-error.ts";
+import type { ErrorResponse } from "../http/responses.ts";
 
 // Para traducir los tipos de errores de la aplicacion a codigos de error HTTP
 const applicationErrorStatus: Record<ApplicationErrorKind, number> = {
@@ -16,18 +17,14 @@ const applicationErrorStatus: Record<ApplicationErrorKind, number> = {
   [ApplicationErrorKind.Unexpected]: 500,
 };
 
-function isMongoDuplicateKeyError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === 11000
-  );
-}
-
 /**
- * Ultimo eslabon de la cadena se encarga de traducir cualquier error que salga de un
- * controller o servicio a una respuesta HTTP.
+ * Ultimo eslabon de la cadena. Express reconoce que es un manejador de errores
+ * porque recibe 4 parametros: cuando un controller o middleware tira un error
+ * (o una funcion async falla), Express saltea el resto de la cadena y llama
+ * directamente a esta funcion.
+ *
+ * Primero convierte cualquier error a un `ApplicationError` y despues arma
+ * siempre la misma respuesta, asi el front recibe un unico formato de error.
  */
 export function errorHandler(
   error: unknown,
@@ -35,43 +32,114 @@ export function errorHandler(
   res: Response,
   next: NextFunction,
 ): void {
+  // Si ya se empezo a mandar la respuesta no se puede cambiar el status; se lo
+  // dejamos al manejador por defecto de Express, que corta la conexion.
   if (res.headersSent) {
     next(error);
     return;
   }
 
+  const applicationError = toApplicationError(error);
+
+  if (applicationError.kind === ApplicationErrorKind.Unexpected) {
+    console.error("Unhandled error:", error);
+  }
+
+  const body: ErrorResponse = {
+    success: false,
+    error: {
+      code: applicationError.kind,
+      message: applicationError.message,
+      ...(applicationError.fields && { fields: applicationError.fields }),
+    },
+  };
+
+  res.status(applicationErrorStatus[applicationError.kind]).json(body);
+}
+
+function toApplicationError(error: unknown): ApplicationError {
   if (error instanceof ApplicationError) {
-    const statusCode = applicationErrorStatus[error.kind];
-    res.status(statusCode).json({ message: error.message });
-    return;
+    return error;
   }
 
-  if (error instanceof ZodError) {
-    res.status(400).json({
-      message: "Invalid request",
-      errors: error.issues.map((issue) => ({
-        field: issue.path.join("."),
-        message: issue.message,
-      })),
-    });
-    return;
+  // `express.json()` tira este error cuando el cuerpo no es un JSON valido.
+  if (
+    error instanceof SyntaxError &&
+    "type" in error &&
+    error.type === "entity.parse.failed"
+  ) {
+    return new ApplicationError(
+      ApplicationErrorKind.InvalidInput,
+      "The request body is not valid JSON",
+    );
   }
 
+  // Validaciones del modelo de Mongoose que no cubrio el schema de Zod.
   if (error instanceof mongoose.Error.ValidationError) {
-    res.status(400).json({ message: error.message });
-    return;
+    const fields: FieldErrors = {};
+
+    for (const [field, fieldError] of Object.entries(error.errors)) {
+      fields[field] = [fieldError.message];
+    }
+
+    return new ApplicationError(
+      ApplicationErrorKind.InvalidInput,
+      "Some fields are invalid",
+      fields,
+    );
   }
 
+  // Un valor que Mongoose no pudo convertir, por ejemplo un id mal formado.
   if (error instanceof mongoose.Error.CastError) {
-    res.status(400).json({ message: `Invalid value for ${error.path}` });
-    return;
+    return new ApplicationError(
+      ApplicationErrorKind.InvalidInput,
+      `Invalid value for ${error.path}`,
+      { [error.path]: ["Invalid value"] },
+    );
   }
 
-  if (isMongoDuplicateKeyError(error)) {
-    res.status(409).json({ message: "That resource already exists" });
-    return;
+  const duplicatedFields = getDuplicatedFields(error);
+
+  if (duplicatedFields) {
+    return new ApplicationError(
+      ApplicationErrorKind.Conflict,
+      "That resource already exists",
+      duplicatedFields,
+    );
   }
 
-  console.error("Unhandled error:", error);
-  res.status(500).json({ message: "Unexpected server error" });
+  return new ApplicationError(
+    ApplicationErrorKind.Unexpected,
+    "Unexpected server error",
+  );
+}
+
+/**
+ * MongoDB responde con el codigo 11000 cuando se viola un indice unico (por
+ * ejemplo, registrar un email que ya existe). En `keyValue` viene que campos
+ * chocaron, y con eso armamos un error por campo para el front.
+ */
+function getDuplicatedFields(error: unknown): FieldErrors | undefined {
+  if (
+    typeof error !== "object" ||
+    error === null ||
+    !("code" in error) ||
+    error.code !== 11000
+  ) {
+    return undefined;
+  }
+
+  const fields: FieldErrors = {};
+
+  if (
+    "keyValue" in error &&
+    typeof error.keyValue === "object" &&
+    error.keyValue !== null
+  ) {
+    for (const field of Object.keys(error.keyValue)) {
+      fields[field] = ["Already in use"];
+    }
+  }
+
+  return fields;
 }
