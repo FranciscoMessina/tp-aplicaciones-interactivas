@@ -27,5 +27,21 @@ runtime:
           bru.setVar("accessToken", res.body.data.accessToken);
         }
 
+docs: |-
+  Inicia sesión con el cliente del seed y guarda el token en la variable `accessToken`, que el resto de la colección manda sola.
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Body:
+  - `email`
+  - `password`
+
+  **Devuelve**
+
+  - `200` con `data.accessToken` (JWT) y `data.user` (`id`, `fullName`, `email`, `phone` y `role`).
+  - `401` si el email o la contraseña son incorrectos.
+
 settings:
   encodeUrl: true

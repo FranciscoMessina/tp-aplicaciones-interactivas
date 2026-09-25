@@ -9,5 +9,18 @@ http:
   auth:
     type: none
 
+docs: |-
+  Lista todas las categorías, ordenadas por nombre.
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Nada.
+
+  **Devuelve**
+
+  - `200` con un array de categorías (`id`, `name`, `createdAt`, `updatedAt`).
+
 settings:
   encodeUrl: true

@@ -13,5 +13,21 @@ http:
       description: Id de la consulta, copiarlo de "Listar consultas"
   auth: inherit
 
+docs: |-
+  Elimina una consulta.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id de la consulta, sale de "Listar consultas".
+
+  **Devuelve**
+
+  - `204` sin cuerpo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si la consulta no existe.
+
 settings:
   encodeUrl: true

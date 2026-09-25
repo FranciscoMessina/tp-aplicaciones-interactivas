@@ -23,7 +23,23 @@ http:
   auth: inherit
 
 docs: |-
-  `status` puede ser `PENDING`, `READ` o `RESOLVED`.
+  Cambia el estado de una consulta. Desde cualquier estado se puede volver a `PENDING`; lo único que no se permite es pasar de `RESOLVED` a `READ`. Mandar el estado que ya tiene no cambia nada.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id de la consulta, sale de "Listar consultas".
+  - Body `status`: `PENDING`, `READ` o `RESOLVED`.
+
+  **Devuelve**
+
+  - `200` con la consulta (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `createdAt`, `updatedAt`).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si la consulta no existe.
+  - `409` si el cambio de estado no está permitido.
 
 settings:
   encodeUrl: true

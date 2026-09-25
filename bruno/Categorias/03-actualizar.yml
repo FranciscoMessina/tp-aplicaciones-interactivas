@@ -22,5 +22,24 @@ http:
       }
   auth: inherit
 
+docs: |-
+  Cambia el nombre de una categoría. Los productos asociados no cambian: siguen apuntando a la misma categoría.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id de la categoría, sale de "Listar categorias".
+  - Body `name`: único sin distinguir mayúsculas.
+
+  **Devuelve**
+
+  - `200` con la categoría actualizada.
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si la categoría no existe.
+  - `409` si ya existe otra categoría con ese nombre.
+
 settings:
   encodeUrl: true

@@ -21,7 +21,25 @@ http:
   auth: inherit
 
 docs: |-
-  Requiere haber iniciado sesion como admin.
+  Crea una cuenta de administrador para otra persona. No devuelve token: esa persona tiene que iniciar sesión con sus datos.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Body, los mismos campos que el registro:
+  - `fullName`
+  - `email`: único en todo el sistema.
+  - `phone`
+  - `password`: mínimo 8 caracteres.
+
+  **Devuelve**
+
+  - `201` con el usuario creado (`id`, `fullName`, `email`, `phone` y `role`).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `409` si el email ya está registrado.
 
 settings:
   encodeUrl: true

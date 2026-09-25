@@ -26,8 +26,26 @@ http:
   auth: inherit
 
 docs: |-
-  Tambien acepta `category`, `minPrice`, `maxPrice`, `sortOrder` e
-  `includeInactive` (este ultimo solo tiene efecto logueado como admin).
+  Busca y lista productos, paginados. Sin filtros devuelve todos los activos, del más nuevo al más viejo.
+
+  **Auth:** opcional. Si hay un token de administrador, cambia lo que devuelve (ver abajo).
+
+  **Recibe**
+
+  Query, todos opcionales:
+  - `search`: texto a buscar en nombre y descripción. Tolera errores de tipeo.
+  - `category`: id de una categoría, sale de "Listar categorias".
+  - `minPrice` / `maxPrice`: rango de precio.
+  - `sortBy`: `publicationDate` (por defecto), `price` o `relevance`. `relevance` requiere `search`.
+  - `sortOrder`: `desc` (por defecto) o `asc`.
+  - `page`: desde 1 (por defecto 1).
+  - `pageSize`: de 1 a 100 (por defecto 20).
+  - `includeInactive`: `true` para incluir los productos desactivados. Solo tiene efecto con un token de administrador; para cualquier otro se ignora.
+
+  **Devuelve**
+
+  - `200` con `data.items` (array de productos, cada uno con su `category` completa), `data.page`, `data.pageSize` y `data.total` (cantidad total de resultados, para calcular las páginas).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
 
 settings:
   encodeUrl: true

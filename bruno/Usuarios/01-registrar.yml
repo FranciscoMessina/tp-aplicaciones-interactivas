@@ -21,5 +21,24 @@ http:
   auth:
     type: none
 
+docs: |-
+  Crea una cuenta de cliente. El rol siempre es `customer`: los administradores se crean con "Crear administrador".
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Body:
+  - `fullName`: nombre y apellido.
+  - `email`: único en todo el sistema.
+  - `phone`
+  - `password`: mínimo 8 caracteres.
+
+  **Devuelve**
+
+  - `201` con `data.accessToken` (JWT) y `data.user` (`id`, `fullName`, `email`, `phone` y `role`).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `409` si el email ya está registrado.
+
 settings:
   encodeUrl: true

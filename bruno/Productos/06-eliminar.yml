@@ -13,5 +13,21 @@ http:
       description: Id del producto, copiarlo de "Listar productos"
   auth: inherit
 
+docs: |-
+  Elimina un producto definitivamente. Para sacarlo del sitio sin perderlo, usar "Desactivar producto".
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id del producto, sale de "Listar productos".
+
+  **Devuelve**
+
+  - `204` sin cuerpo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si el producto no existe.
+
 settings:
   encodeUrl: true

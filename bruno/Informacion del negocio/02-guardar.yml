@@ -29,5 +29,27 @@ http:
       }
   auth: inherit
 
+docs: |-
+  Crea la información institucional, o la reemplaza si ya existe. Hay una sola en todo el sistema.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Body, todos obligatorios:
+  - `name`: nombre del comercio.
+  - `description`
+  - `address`
+  - `phone`
+  - `socialNetworks`: array de URLs (puede estar vacío).
+  - `openingHours`: array de textos, por ejemplo "Lunes a viernes de 10 a 20 hs".
+
+  **Devuelve**
+
+  - `200` con la información (`id`, `name`, `description`, `address`, `phone`, `socialNetworks`, `openingHours`).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+
 settings:
   encodeUrl: true

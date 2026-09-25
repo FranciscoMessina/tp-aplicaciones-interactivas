@@ -14,7 +14,21 @@ http:
   auth: inherit
 
 docs: |-
-  `status` es opcional: `PENDING`, `READ` o `RESOLVED`. Sin el, lista todas.
+  Lista las consultas recibidas, de la más nueva a la más vieja.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Query:
+  - `status` (opcional): `PENDING`, `READ` o `RESOLVED`. Sin él, lista todas.
+
+  **Devuelve**
+
+  - `200` con un array de consultas (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `createdAt`, `updatedAt`).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
 
 settings:
   encodeUrl: true

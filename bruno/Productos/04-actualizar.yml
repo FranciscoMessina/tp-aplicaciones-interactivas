@@ -23,5 +23,23 @@ http:
       }
   auth: inherit
 
+docs: |-
+  Modifica un producto. Solo cambian los campos que se mandan.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id del producto, sale de "Listar productos".
+  - Body: cualquiera de los campos de "Crear producto", al menos uno.
+
+  **Devuelve**
+
+  - `200` con el producto actualizado. `category` viene como id.
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo. También si la categoría no existe.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si el producto no existe.
+
 settings:
   encodeUrl: true

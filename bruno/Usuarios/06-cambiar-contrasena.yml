@@ -19,8 +19,21 @@ http:
   auth: inherit
 
 docs: |-
-  Cambia la contraseña del usuario logueado. Si se usa con el cliente del
-  seed, despues hay que iniciar sesion con la contraseña nueva.
+  Cambia la contraseña del usuario logueado. Si se usa con el cliente del seed, después hay que iniciar sesión con la contraseña nueva.
+
+  **Auth:** cualquier usuario logueado. Usa el token guardado al iniciar sesión.
+
+  **Recibe**
+
+  Body:
+  - `currentPassword`: la contraseña actual.
+  - `newPassword`: mínimo 8 caracteres.
+
+  **Devuelve**
+
+  - `200` con `data.message`.
+  - `400` si `currentPassword` es incorrecta (en `error.fields.currentPassword`) o algún campo es inválido.
+  - `401` si falta el token o está vencido.
 
 settings:
   encodeUrl: true

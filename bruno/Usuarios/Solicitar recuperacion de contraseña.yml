@@ -16,6 +16,21 @@ http:
         "email": "cliente@example.com"
       }
 
+docs: |-
+  Genera un token de recuperación de contraseña, de un solo uso y válido por 15 minutos. Todavía no se manda por mail: se escribe en la consola del servidor, de donde hay que copiarlo para "Restablecer contraseña".
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Body:
+  - `email`
+
+  **Devuelve**
+
+  - `200` con `data.message`. La respuesta es la misma exista o no la cuenta, para no revelar qué emails están registrados.
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+
 settings:
   encodeUrl: true
   timeout: 0

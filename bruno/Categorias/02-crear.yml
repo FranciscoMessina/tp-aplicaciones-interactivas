@@ -17,5 +17,23 @@ http:
       }
   auth: inherit
 
+docs: |-
+  Crea una categoría.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Body:
+  - `name`: único sin distinguir mayúsculas ("Consolas" y "consolas" chocan).
+
+  **Devuelve**
+
+  - `201` con la categoría creada.
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `409` si ya existe una categoría con ese nombre.
+
 settings:
   encodeUrl: true

@@ -23,7 +23,21 @@ http:
   auth: inherit
 
 docs: |-
-  Con `"isActive": true` se vuelve a activar.
+  Desactiva un producto: deja de aparecer en el sitio público, pero no se borra. Con `"isActive": true` se vuelve a activar. Es la misma ruta que "Actualizar producto".
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id del producto, sale de "Listar productos".
+  - Body `isActive`: `false` para desactivar, `true` para activar.
+
+  **Devuelve**
+
+  - `200` con el producto actualizado.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si el producto no existe.
 
 settings:
   encodeUrl: true

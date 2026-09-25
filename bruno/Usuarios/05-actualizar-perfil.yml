@@ -18,5 +18,24 @@ http:
       }
   auth: inherit
 
+docs: |-
+  Modifica los datos personales del usuario logueado.
+
+  **Auth:** cualquier usuario logueado. Usa el token guardado al iniciar sesión.
+
+  **Recibe**
+
+  Body, todos opcionales pero al menos uno:
+  - `fullName`
+  - `email`: no puede estar en uso por otra cuenta.
+  - `phone`
+
+  **Devuelve**
+
+  - `200` con el perfil actualizado.
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `409` si el email ya lo usa otra cuenta.
+
 settings:
   encodeUrl: true

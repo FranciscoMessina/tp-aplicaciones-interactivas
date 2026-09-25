@@ -8,5 +8,19 @@ http:
   url: "{{baseUrl}}/api/users/me"
   auth: inherit
 
+docs: |-
+  Devuelve los datos del usuario logueado.
+
+  **Auth:** cualquier usuario logueado. Usa el token guardado al iniciar sesión.
+
+  **Recibe**
+
+  Nada.
+
+  **Devuelve**
+
+  - `200` con `id`, `fullName`, `email`, `phone` y `role`, `createdAt` y `updatedAt`.
+  - `401` si falta el token o está vencido.
+
 settings:
   encodeUrl: true

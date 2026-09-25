@@ -25,5 +25,28 @@ http:
       }
   auth: inherit
 
+docs: |-
+  Crea un producto.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Body:
+  - `name`
+  - `category`: id de una categoría existente, sale de "Listar categorias".
+  - `description`
+  - `images`: array de URLs, al menos una.
+  - `price`: número mayor o igual a 0.
+  - `availableQuantity` (opcional, por defecto 0): stock. Con 0 el producto se muestra sin stock.
+  - `isActive` (opcional, por defecto `true`): si se publica en el sitio.
+
+  **Devuelve**
+
+  - `201` con el producto (`id`, `name`, `category`, `description`, `images`, `price`, `availableQuantity`, `isActive`, `createdAt`, `updatedAt`). `category` viene como id.
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo. También si la categoría no existe.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+
 settings:
   encodeUrl: true

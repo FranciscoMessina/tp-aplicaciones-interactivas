@@ -17,6 +17,22 @@ http:
         "password": "Customer123!"
       }
 
+docs: |-
+  Cambia la contraseña usando el token de recuperación. El body deja la contraseña del cliente del seed como estaba.
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Body:
+  - `token`: el que escribió la consola del servidor después de "Solicitar recuperacion de contraseña".
+  - `password`: la contraseña nueva, mínimo 8 caracteres.
+
+  **Devuelve**
+
+  - `200` con `data.message`.
+  - `400` si el token es inválido, ya se usó o venció.
+
 settings:
   encodeUrl: true
   timeout: 0

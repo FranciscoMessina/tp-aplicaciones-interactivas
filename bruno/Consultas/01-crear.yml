@@ -22,5 +22,24 @@ http:
   auth:
     type: none
 
+docs: |-
+  Envía una consulta al comercio desde el formulario de contacto. Queda guardada como `PENDING`.
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Body:
+  - `name`
+  - `email`
+  - `phone` (opcional)
+  - `subject`
+  - `message`
+
+  **Devuelve**
+
+  - `201` con la consulta (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `createdAt`, `updatedAt`).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+
 settings:
   encodeUrl: true

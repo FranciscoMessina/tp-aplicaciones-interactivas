@@ -9,5 +9,19 @@ http:
   auth:
     type: none
 
+docs: |-
+  Devuelve la información institucional del comercio, para las páginas de inicio y contacto.
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Nada.
+
+  **Devuelve**
+
+  - `200` con la información (`id`, `name`, `description`, `address`, `phone`, `socialNetworks`, `openingHours`).
+  - `404` si todavía no se cargó (el seed la carga).
+
 settings:
   encodeUrl: true
