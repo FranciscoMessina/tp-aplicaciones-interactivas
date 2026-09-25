@@ -70,7 +70,7 @@ function toApplicationError(error: unknown): ApplicationError {
   ) {
     return new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      "The request body is not valid JSON",
+      "El cuerpo del request no es un JSON válido",
     );
   }
 
@@ -84,7 +84,7 @@ function toApplicationError(error: unknown): ApplicationError {
 
     return new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      "Some fields are invalid",
+      "Hay campos con errores",
       fields,
     );
   }
@@ -93,8 +93,8 @@ function toApplicationError(error: unknown): ApplicationError {
   if (error instanceof mongoose.Error.CastError) {
     return new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      `Invalid value for ${error.path}`,
-      { [error.path]: ["Invalid value"] },
+      `Valor inválido para ${error.path}`,
+      { [error.path]: ["Valor inválido"] },
     );
   }
 
@@ -103,14 +103,14 @@ function toApplicationError(error: unknown): ApplicationError {
   if (duplicatedFields) {
     return new ApplicationError(
       ApplicationErrorKind.Conflict,
-      "That resource already exists",
+      "El recurso ya existe",
       duplicatedFields,
     );
   }
 
   return new ApplicationError(
     ApplicationErrorKind.Unexpected,
-    "Unexpected server error",
+    "Ocurrió un error inesperado en el servidor",
   );
 }
 
@@ -137,7 +137,7 @@ function getDuplicatedFields(error: unknown): FieldErrors | undefined {
     error.keyValue !== null
   ) {
     for (const field of Object.keys(error.keyValue)) {
-      fields[field] = ["Already in use"];
+      fields[field] = ["Ya está en uso"];
     }
   }
 

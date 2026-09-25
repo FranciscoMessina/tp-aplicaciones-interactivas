@@ -16,17 +16,22 @@ http:
         "token": "{{resetToken}}",
         "password": "{{newUserPassword}}"
       }
-  auth:
-    type: none
 
 runtime:
+  variables:
+    - name: newUserPassword
+      value: "12345678"
   scripts:
     - type: tests
       code: |-
         test("restablece la contrasena", function() {
           expect(res.status).to.equal(200);
-          expect(res.body.data.message).to.equal("Password updated successfully");
+          expect(res.body.data.message).to.equal("La contraseña se actualizó correctamente");
         });
 
 settings:
   encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

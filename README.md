@@ -142,10 +142,10 @@ Si falló:
   "success": false,
   "error": {
     "code": "INVALID_INPUT",
-    "message": "Some fields are invalid",
+    "message": "Hay campos con errores",
     "fields": {
-      "email": ["Invalid email address"],
-      "images.0": ["Invalid URL"]
+      "email": ["El email no es válido"],
+      "images.0": ["La URL no es válida"]
     }
   }
 }

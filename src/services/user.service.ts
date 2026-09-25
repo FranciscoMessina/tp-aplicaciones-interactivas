@@ -83,7 +83,7 @@ export async function loginUser(input: LoginInput) {
   if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
-      "Invalid email or password",
+      "El email o la contraseña son incorrectos",
     );
   }
 
@@ -96,7 +96,10 @@ export async function getUserProfile(
   const user = await UserModel.findById(userId).select(PUBLIC_USER_FIELDS);
 
   if (!user) {
-    throw new ApplicationError(ApplicationErrorKind.NotFound, "User not found");
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "No se encontró el usuario",
+    );
   }
 
   return user;
@@ -113,7 +116,10 @@ export async function updateUserProfile(
   ).select(PUBLIC_USER_FIELDS);
 
   if (!user) {
-    throw new ApplicationError(ApplicationErrorKind.NotFound, "User not found");
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "No se encontró el usuario",
+    );
   }
 
   return user;
@@ -167,7 +173,7 @@ export async function resetPassword(
   if (!user) {
     throw new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      "Invalid or expired reset token",
+      "El token de recuperación es inválido o está vencido",
     );
   }
 }

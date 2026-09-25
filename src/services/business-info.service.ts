@@ -23,7 +23,7 @@ export async function getBusinessInfo(): Promise<DocumentType<BusinessInfo>> {
   if (!businessInfo) {
     throw new ApplicationError(
       ApplicationErrorKind.NotFound,
-      "Business information not found",
+      "No se encontró la información del comercio",
     );
   }
 
@@ -47,7 +47,7 @@ export async function upsertBusinessInfo(
   if (!businessInfo) {
     throw new ApplicationError(
       ApplicationErrorKind.Unexpected,
-      "Could not save business information",
+      "No se pudo guardar la información del comercio",
     );
   }
 

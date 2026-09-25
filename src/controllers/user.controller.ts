@@ -52,7 +52,7 @@ export async function requestPasswordReset(
   // El mensaje es el mismo exista o no la cuenta, para que nadie pueda usar
   // este endpoint para averiguar que emails estan registrados.
   const message =
-    "If the account exists, password reset instructions have been generated";
+    "Si la cuenta existe, se generaron las instrucciones para recuperar la contraseña";
   const { resetToken } = await userService.requestPasswordReset(email);
   sendSuccess(res, resetToken ? { message, resetToken } : { message });
 }
@@ -63,5 +63,5 @@ export async function resetPassword(
 ): Promise<void> {
   const { token, password } = validate(resetPasswordSchema, req.body);
   await userService.resetPassword(token, password);
-  sendSuccess(res, { message: "Password updated successfully" });
+  sendSuccess(res, { message: "La contraseña se actualizó correctamente" });
 }

@@ -1,7 +1,7 @@
 info:
   name: Desactivar producto
   type: http
-  seq: 5
+  seq: 4
 
 http:
   method: PATCH
@@ -30,3 +30,7 @@ runtime:
 
 settings:
   encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

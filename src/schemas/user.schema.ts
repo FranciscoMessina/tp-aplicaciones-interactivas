@@ -20,7 +20,7 @@ export const updateProfileSchema = z
     phone: z.string().trim().min(1).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
-    message: "Provide at least one field",
+    message: "Enviá al menos un campo para modificar",
   });
 
 export const forgotPasswordSchema = z.object({ email: emailSchema });

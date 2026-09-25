@@ -45,7 +45,7 @@ export const searchProductsSchema = z
       context.addIssue({
         code: "custom",
         path: ["maxPrice"],
-        message: "Must be greater than or equal to minPrice",
+        message: "Debe ser mayor o igual que el precio mínimo",
       });
     }
 
@@ -53,7 +53,7 @@ export const searchProductsSchema = z
       context.addIssue({
         code: "custom",
         path: ["sortBy"],
-        message: "Relevance sorting requires search",
+        message: "Para ordenar por relevancia hay que ingresar una búsqueda",
       });
     }
   });
@@ -65,5 +65,5 @@ export const updateProductSchema = z
   .object(productFields)
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
-    message: "Provide at least one field",
+    message: "Enviá al menos un campo para modificar",
   });

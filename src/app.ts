@@ -1,6 +1,8 @@
 import "reflect-metadata";
 import cors from "cors";
 import express from "express";
+import morgan from "morgan";
+import { env } from "./config/env.ts";
 import {
   ApplicationError,
   ApplicationErrorKind,
@@ -17,6 +19,11 @@ const app = express();
 // El orden de los `app.use` importa: Express pasa cada request por estas
 // funciones de arriba hacia abajo.
 
+// Escribe en consola una linea por cada request (metodo, ruta, status y tiempo
+// de respuesta). Va primero para registrar tambien los que terminan en error.
+// En desarrollo usa un formato corto y con colores; en produccion, el formato
+// estandar de los servidores web, que incluye IP y navegador del cliente.
+app.use(morgan(env.isProduction ? "combined" : "dev"));
 // El front corre en otro origen (otro puerto o dominio) y el navegador bloquea
 // esas llamadas salvo que la API las autorice con los headers de CORS.
 app.use(cors());
@@ -31,7 +38,10 @@ app.use("/api/enquiries", enquiryRouter);
 
 // Si el request llego hasta aca, ninguna ruta coincidio.
 app.use(() => {
-  throw new ApplicationError(ApplicationErrorKind.NotFound, "Route not found");
+  throw new ApplicationError(
+    ApplicationErrorKind.NotFound,
+    "La ruta no existe",
+  );
 });
 
 // Va ultimo para recibir los errores de todo lo anterior.

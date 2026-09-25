@@ -39,7 +39,7 @@ export async function updateEnquiryStatus(
   if (!enquiry) {
     throw new ApplicationError(
       ApplicationErrorKind.NotFound,
-      "Enquiry not found",
+      "No se encontró la consulta",
     );
   }
 
@@ -50,7 +50,7 @@ export async function updateEnquiryStatus(
   if (!allowedTransitions[enquiry.status].includes(nextStatus)) {
     throw new ApplicationError(
       ApplicationErrorKind.Conflict,
-      `Cannot transition enquiry from ${enquiry.status} to ${nextStatus}`,
+      `No se puede cambiar una consulta de ${enquiry.status} a ${nextStatus}`,
     );
   }
 
@@ -64,7 +64,7 @@ export async function deleteEnquiry(enquiryId: string): Promise<void> {
   if (!enquiry) {
     throw new ApplicationError(
       ApplicationErrorKind.NotFound,
-      "Enquiry not found",
+      "No se encontró la consulta",
     );
   }
 }

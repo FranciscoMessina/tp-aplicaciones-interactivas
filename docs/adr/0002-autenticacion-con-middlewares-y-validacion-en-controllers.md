@@ -1,24 +1,32 @@
-# La validacion y la autenticacion viven en un solo modulo, no en middlewares
+# La autenticacion va en middlewares y la validacion en los controllers
 
-`handler({ schema, auth }, fn)` en `src/http/handler.ts` parsea el request y
-resuelve la autenticacion, y le pasa al handler un contexto ya tipado. No hay
-middleware `authenticate` ni `requireAdmin`: `auth` es `"user" | "admin" |
-"optional"` y viaja como dato del handler.
+La autenticacion y la autorizacion son middlewares de Express que se encadenan
+en cada ruta (`authenticate`, `optionalAuthenticate`, `requireAdmin` en
+`src/middleware/auth.ts`). El usuario autenticado queda en `req.user`. La
+validacion no es un middleware: cada controller llama a
+`validate(schema, req.body)` (`src/http/validate.ts`) y recibe el dato ya tipado.
 
-Antes cada handler repetia el mismo ritual de parseo y cada consumidor de
-`req.auth` lo casteaba a `AuthenticatedRequest`. Los dos eran el mismo problema:
-estado derivado del request que llega al handler sin que los tipos lo
-acompañen. Con middlewares montados aparte, una ruta que pusiera `requireAdmin`
-sin `authenticate` leia `undefined.role` en runtime y compilaba igual. Como
-requisito del handler, esa combinacion no se puede escribir.
+Antes habia un wrapper `handler({ schema, auth }, fn)` que resolvia las dos
+cosas y le pasaba al controller un contexto tipado. Funcionaba, pero escondia la
+autenticacion: mirando las rutas no se veia que endpoint estaba protegido.
+Con middlewares, la ruta dice quien puede usarla:
+
+```ts
+productRouter.post("/", authenticate, requireAdmin, createProduct);
+```
+
+La validacion se queda en el controller porque ahi el tipo sale solo del
+schema de Zod. Como middleware, el controller tendria que declarar a mano el
+tipo de `req.body` y confiar en que el middleware se monto. Ademas, en Express 5
+`req.query` no se puede reasignar, asi que un middleware no podria dejar el
+query ya convertido.
 
 ## Consequences
 
-- Un lector que busque `authenticate` en `src/middleware/` no lo va a
-  encontrar. El orden de las cosas esta en `handler.ts`, no en las rutas.
-- `exactOptionalPropertyTypes` se saco de `tsconfig.json`. Era lo que obligaba
-  al armado manual de objetos opcionales en los controllers, y con el parseo
-  centralizado distinguia algo que ningun caller distinguia. El costo es que los
-  tipos ya no separan "campo ausente" de "campo explicitamente `undefined`";
-  Mongoose descarta `undefined` en `$set`, asi que el comportamiento no cambia,
-  pero paso de ser una garantia del compilador a un supuesto.
+- TypeScript no puede verificar que una ruta tenga `authenticate`. `req.user`
+  es opcional, y los controllers que lo necesitan usan `getAuthenticatedUser`,
+  que responde 401 si falta en vez de romper.
+- `requireAdmin` asume que `authenticate` corrio antes. Sin el, responde 403
+  porque no hay usuario, que es seguro pero el mensaje no es el ideal.
+- No hace falta envolver los controllers `async` en try/catch: Express 5 pasa al
+  error handler cualquier promesa rechazada.

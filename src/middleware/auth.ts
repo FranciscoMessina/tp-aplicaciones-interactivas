@@ -48,7 +48,7 @@ export const authenticate: RequestHandler = (req, _res, next) => {
   if (!token) {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
-      "A bearer token is required",
+      "Se requiere un token de acceso",
     );
   }
 
@@ -57,7 +57,7 @@ export const authenticate: RequestHandler = (req, _res, next) => {
   } catch {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
-      "Invalid or expired token",
+      "El token es inválido o está vencido",
     );
   }
 
@@ -88,7 +88,7 @@ export const requireAdmin: RequestHandler = (req, _res, next) => {
   if (req.user?.role !== UserRole.Admin) {
     throw new ApplicationError(
       ApplicationErrorKind.Forbidden,
-      "Insufficient permissions",
+      "No tenés permisos para realizar esta acción",
     );
   }
 
@@ -104,7 +104,7 @@ export function getAuthenticatedUser(req: Request): AccessTokenPayload {
   if (!req.user) {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
-      "Authentication is required",
+      "Tenés que iniciar sesión",
     );
   }
 

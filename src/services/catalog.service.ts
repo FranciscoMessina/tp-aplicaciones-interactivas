@@ -199,7 +199,7 @@ export async function updateProduct(
   if (!product) {
     throw new ApplicationError(
       ApplicationErrorKind.NotFound,
-      "Product not found",
+      "No se encontró el producto",
     );
   }
 
@@ -212,7 +212,7 @@ export async function deleteProduct(productId: string): Promise<void> {
   if (!product) {
     throw new ApplicationError(
       ApplicationErrorKind.NotFound,
-      "Product not found",
+      "No se encontró el producto",
     );
   }
 }
@@ -240,7 +240,7 @@ export async function updateCategory(
   if (!category) {
     throw new ApplicationError(
       ApplicationErrorKind.NotFound,
-      "Category not found",
+      "No se encontró la categoría",
     );
   }
 
@@ -253,7 +253,7 @@ export async function deleteCategory(categoryId: string): Promise<void> {
   if (associatedProduct) {
     throw new ApplicationError(
       ApplicationErrorKind.Conflict,
-      "Category has associated products",
+      "La categoría tiene productos asociados",
     );
   }
 
@@ -262,7 +262,7 @@ export async function deleteCategory(categoryId: string): Promise<void> {
   if (!category) {
     throw new ApplicationError(
       ApplicationErrorKind.NotFound,
-      "Category not found",
+      "No se encontró la categoría",
     );
   }
 }
@@ -273,7 +273,7 @@ async function ensureCategoryExists(categoryId: string): Promise<void> {
   if (!category) {
     throw new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      "Category not found",
+      "No se encontró la categoría",
     );
   }
 }
