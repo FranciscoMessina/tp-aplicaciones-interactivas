@@ -1,7 +1,7 @@
 info:
   name: Restablecer contrasena
   type: http
-  seq: 6
+  seq: 7
 
 http:
   method: POST
@@ -16,6 +16,10 @@ http:
         "token": "{{resetToken}}",
         "password": "{{newUserPassword}}"
       }
+
+docs: |-
+  El token no viene en la respuesta de la request anterior: se escribe en la
+  consola del servidor. Copiarlo en la variable `resetToken` antes de ejecutar.
 
 runtime:
   variables:

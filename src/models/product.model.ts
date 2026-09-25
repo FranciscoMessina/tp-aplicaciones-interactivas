@@ -15,8 +15,11 @@ import { Category } from "./category.model.ts";
  * `autocomplete` solo lee `autocomplete`, y `equals`/`range` solo leen el tipo
  * exacto del campo. Un campo que falta no da error, devuelve cero resultados.
  * Por eso `name` va con los dos tipos y los campos que se filtran estan todos.
+ *
+ * Atlas no toma los cambios de esta definicion solo: `npm run seed` la vuelve
+ * a aplicar con `updateSearchIndex`.
  */
-@searchIndex({
+export const productSearchIndex = {
   name: "productSearch",
   definition: {
     mappings: {
@@ -33,7 +36,9 @@ import { Category } from "./category.model.ts";
       },
     },
   },
-})
+};
+
+@searchIndex(productSearchIndex)
 @modelOptions({
   ...baseModelOptions,
   schemaOptions: {

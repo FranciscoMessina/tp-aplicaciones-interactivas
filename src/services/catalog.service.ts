@@ -3,8 +3,16 @@ import {
   ApplicationError,
   ApplicationErrorKind,
 } from "../domain/application-error.ts";
-import { Category, CategoryModel } from "../models/category.model.ts";
-import { Product, ProductModel } from "../models/product.model.ts";
+import {
+  Category,
+  CategoryModel,
+  categoryCollation,
+} from "../models/category.model.ts";
+import {
+  Product,
+  ProductModel,
+  productSearchIndex,
+} from "../models/product.model.ts";
 import { Types, type PipelineStage } from "mongoose";
 
 export interface CreateProductInput {
@@ -13,6 +21,7 @@ export interface CreateProductInput {
   description: string;
   images: string[];
   price: number;
+  availableQuantity?: number;
   isActive?: boolean;
 }
 
@@ -22,6 +31,7 @@ export interface UpdateProductInput {
   description?: string;
   images?: string[];
   price?: number;
+  availableQuantity?: number;
   isActive?: boolean;
 }
 
@@ -37,6 +47,15 @@ export interface ProductSearchFilters {
   sortBy?: "publicationDate" | "price" | "relevance";
   sortOrder?: "asc" | "desc";
   includeInactive?: boolean;
+  page: number;
+  pageSize: number;
+}
+
+export interface ProductPage {
+  items: DocumentType<Product>[];
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 /**
@@ -50,11 +69,12 @@ export interface ProductSearchFilters {
  *   primera etapa del pipeline.
  * - Sin `search` alcanza con un `$match`, el filtro comun de MongoDB.
  *
- * En los dos casos despues se ordena y se completa la categoria de cada producto.
+ * En los dos casos despues se ordena, se corta la pagina pedida y se completa
+ * la categoria de cada producto.
  */
 export async function searchProducts(
-  filters: ProductSearchFilters = {},
-): Promise<DocumentType<Product>[]> {
+  filters: ProductSearchFilters,
+): Promise<ProductPage> {
   const pipeline: PipelineStage[] = [];
 
   if (filters.search) {
@@ -85,7 +105,7 @@ export async function searchProducts(
 
     pipeline.push({
       $search: {
-        index: "productSearch",
+        index: productSearchIndex.name,
         compound: {
           should: [
             {
@@ -164,15 +184,59 @@ export async function searchProducts(
       pipeline.push({ $sort: { createdAt: sortDirection } });
   }
 
+  // `$facet` corre dos sub-pipelines sobre el mismo resultado: uno corta la
+  // pagina y el otro cuenta el total, asi alcanza con una sola consulta.
+  pipeline.push({
+    $facet: {
+      items: [
+        { $skip: (filters.page - 1) * filters.pageSize },
+        { $limit: filters.pageSize },
+      ],
+      total: [{ $count: "count" }],
+    },
+  });
+
+  const [result] = await ProductModel.aggregate<{
+    items: Product[];
+    total: { count: number }[];
+  }>(pipeline);
+
   // `aggregate` devuelve objetos planos. `hydrate` los convierte en documentos
   // de Mongoose, para que se serialicen igual que en el resto de la API (con
   // `id` en vez de `_id`) y para poder completar la categoria con `populate`.
-  const products = await ProductModel.aggregate(pipeline);
-  const hydratedProducts = products.map((product) =>
+  const products = (result?.items ?? []).map((product) =>
     ProductModel.hydrate(product),
   );
 
-  return ProductModel.populate(hydratedProducts, { path: "category" });
+  return {
+    items: await ProductModel.populate(products, { path: "category" }),
+    page: filters.page,
+    pageSize: filters.pageSize,
+    total: result?.total[0]?.count ?? 0,
+  };
+}
+
+/**
+ * Un Product inactivo no existe para el publico: responde lo mismo que si el
+ * id no existiera.
+ */
+export async function getProduct(
+  productId: string,
+  includeInactive: boolean,
+): Promise<DocumentType<Product>> {
+  const product = await ProductModel.findOne({
+    _id: productId,
+    ...(!includeInactive && { isActive: true }),
+  }).populate("category");
+
+  if (!product) {
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "No se encontró el producto",
+    );
+  }
+
+  return product;
 }
 
 export async function createProduct(
@@ -218,7 +282,7 @@ export async function deleteProduct(productId: string): Promise<void> {
 }
 
 export function listCategories(): Promise<DocumentType<Category>[]> {
-  return CategoryModel.find();
+  return CategoryModel.find().sort({ name: 1 }).collation(categoryCollation);
 }
 
 export function createCategory(

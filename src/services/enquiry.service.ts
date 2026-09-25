@@ -17,8 +17,10 @@ export interface CreateEnquiryInput {
   message: string;
 }
 
-export function listEnquiries(): Promise<DocumentType<Enquiry>[]> {
-  return EnquiryModel.find();
+export function listEnquiries(
+  status?: EnquiryStatusValue,
+): Promise<DocumentType<Enquiry>[]> {
+  return EnquiryModel.find(status ? { status } : {}).sort({ createdAt: -1 });
 }
 
 export function createEnquiry(

@@ -4,15 +4,17 @@ import { validate } from "../http/validate.ts";
 import { idParamsSchema } from "../schemas/common.schema.ts";
 import {
   createEnquirySchema,
+  listEnquiriesSchema,
   updateEnquiryStatusSchema,
 } from "../schemas/enquiry.schema.ts";
 import * as enquiryService from "../services/enquiry.service.ts";
 
 export async function listEnquiries(
-  _req: Request,
+  req: Request,
   res: Response,
 ): Promise<void> {
-  sendSuccess(res, await enquiryService.listEnquiries());
+  const { status } = validate(listEnquiriesSchema, req.query);
+  sendSuccess(res, await enquiryService.listEnquiries(status));
 }
 
 export async function createEnquiry(

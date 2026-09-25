@@ -19,6 +19,8 @@ const productFields = {
   images: z.array(z.url()).min(1),
   // La consigna lo deja opcional segun el rubro; en el nuestro es obligatorio.
   price: z.number().nonnegative(),
+  // El estado de disponibilidad: con 0 el producto se publica como sin stock.
+  availableQuantity: z.number().int().nonnegative().optional(),
   isActive: z.boolean().optional(),
 };
 
@@ -32,6 +34,8 @@ export const searchProductsSchema = z
       .enum(["publicationDate", "price", "relevance"])
       .default("publicationDate"),
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(20),
     // Solo la tienen en cuenta los administradores; ver product.controller.
     includeInactive: z.stringbool().optional(),
   })

@@ -3,6 +3,7 @@ import { sendSuccess } from "../http/responses.ts";
 import { validate } from "../http/validate.ts";
 import { getAuthenticatedUser } from "../middleware/auth.ts";
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   registerSchema,
@@ -14,6 +15,11 @@ import * as userService from "../services/user.service.ts";
 export async function register(req: Request, res: Response): Promise<void> {
   const body = validate(registerSchema, req.body);
   sendSuccess(res, await userService.registerUser(body), 201);
+}
+
+export async function createAdmin(req: Request, res: Response): Promise<void> {
+  const body = validate(registerSchema, req.body);
+  sendSuccess(res, await userService.createAdmin(body), 201);
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
@@ -44,6 +50,19 @@ export async function updateProfile(
   sendSuccess(res, await userService.updateUserProfile(userId, body));
 }
 
+export async function changePassword(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { sub: userId } = getAuthenticatedUser(req);
+  const { currentPassword, newPassword } = validate(
+    changePasswordSchema,
+    req.body,
+  );
+  await userService.changePassword(userId, currentPassword, newPassword);
+  sendSuccess(res, { message: "La contraseña se actualizó correctamente" });
+}
+
 export async function requestPasswordReset(
   req: Request,
   res: Response,
@@ -51,10 +70,11 @@ export async function requestPasswordReset(
   const { email } = validate(forgotPasswordSchema, req.body);
   // El mensaje es el mismo exista o no la cuenta, para que nadie pueda usar
   // este endpoint para averiguar que emails estan registrados.
-  const message =
-    "Si la cuenta existe, se generaron las instrucciones para recuperar la contraseña";
-  const { resetToken } = await userService.requestPasswordReset(email);
-  sendSuccess(res, resetToken ? { message, resetToken } : { message });
+  await userService.requestPasswordReset(email);
+  sendSuccess(res, {
+    message:
+      "Si la cuenta existe, se enviaron las instrucciones para recuperar la contraseña",
+  });
 }
 
 export async function resetPassword(

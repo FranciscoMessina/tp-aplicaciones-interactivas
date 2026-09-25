@@ -6,7 +6,11 @@ import {
 } from "@typegoose/typegoose";
 import { baseModelOptions } from "./model-options.ts";
 
-@index({ name: 1 }, { unique: true })
+// Con esta collation "Consolas" y "consolas" son el mismo nombre, tanto para
+// el indice unico como para ordenar el listado.
+export const categoryCollation = { locale: "es", strength: 2 };
+
+@index({ name: 1 }, { unique: true, collation: categoryCollation })
 @modelOptions(baseModelOptions)
 export class Category {
   @prop({ required: true, trim: true })

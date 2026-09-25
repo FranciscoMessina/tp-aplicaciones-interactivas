@@ -10,6 +10,10 @@ export const createEnquirySchema = z.object({
   message: z.string().trim().min(1),
 });
 
+export const listEnquiriesSchema = z.object({
+  status: z.enum(EnquiryStatus).optional(),
+});
+
 export const updateEnquiryStatusSchema = z.object({
   status: z.enum(EnquiryStatus),
 });

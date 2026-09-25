@@ -4,7 +4,10 @@ info:
   seq: 1
 
 docs: |-
-  Registro, autenticacion, perfil y recuperacion de contrasena.
+  Registro, autenticacion, perfil, cambio y recuperacion de contrasena, y alta
+  de administradores.
+
+  Restablecer contrasena necesita el token que el servidor escribe en su consola.
 
   La ultima request inicia sesion como administrador y deja `accessToken`
   preparado para ejecutar la carpeta Productos.

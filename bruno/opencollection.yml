@@ -37,7 +37,7 @@ docs:
 
     1. Iniciar la API con `npm run dev`.
     2. Seleccionar el entorno `Local` en Bruno.
-    3. Crear en MongoDB el usuario configurado como `adminEmail` y asignarle el rol `admin`.
+    3. Correr `npm run seed`, que crea el administrador `adminEmail`. Su contraseña es `SEED_ADMIN_PASSWORD`.
     4. Ejecutar las requests individualmente o correr la coleccion completa en orden.
 
     Las requests guardan automaticamente los tokens e identificadores necesarios como variables de runtime. Los productos, las consultas y la categoria auxiliar se eliminan durante la corrida.

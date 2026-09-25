@@ -25,6 +25,14 @@ export async function searchProducts(
   sendSuccess(res, await catalog.searchProducts({ ...query, includeInactive }));
 }
 
+export async function getProduct(req: Request, res: Response): Promise<void> {
+  const { id } = validate(idParamsSchema, req.params);
+  // Igual que en el listado: solo un administrador ve los inactivos.
+  const includeInactive = req.user?.role === UserRole.Admin;
+
+  sendSuccess(res, await catalog.getProduct(id, includeInactive));
+}
+
 export async function createProduct(
   req: Request,
   res: Response,

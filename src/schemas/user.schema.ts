@@ -23,6 +23,11 @@ export const updateProfileSchema = z
     message: "Enviá al menos un campo para modificar",
   });
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+});
+
 export const forgotPasswordSchema = z.object({ email: emailSchema });
 
 export const resetPasswordSchema = z.object({
