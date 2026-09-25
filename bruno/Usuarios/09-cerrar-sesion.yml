@@ -11,7 +11,10 @@ http:
 runtime:
   scripts:
     - type: after-response
-      code: bru.deleteVar("accessToken")
+      code: |-
+        if (res.status === 204) {
+          bru.deleteVar("accessToken");
+        }
 
 settings:
   encodeUrl: true
