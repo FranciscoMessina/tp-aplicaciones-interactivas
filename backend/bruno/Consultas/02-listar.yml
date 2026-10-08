@@ -5,13 +5,21 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/enquiries?status=PENDING"
+  url: "{{baseUrl}}/api/enquiries"
   params:
     - name: status
-      value: "PENDING"
+      value: PENDING
       type: query
       description: PENDING, READ o RESOLVED (opcional)
+      disabled: true
   auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
 
 docs: |-
   Lista las consultas recibidas, de la más nueva a la más vieja.
@@ -29,6 +37,3 @@ docs: |-
   - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
   - `401` si falta el token o está vencido.
   - `403` si el usuario no es administrador.
-
-settings:
-  encodeUrl: true

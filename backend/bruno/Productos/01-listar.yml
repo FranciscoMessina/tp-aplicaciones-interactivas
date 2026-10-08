@@ -5,14 +5,14 @@ info:
 
 http:
   method: GET
-  url: "{{baseUrl}}/api/products?search=notebook&sortBy=relevance&page=1&pageSize=20"
+  url: "{{baseUrl}}/api/products?search=Notebook ASUS&sortBy=price&page=1&pageSize=20"
   params:
     - name: search
-      value: "notebook"
+      value: Notebook ASUS
       type: query
       description: Texto a buscar en nombre y descripcion (opcional)
     - name: sortBy
-      value: "relevance"
+      value: price
       type: query
       description: publicationDate, price o relevance (relevance requiere search)
     - name: page
@@ -24,6 +24,13 @@ http:
       type: query
       description: Productos por pagina, de 1 a 100
   auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
 
 docs: |-
   Busca y lista productos, paginados. Sin filtros devuelve todos los activos, del más nuevo al más viejo.
@@ -46,6 +53,3 @@ docs: |-
 
   - `200` con `data.items` (array de productos, cada uno con su `category` completa), `data.page`, `data.pageSize` y `data.total` (cantidad total de resultados, para calcular las páginas).
   - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
-
-settings:
-  encodeUrl: true

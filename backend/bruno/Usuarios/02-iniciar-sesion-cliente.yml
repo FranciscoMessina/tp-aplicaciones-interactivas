@@ -14,10 +14,8 @@ http:
     data: |-
       {
         "email": "cliente@example.com",
-        "password": "Customer123!"
+        "password": "Customer1234!"
       }
-  auth:
-    type: none
 
 runtime:
   scripts:
@@ -26,6 +24,13 @@ runtime:
         if (res.status === 200) {
           bru.setVar("accessToken", res.body.data.accessToken);
         }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
 
 docs: |-
   Inicia sesión con el cliente del seed y guarda el token en la variable `accessToken`, que el resto de la colección manda sola.
@@ -42,6 +47,3 @@ docs: |-
 
   - `200` con `data.accessToken` (JWT) y `data.user` (`id`, `fullName`, `email`, `phone` y `role`).
   - `401` si el email o la contraseña son incorrectos.
-
-settings:
-  encodeUrl: true

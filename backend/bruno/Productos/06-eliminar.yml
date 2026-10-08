@@ -8,10 +8,17 @@ http:
   url: "{{baseUrl}}/api/products/:id"
   params:
     - name: id
-      value: ""
+      value: 6ab6f7514bd9c966c17cf5c2
       type: path
       description: Id del producto, copiarlo de "Listar productos"
   auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
 
 docs: |-
   Elimina un producto definitivamente. Para sacarlo del sitio sin perderlo, usar "Desactivar producto".
@@ -28,6 +35,3 @@ docs: |-
   - `401` si falta el token o está vencido.
   - `403` si el usuario no es administrador.
   - `404` si el producto no existe.
-
-settings:
-  encodeUrl: true

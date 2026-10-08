@@ -14,8 +14,8 @@ http:
     data: |-
       {
         // Completar con el token que devuelve el servidor, por ahora lo muestra en consola
-        "token": "",
-        "password": "Customer123!"
+        "token": "843b2efec9479d10496e9c32fd7bae8590e3308f02fee7ff787c6e72048bb5d6",
+        "password": "Customer1234!"
       }
 
 settings:
