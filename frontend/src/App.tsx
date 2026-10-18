@@ -1,6 +1,9 @@
-import { useMemo, useState } from 'react'
-import { products } from './data/products'
+import { useEffect, useMemo, useState } from 'react'
+import { fetchProducts } from './services/products'
+import type { Product } from './types/product'
 import './App.css'
+
+const PRODUCTS_PER_PAGE = 12
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('es-AR', {
@@ -9,15 +12,62 @@ const formatPrice = (price: number) =>
     maximumFractionDigits: 0,
   }).format(price)
 
+function ProductImage({ product }: { product: Product }) {
+  const [imageFailed, setImageFailed] = useState(false)
+  const imageUrl = product.images?.[0]
+
+  return (
+    <div className="product-image">
+      {imageUrl && !imageFailed ? (
+        <img
+          src={imageUrl}
+          alt={product.name}
+          loading="lazy"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <span className="image-placeholder" role="img" aria-label="Sin imagen disponible">💻</span>
+      )}
+    </div>
+  )
+}
+
 function App() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [retryCount, setRetryCount] = useState(0)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todas')
   const [onlyAvailable, setOnlyAvailable] = useState(false)
-  const [sortBy, setSortBy] = useState('featured')
+  const [sortBy, setSortBy] = useState('recent')
+  const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    async function loadProducts() {
+      setIsLoading(true)
+      setError('')
+      try {
+        const result = await fetchProducts(controller.signal)
+        if (!controller.signal.aborted) setProducts(result)
+      } catch (cause) {
+        if (!controller.signal.aborted) {
+          setError(cause instanceof Error ? cause.message : 'No se pudieron cargar los productos.')
+        }
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false)
+      }
+    }
+
+    void loadProducts()
+    return () => controller.abort()
+  }, [retryCount])
 
   const categories = useMemo(
-    () => ['Todas', ...Array.from(new Set(products.map((product) => product.category)))],
-    [],
+    () => ['Todas', ...Array.from(new Set(products.map((product) => product.category?.name).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'es-AR'))],
+    [products],
   )
 
   const visibleProducts = useMemo(() => {
@@ -28,8 +78,8 @@ function App() {
         const matchesSearch =
           product.name.toLocaleLowerCase('es-AR').includes(normalizedSearch) ||
           product.description.toLocaleLowerCase('es-AR').includes(normalizedSearch)
-        const matchesCategory = category === 'Todas' || product.category === category
-        const matchesStock = !onlyAvailable || product.available
+        const matchesCategory = category === 'Todas' || product.category?.name === category
+        const matchesStock = !onlyAvailable || product.availableQuantity > 0
 
         return matchesSearch && matchesCategory && matchesStock
       })
@@ -37,15 +87,27 @@ function App() {
         if (sortBy === 'price-asc') return first.price - second.price
         if (sortBy === 'price-desc') return second.price - first.price
         if (sortBy === 'name') return first.name.localeCompare(second.name, 'es-AR')
-        return Number(Boolean(second.featured)) - Number(Boolean(first.featured))
+        return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
       })
-  }, [search, category, onlyAvailable, sortBy])
+  }, [products, search, category, onlyAvailable, sortBy])
+
+  const totalPages = Math.ceil(visibleProducts.length / PRODUCTS_PER_PAGE)
+  const paginatedProducts = visibleProducts.slice(
+    (currentPage - 1) * PRODUCTS_PER_PAGE,
+    currentPage * PRODUCTS_PER_PAGE,
+  )
+
+  const changeFilters = (callback: () => void) => {
+    callback()
+    setCurrentPage(1)
+  }
 
   const clearFilters = () => {
     setSearch('')
     setCategory('Todas')
     setOnlyAvailable(false)
-    setSortBy('featured')
+    setSortBy('recent')
+    setCurrentPage(1)
   }
 
   return (
@@ -115,7 +177,7 @@ function App() {
                 type="search"
                 placeholder="Ej.: notebook, auriculares..."
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => changeFilters(() => setSearch(event.target.value))}
               />
             </div>
 
@@ -124,7 +186,7 @@ function App() {
               <select
                 id="category-filter"
                 value={category}
-                onChange={(event) => setCategory(event.target.value)}
+                onChange={(event) => changeFilters(() => setCategory(event.target.value))}
               >
                 {categories.map((item) => (
                   <option key={item} value={item}>{item}</option>
@@ -137,9 +199,9 @@ function App() {
               <select
                 id="sort-filter"
                 value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
+                onChange={(event) => changeFilters(() => setSortBy(event.target.value))}
               >
-                <option value="featured">Destacados</option>
+                <option value="recent">Más recientes</option>
                 <option value="price-asc">Menor precio</option>
                 <option value="price-desc">Mayor precio</option>
                 <option value="name">Nombre (A-Z)</option>
@@ -150,7 +212,7 @@ function App() {
               <input
                 type="checkbox"
                 checked={onlyAvailable}
-                onChange={(event) => setOnlyAvailable(event.target.checked)}
+                onChange={(event) => changeFilters(() => setOnlyAvailable(event.target.checked))}
               />
               Solo disponibles
             </label>
@@ -158,32 +220,50 @@ function App() {
 
           <div className="catalog-toolbar">
             <p aria-live="polite">
-              {visibleProducts.length} {visibleProducts.length === 1 ? 'producto encontrado' : 'productos encontrados'}
+              {isLoading ? 'Cargando productos...' : `${visibleProducts.length} ${visibleProducts.length === 1 ? 'producto encontrado' : 'productos encontrados'}`}
             </p>
             <button type="button" className="clear-button" onClick={clearFilters}>
               Limpiar filtros
             </button>
           </div>
 
-          {visibleProducts.length > 0 ? (
-            <div className="products-grid">
-              {visibleProducts.map((product) => (
-                <article className="product-card" key={product.id}>
-                  <div className="product-image" aria-hidden="true">
-                    <span>{product.icon}</span>
-                  </div>
-                  <div className="product-info">
-                    <span className="product-category">{product.category}</span>
-                    <h3>{product.name}</h3>
-                    <p className="product-description">{product.description}</p>
-                    <p className="product-price">{formatPrice(product.price)}</p>
-                    <span className={product.available ? 'product-available' : 'product-unavailable'}>
-                      {product.available ? 'Disponible' : 'Sin stock'}
-                    </span>
-                  </div>
-                </article>
-              ))}
+          {isLoading ? (
+            <div className="empty-state" role="status">Cargando catálogo desde MongoDB...</div>
+          ) : error ? (
+            <div className="empty-state" role="alert">
+              <span aria-hidden="true">⚠️</span>
+              <h3>No pudimos cargar el catálogo</h3>
+              <p>{error} Verificá que el backend esté funcionando en el puerto 8080.</p>
+              <button type="button" className="primary-button empty-button" onClick={() => setRetryCount((previous) => previous + 1)}>
+                Reintentar
+              </button>
             </div>
+          ) : paginatedProducts.length > 0 ? (
+            <>
+              <div className="products-grid">
+                {paginatedProducts.map((product) => (
+                  <article className="product-card" key={product.id}>
+                    <ProductImage product={product} />
+                    <div className="product-info">
+                      <span className="product-category">{product.category?.name ?? 'Sin categoría'}</span>
+                      <h3>{product.name}</h3>
+                      <p className="product-description">{product.description}</p>
+                      <p className="product-price">{formatPrice(product.price)}</p>
+                      <span className={product.availableQuantity > 0 ? 'product-available' : 'product-unavailable'}>
+                        {product.availableQuantity > 0 ? 'Disponible' : 'Sin stock'}
+                      </span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div className="pagination" aria-label="Paginación de productos">
+                  <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)}>Anterior</button>
+                  <span>Página {currentPage} de {totalPages}</span>
+                  <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)}>Siguiente</button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="empty-state">
               <span aria-hidden="true">🔎</span>
