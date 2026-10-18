@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchProducts } from '../services/products'
 import type { Product } from '../types/product'
 
@@ -257,7 +258,8 @@ function HomePage() {
           <div>
             <span className="section-kicker">ESTAMOS PARA AYUDARTE</span>
             <h2 id="contact-title">¿Tenés alguna consulta?</h2>
-            <p>Próximamente vas a poder enviarnos tus consultas desde nuestro formulario de contacto.</p>
+            <p>Escribinos y contanos qué necesitás. Podés enviar una consulta sin iniciar sesión.</p>
+            <Link className="contact-cta" to="/contacto">Enviar consulta →</Link>
           </div>
           <span className="contact-icon" aria-hidden="true">✉</span>
         </section>

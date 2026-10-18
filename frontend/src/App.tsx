@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/auth-context'
 import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from './pages/AuthPages'
 import HomePage from './pages/HomePage'
+import BusinessInfoPage from './pages/BusinessInfoPage'
+import ContactPage from './pages/ContactPage'
 import './App.css'
 
 function ScrollToSection() {
@@ -35,7 +37,8 @@ function Layout() {
         <nav className="nav" aria-label="Navegación principal">
           <Link to="/">Inicio</Link>
           <Link to="/#productos">Productos</Link>
-          <Link to="/#contacto">Contacto</Link>
+          <Link to="/nosotros">Nosotros</Link>
+          <Link to="/contacto">Contacto</Link>
         </nav>
         {user ? (
           <div className="user-actions">
@@ -48,6 +51,8 @@ function Layout() {
       </header>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/nosotros" element={<BusinessInfoPage />} />
+        <Route path="/contacto" element={<ContactPage />} />
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/registro" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
         <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
@@ -57,7 +62,11 @@ function Layout() {
       <footer className="footer">
         <Link to="/" className="footer-logo">TechStore</Link>
         <p>© 2026 TechStore. Todos los derechos reservados.</p>
-        <Link to="/">Volver al inicio ↑</Link>
+        <div className="footer-links">
+          <Link to="/nosotros">Nosotros</Link>
+          <Link to="/contacto">Contacto</Link>
+          <Link to="/">Volver al inicio ↑</Link>
+        </div>
       </footer>
     </div>
   )
