@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { fetchProfile, logout as logoutRequest } from '../services/auth'
-import type { AuthSession } from '../types/auth'
+import type { AuthSession, AuthUser } from '../types/auth'
 import { AuthContext } from './auth-context'
 
 const STORAGE_KEY = 'techstore_session'
@@ -50,6 +50,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCheckingSession(false)
   }
 
+  function updateUser(nextUser: AuthUser) {
+    if (!session) return
+    const updatedSession = { ...session, user: nextUser }
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSession))
+    setSession(updatedSession)
+  }
+
   async function signOut() {
     const token = session?.accessToken
     // El logout del backend es informativo (JWT sin lista de revocación).
@@ -61,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user: session?.user ?? null, checkingSession, signIn, signOut }}>
+    <AuthContext.Provider value={{ user: session?.user ?? null, accessToken: token ?? null, checkingSession, signIn, updateUser, signOut }}>
       {children}
     </AuthContext.Provider>
   )

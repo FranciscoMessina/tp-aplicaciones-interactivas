@@ -6,6 +6,7 @@ import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from '
 import HomePage from './pages/HomePage'
 import BusinessInfoPage from './pages/BusinessInfoPage'
 import ContactPage from './pages/ContactPage'
+import ProfilePage from './pages/ProfilePage'
 import './App.css'
 
 function ScrollToSection() {
@@ -27,6 +28,11 @@ function Layout() {
     navigate('/')
   }
 
+  function profileRoute() {
+    if (checkingSession) return <main className="profile-loading" role="status">Verificando tu sesión...</main>
+    return user ? <ProfilePage /> : <Navigate to="/login" replace />
+  }
+
   return (
     <div className="app">
       <ScrollToSection />
@@ -43,6 +49,7 @@ function Layout() {
         {user ? (
           <div className="user-actions">
             <span className="user-greeting">Hola, {user.fullName.split(' ')[0]}</span>
+            <Link className="profile-nav-link" to="/perfil">Mi perfil</Link>
             <button className="login-button" type="button" onClick={() => void leave()}>Cerrar sesión</button>
           </div>
         ) : (
@@ -53,6 +60,7 @@ function Layout() {
         <Route path="/" element={<HomePage />} />
         <Route path="/nosotros" element={<BusinessInfoPage />} />
         <Route path="/contacto" element={<ContactPage />} />
+        <Route path="/perfil" element={profileRoute()} />
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/registro" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
         <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />

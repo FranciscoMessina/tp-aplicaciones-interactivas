@@ -61,3 +61,25 @@ export function forgotPassword(email: string) {
 export function resetPassword(token: string, password: string) {
   return request<{ message: string }>('/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) })
 }
+
+export interface ProfileChanges {
+  fullName: string
+  email: string
+  phone: string
+}
+
+export function updateProfile(token: string, updates: ProfileChanges) {
+  return request<AuthUser>('/me', {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(updates),
+  })
+}
+
+export function changePassword(token: string, currentPassword: string, newPassword: string) {
+  return request<{ message: string }>('/me/password', {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  })
+}
