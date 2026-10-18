@@ -1,0 +1,141 @@
+import { useEffect, useState } from 'react'
+import type { FormEvent } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../context/auth-context'
+import { BusinessInfoError, fetchBusinessInfo } from '../services/businessInfo'
+import { EnquiryRequestError, sendEnquiry } from '../services/enquiries'
+import type { BusinessInfo } from '../types/business'
+
+export default function ContactPage() {
+  const { user } = useAuth()
+  const [name, setName] = useState(user?.fullName ?? '')
+  const [email, setEmail] = useState(user?.email ?? '')
+  const [phone, setPhone] = useState(user?.phone ?? '')
+  const [subject, setSubject] = useState('')
+  const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+  const [info, setInfo] = useState<BusinessInfo | null>(null)
+  const [infoNote, setInfoNote] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    void fetchBusinessInfo(controller.signal)
+      .then((result) => { if (!controller.signal.aborted) setInfo(result) })
+      .catch((cause: unknown) => {
+        if (controller.signal.aborted) return
+        if (cause instanceof BusinessInfoError && cause.status === 404) {
+          setInfoNote('Los datos institucionales todavía no están cargados.')
+        } else {
+          setInfoNote('No se pudieron consultar los datos del comercio.')
+        }
+      })
+    return () => controller.abort()
+  }, [])
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (sending) return
+    setError('')
+    setSuccess(false)
+
+    const data = {
+      name: name.trim(),
+      email: email.trim(),
+      ...(phone.trim() ? { phone: phone.trim() } : {}),
+      subject: subject.trim(),
+      message: message.trim(),
+    }
+
+    if (!data.name || !data.email || !data.subject || !data.message) {
+      setError('Completá los campos obligatorios.')
+      return
+    }
+
+    setSending(true)
+    try {
+      await sendEnquiry(data)
+      setSuccess(true)
+      setSubject('')
+      setMessage('')
+    } catch (cause) {
+      if (cause instanceof EnquiryRequestError) {
+        const fieldMessage = Object.values(cause.fields ?? {})[0]?.[0]
+        setError(fieldMessage ?? cause.message)
+      } else {
+        setError('Ocurrió un error inesperado. Intentá de nuevo.')
+      }
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <main className="information-page">
+      <div className="information-container">
+        <div className="information-heading">
+          <span className="section-kicker">ESTAMOS PARA AYUDARTE</span>
+          <h1>Contacto</h1>
+          <p>Contanos qué necesitás. Tu consulta se guardará para que el comercio pueda responderla.</p>
+        </div>
+
+        <div className="contact-layout">
+          <section className="contact-form-card" aria-labelledby="contact-form-title">
+            <h2 id="contact-form-title">Envianos tu consulta</h2>
+            <p className="contact-form-description">Los campos marcados con * son obligatorios.</p>
+
+            {success && (
+              <div className="contact-alert contact-success" role="status">
+                <strong>¡Consulta enviada!</strong> Recibimos tu mensaje correctamente.
+              </div>
+            )}
+            {error && <div className="contact-alert contact-error" role="alert">{error}</div>}
+
+            <form className="contact-form" onSubmit={(event) => void submit(event)}>
+              <div className="contact-form-row">
+                <label className="auth-field">Nombre y apellido *
+                  <input required maxLength={120} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Tu nombre" />
+                </label>
+                <label className="auth-field">Email *
+                  <input required type="email" maxLength={254} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nombre@ejemplo.com" />
+                </label>
+              </div>
+              <label className="auth-field">Teléfono (opcional)
+                <input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Ej.: +54 11 4444-4444" />
+              </label>
+              <label className="auth-field">Asunto *
+                <input required maxLength={150} value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="¿Sobre qué querés consultar?" />
+              </label>
+              <label className="auth-field">Mensaje *
+                <textarea required minLength={1} maxLength={3000} rows={6} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Escribí tu consulta..." />
+              </label>
+              <button className="auth-submit" type="submit" disabled={sending}>
+                {sending ? 'Enviando...' : 'Enviar consulta →'}
+              </button>
+            </form>
+          </section>
+
+          <aside className="contact-aside" aria-label="Datos de contacto del negocio">
+            <div className="contact-aside-heading">
+              <span className="section-kicker">ENCONTRANOS</span>
+              <h2>Datos del comercio</h2>
+            </div>
+            {info ? (
+              <>
+                <h3>{info.name}</h3>
+                <p>{info.description}</p>
+                <div className="contact-aside-detail"><strong>Dirección</strong><span>{info.address}</span></div>
+                <div className="contact-aside-detail"><strong>Teléfono</strong><a href={`tel:${info.phone.replace(/[^\d+]/g, '')}`}>{info.phone}</a></div>
+                {info.openingHours.length > 0 && (
+                  <div className="contact-aside-detail"><strong>Horarios</strong>{info.openingHours.map((hour, index) => <span key={`${index}-${hour}`}>{hour}</span>)}</div>
+                )}
+              </>
+            ) : <p className="contact-aside-note">{infoNote || 'Cargando información...'}</p>}
+            <Link to="/nosotros" className="contact-aside-link">Ver información institucional →</Link>
+          </aside>
+        </div>
+      </div>
+    </main>
+  )
+}
