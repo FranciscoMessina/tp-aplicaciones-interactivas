@@ -3,8 +3,10 @@ import type { AuthUser, AuthSession } from '../types/auth'
 
 export interface AuthContextValue {
   user: AuthUser | null
+  accessToken: string | null
   checkingSession: boolean
   signIn: (session: AuthSession) => void
+  updateUser: (user: AuthUser) => void
   signOut: () => Promise<void>
 }
 
