@@ -448,3 +448,36 @@
 }
 .pagination button:not(:disabled):hover { background: #eaf1ff; }
 .pagination button:disabled { color: #9aa8bc; cursor: not-allowed; }
+
+
+/* PR 3: navegación y autenticación */
+.login-button { text-decoration: none; white-space: nowrap; text-align: center; }
+.login-button:hover { background: #1748bd; color: #fff; }
+.user-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.user-greeting { color: #253752; font-size: 14px; font-weight: 650; }
+.auth-page { min-height: 70vh; display: grid; place-items: center; padding: 55px 18px 75px; background: linear-gradient(165deg, #edf3ff, #f8fafc 62%); }
+.auth-card { width: min(100%, 490px); padding: 34px; border: 1px solid #e0e8f5; border-radius: 18px; background: #fff; box-shadow: 0 18px 55px rgba(28, 57, 127, .09); }
+.auth-back { display: inline-block; color: #205ce2; font-weight: 650; font-size: 14px; margin-bottom: 25px; }
+.auth-heading h1 { color: #17243d; font-size: clamp(27px, 3vw, 35px); margin: 10px 0 9px; }
+.auth-heading p { color: #697a95; line-height: 1.55; margin: 0 0 26px; }
+.auth-form { display: grid; gap: 17px; }
+.auth-field { color: #304363; display: grid; gap: 7px; font-size: 14px; font-weight: 650; }
+.auth-field input { border: 1px solid #cbd8ed; border-radius: 9px; padding: 13px 12px; font: inherit; color: #1e293b; background: white; width: 100%; }
+.auth-field input:focus { border-color: #205ce2; outline: 3px solid #e0eaff; }
+.auth-inline { text-align: right; }
+.auth-inline a, .auth-switch a { color: #205ce2; font-weight: 700; }
+.auth-inline a { font-size: 13px; }
+.auth-submit { display: block; width: 100%; border: 0; border-radius: 9px; padding: 14px 18px; background: #205ce2; color: white; font-size: 15px; font-weight: 750; text-align: center; cursor: pointer; }
+.auth-submit:hover { background: #1748bd; }
+.auth-submit:disabled { opacity: .7; cursor: wait; }
+.auth-switch { text-align: center; margin: 25px 0 0; color: #64748b; font-size: 14px; }
+.auth-alert { padding: 12px 15px; border-radius: 9px; line-height: 1.5; font-size: 14px; }
+.auth-alert-error { background: #fee2e2; color: #991b1b; }
+.auth-success { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; color: #166534; }
+.auth-success p { margin: 10px 0 15px; line-height: 1.5; }
+.auth-success .auth-dev-note { font-size: 13px; color: #475569; }
+.auth-as-link { margin-top: 20px; text-decoration: none; }
+@media (max-width: 520px) {
+  .auth-card { padding: 26px 19px; }
+  .user-actions { width: 100%; }
+}
