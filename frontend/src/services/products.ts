@@ -1,4 +1,4 @@
-import type { ApiResponse, Product, ProductInput, ProductPage } from '../types/product'
+import type { Product, ProductInput, ProductPage } from '../types/product'
 import { apiRequest } from './api'
 
 // Vite reenvía /api al backend local en el puerto 8080.
@@ -19,17 +19,7 @@ export async function fetchProducts(signal?: AbortSignal): Promise<Product[]> {
       sortOrder: 'desc',
     })
 
-    const response = await fetch(`/api/products?${params}`, { signal })
-    if (!response.ok) {
-      throw new Error(`No se pudieron cargar los productos (HTTP ${response.status}).`)
-    }
-
-    const payload: ApiResponse<ProductPage> = await response.json()
-    if (!payload.success) {
-      throw new Error(payload.error?.message || 'No se pudieron cargar los productos.')
-    }
-
-    const { items, total } = payload.data
+    const { items, total } = await apiRequest<ProductPage>(`/api/products?${params}`, { signal })
     products.push(...items)
 
     if (items.length === 0 || products.length >= total) break

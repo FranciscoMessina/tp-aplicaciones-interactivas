@@ -1,5 +1,21 @@
-import type { ApiEnvelope } from '../types/auth'
-import { ApiRequestError } from './auth'
+export class ApiRequestError extends Error {
+  readonly status: number
+  readonly fields?: Record<string, string[]>
+
+  constructor(message: string, status: number, fields?: Record<string, string[]>) {
+    super(message)
+    this.name = 'ApiRequestError'
+    this.status = status
+    this.fields = fields
+  }
+}
+
+// Sobre que usa el backend en todas sus respuestas.
+interface ApiEnvelope<T> {
+  success: boolean
+  data?: T
+  error?: { code: string; message: string; fields?: Record<string, string[]> }
+}
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
@@ -51,4 +67,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     )
   }
   return envelope.data
+}
+
+/** Mensaje para mostrar al usuario: el primer error de campo o el general. */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiRequestError) return Object.values(error.fields ?? {})[0]?.[0] ?? error.message
+  return 'Ocurrió un error inesperado. Intentá de nuevo.'
 }

@@ -1,24 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import AdminNotice from '../components/AdminNotice'
+import type { Notice } from '../components/AdminNotice'
 import Modal from '../components/Modal'
 import ProductFormModal from '../components/ProductFormModal'
 import { useAuth } from '../context/auth-context'
-import { ApiRequestError } from '../services/auth'
+import { getErrorMessage as errorMessage } from '../services/api'
 import { fetchCategories } from '../services/categories'
 import { deleteProduct, fetchAdminProducts, updateProduct } from '../services/products'
 import type { Category, Product } from '../types/product'
+import { formatPrice } from '../utils/format'
 
 const PAGE_SIZE = 10
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(price)
-
-function errorMessage(error: unknown) {
-  if (error instanceof ApiRequestError) return Object.values(error.fields ?? {})[0]?.[0] ?? error.message
-  return 'Ocurrió un error inesperado. Intentá de nuevo.'
-}
-
-type Notice = { kind: 'success' | 'error'; text: string }
 
 export default function AdminProductsPage() {
   const { accessToken } = useAuth()
@@ -44,12 +36,7 @@ export default function AdminProductsPage() {
   const [notice, setNotice] = useState<Notice | null>(null)
 
   const showNotice = useCallback((next: Notice) => setNotice(next), [])
-
-  useEffect(() => {
-    if (!notice) return
-    const timer = window.setTimeout(() => setNotice(null), 5000)
-    return () => window.clearTimeout(timer)
-  }, [notice])
+  const clearNotice = useCallback(() => setNotice(null), [])
 
   // Debounce del buscador para no consultar en cada tecla.
   useEffect(() => {
@@ -139,11 +126,9 @@ export default function AdminProductsPage() {
   }
 
   return (
-    <main className="admin-page">
-      <div className="admin-container">
+    <>
         <div className="admin-heading">
           <div>
-            <Link className="auth-back" to="/">← Volver a la tienda</Link>
             <span className="section-kicker">ADMINISTRACIÓN</span>
             <h1>Productos</h1>
             <p>Creá, editá, publicá u ocultá los productos del catálogo.</p>
@@ -151,14 +136,7 @@ export default function AdminProductsPage() {
           <button type="button" className="admin-primary" onClick={() => setCreating(true)}>+ Nuevo producto</button>
         </div>
 
-        <div className="admin-notice-slot" aria-live="polite">
-          {notice && (
-            <div className={`admin-notice ${notice.kind === 'success' ? 'admin-notice-success' : 'admin-notice-error'}`} role={notice.kind === 'error' ? 'alert' : 'status'}>
-              {notice.text}
-              <button type="button" aria-label="Cerrar aviso" onClick={() => setNotice(null)}>×</button>
-            </div>
-          )}
-        </div>
+        <AdminNotice notice={notice} onClose={clearNotice} />
 
         <div className="admin-toolbar">
           <div className="admin-field admin-search">
@@ -256,7 +234,6 @@ export default function AdminProductsPage() {
             <button type="button" disabled={page === totalPages} onClick={() => setPage((current) => current + 1)}>Siguiente</button>
           </div>
         )}
-      </div>
 
       {(creating || editing) && (
         <ProductFormModal
@@ -282,6 +259,6 @@ export default function AdminProductsPage() {
           </div>
         </Modal>
       )}
-    </main>
+    </>
   )
 }

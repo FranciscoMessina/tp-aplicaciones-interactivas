@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import BusinessDetails from '../components/BusinessDetails'
-import { BusinessInfoError, fetchBusinessInfo } from '../services/businessInfo'
+import { ApiRequestError } from '../services/api'
+import { fetchBusinessInfo } from '../services/businessInfo'
 import type { BusinessInfo } from '../types/business'
 
 export default function BusinessInfoPage() {
@@ -19,7 +20,7 @@ export default function BusinessInfoPage() {
         if (!controller.signal.aborted) setInfo(data)
       } catch (cause) {
         if (!controller.signal.aborted) {
-          const missing = cause instanceof BusinessInfoError && cause.status === 404
+          const missing = cause instanceof ApiRequestError && cause.status === 404
           setNotConfigured(missing)
           setError(missing
             ? 'La información institucional todavía no fue cargada por un administrador.'

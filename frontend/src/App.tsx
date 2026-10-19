@@ -3,12 +3,16 @@ import type { ReactElement } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/auth-context'
+import AdminLayout from './components/AdminLayout'
 import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from './pages/AuthPages'
 import HomePage from './pages/HomePage'
 import BusinessInfoPage from './pages/BusinessInfoPage'
 import ContactPage from './pages/ContactPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminProductsPage from './pages/AdminProductsPage'
+import AdminCategoriesPage from './pages/AdminCategoriesPage'
+import AdminEnquiriesPage from './pages/AdminEnquiriesPage'
+import AdminBusinessInfoPage from './pages/AdminBusinessInfoPage'
 import './App.css'
 
 function ScrollToSection() {
@@ -30,15 +34,11 @@ function Layout() {
     navigate('/')
   }
 
-  function profileRoute() {
+  // Las únicas cuentas son las de los administradores del comercio:
+  // estar logueado alcanza para entrar al área privada.
+  function privateRoute(page: ReactElement) {
     if (checkingSession) return <main className="profile-loading" role="status">Verificando tu sesión...</main>
-    return user ? <ProfilePage /> : <Navigate to="/login" replace />
-  }
-
-  function adminRoute(page: ReactElement) {
-    if (checkingSession) return <main className="profile-loading" role="status">Verificando tu sesión...</main>
-    if (!user) return <Navigate to="/login" replace />
-    return user.role === 'admin' ? page : <Navigate to="/" replace />
+    return user ? page : <Navigate to="/login" replace />
   }
 
   return (
@@ -54,25 +54,29 @@ function Layout() {
           <Link to="/nosotros">Nosotros</Link>
           <Link to="/contacto">Contacto</Link>
         </nav>
-        {user ? (
+        {user && (
           <div className="user-actions">
             <span className="user-greeting">Hola, {user.fullName.split(' ')[0]}</span>
-            {user.role === 'admin' && <Link className="profile-nav-link" to="/admin/productos">Administrar productos</Link>}
+            <Link className="profile-nav-link" to="/admin">Panel</Link>
             <Link className="profile-nav-link" to="/perfil">Mi perfil</Link>
             <button className="login-button" type="button" onClick={() => void leave()}>Cerrar sesión</button>
           </div>
-        ) : (
-          <Link className="login-button" to="/login">{checkingSession ? 'Verificando...' : 'Iniciar sesión'}</Link>
         )}
       </header>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/nosotros" element={<BusinessInfoPage />} />
         <Route path="/contacto" element={<ContactPage />} />
-        <Route path="/perfil" element={profileRoute()} />
-        <Route path="/admin/productos" element={adminRoute(<AdminProductsPage />)} />
-        <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route path="/registro" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
+        <Route path="/perfil" element={privateRoute(<ProfilePage />)} />
+        <Route path="/admin" element={privateRoute(<AdminLayout />)}>
+          <Route index element={<Navigate to="productos" replace />} />
+          <Route path="productos" element={<AdminProductsPage />} />
+          <Route path="categorias" element={<AdminCategoriesPage />} />
+          <Route path="consultas" element={<AdminEnquiriesPage />} />
+          <Route path="comercio" element={<AdminBusinessInfoPage />} />
+        </Route>
+        <Route path="/login" element={user ? <Navigate to="/admin" replace /> : <LoginPage />} />
+        <Route path="/registro" element={user ? <Navigate to="/admin" replace /> : <RegisterPage />} />
         <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
         <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -83,7 +87,7 @@ function Layout() {
         <div className="footer-links">
           <Link to="/nosotros">Nosotros</Link>
           <Link to="/contacto">Contacto</Link>
-          <Link to="/">Volver al inicio ↑</Link>
+          <Link to={user ? '/admin' : '/login'}>Administración</Link>
         </div>
       </footer>
     </div>

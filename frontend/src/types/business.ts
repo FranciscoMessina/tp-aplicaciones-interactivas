@@ -8,6 +8,8 @@ export interface BusinessInfo {
   openingHours: string[]
 }
 
+export type BusinessInfoInput = Omit<BusinessInfo, 'id'>
+
 export interface EnquiryInput {
   name: string
   email: string
@@ -16,12 +18,11 @@ export interface EnquiryInput {
   message: string
 }
 
-export interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: {
-    code: string
-    message: string
-    fields?: Record<string, string[]>
-  }
+// Mismos valores que `EnquiryStatus` en el backend.
+export type EnquiryStatus = 'PENDING' | 'READ' | 'RESOLVED'
+
+export interface Enquiry extends EnquiryInput {
+  id: string
+  status: EnquiryStatus
+  createdAt: string
 }

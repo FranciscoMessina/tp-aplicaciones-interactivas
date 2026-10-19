@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import { ApiRequestError } from '../services/auth'
+import { ApiRequestError, getErrorMessage } from '../services/api'
 import { uploadImage } from '../services/images'
 import { createProduct, updateProduct } from '../services/products'
 import type { Category, Product, ProductInput } from '../types/product'
@@ -83,10 +83,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
       try {
         uploaded.push(await uploadImage(token, file))
       } catch (error) {
-        const detail = error instanceof ApiRequestError
-          ? Object.values(error.fields ?? {})[0]?.[0] ?? error.message
-          : 'error inesperado.'
-        problems.push(`${file.name}: ${detail}`)
+        problems.push(`${file.name}: ${getErrorMessage(error)}`)
       }
     }
 

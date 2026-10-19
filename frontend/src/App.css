@@ -679,3 +679,34 @@
   .modal-header, .modal-body { padding-left: 18px; padding-right: 18px; }
   .user-actions { gap: 8px; }
 }
+/* ===== Panel de administración: pestañas y consultas ===== */
+.admin-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 26px; padding: 6px; background: #fff; border: 1px solid #e0e8f5; border-radius: 13px; }
+.admin-tabs a { padding: 10px 16px; border-radius: 9px; color: #475569; font-size: 14px; font-weight: 700; text-decoration: none; }
+.admin-tabs a:hover { background: #f1f5fd; color: #205ce2; }
+.admin-tabs a.active { background: #205ce2; color: #fff; }
+.admin-form-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.admin-filter-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-filter-chips button { border: 1px solid #cbd8ed; background: #fff; color: #334564; border-radius: 999px; padding: 8px 15px; font-size: 13px; font-weight: 700; }
+.admin-filter-chips button[aria-pressed="true"] { background: #17243d; border-color: #17243d; color: #fff; }
+
+.admin-enquiries { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; transition: opacity .15s; }
+.admin-enquiries.is-loading { opacity: .55; }
+.admin-enquiry { background: #fff; border: 1px solid #e0e8f5; border-left: 4px solid #f59e0b; border-radius: 14px; padding: 18px 20px; }
+.admin-enquiry.status-read { border-left-color: #205ce2; }
+.admin-enquiry.status-resolved { border-left-color: #16a34a; }
+.admin-enquiry-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+.admin-enquiry h2 { margin: 0 0 6px; font-size: 18px; color: #17243d; }
+.admin-enquiry-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; color: #64748b; font-size: 13px; }
+.admin-enquiry-meta a { color: #205ce2; }
+.admin-enquiry-status { flex: none; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #fef3c7; color: #92400e; }
+.admin-enquiry-status.status-read { background: #dbeafe; color: #1d4ed8; }
+.admin-enquiry-status.status-resolved { background: #dcfce7; color: #166534; }
+.admin-enquiry-message { margin: 14px 0; color: #334155; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-enquiry .admin-row-actions { justify-content: flex-start; }
+
+@media (max-width: 760px) {
+  .admin-form-row-2 { grid-template-columns: 1fr; }
+  .admin-tabs a { flex: 1 1 auto; text-align: center; }
+  .admin-enquiry-header { flex-direction: column-reverse; }
+}
