@@ -11,6 +11,7 @@ export type Product = {
   price: number
   availableQuantity: number
   isActive: boolean
+  isFeatured: boolean
   createdAt: string
 }
 
@@ -28,6 +29,7 @@ export type ProductInput = {
   price: number
   availableQuantity: number
   isActive: boolean
+  isFeatured: boolean
 }
 
 export type ProductPage = {

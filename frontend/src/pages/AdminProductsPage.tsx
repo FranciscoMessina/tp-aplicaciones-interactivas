@@ -197,7 +197,11 @@ export default function AdminProductsPage() {
                           : <span className="admin-thumb-placeholder" aria-hidden="true">💻</span>}
                         <div>
                           <strong>{product.name}</strong>
-                          {product.images.length > 1 && <small>{product.images.length} imágenes</small>}
+                          <small>
+                            {product.isFeatured && '★ Destacado'}
+                            {product.isFeatured && product.images.length > 1 && ' · '}
+                            {product.images.length > 1 && `${product.images.length} imágenes`}
+                          </small>
                         </div>
                       </div>
                     </td>

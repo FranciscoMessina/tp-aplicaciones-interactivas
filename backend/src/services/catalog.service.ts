@@ -23,6 +23,7 @@ export interface CreateProductInput {
   price: number;
   availableQuantity?: number;
   isActive?: boolean;
+  isFeatured?: boolean;
 }
 
 export interface UpdateProductInput {
@@ -33,6 +34,7 @@ export interface UpdateProductInput {
   price?: number;
   availableQuantity?: number;
   isActive?: boolean;
+  isFeatured?: boolean;
 }
 
 export interface CategoryInput {
