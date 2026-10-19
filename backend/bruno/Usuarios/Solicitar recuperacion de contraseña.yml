@@ -13,11 +13,11 @@ http:
     type: json
     data: |-
       {
-        "email": "cliente@example.com"
+        "email": "admin@example.com"
       }
 
 docs: |-
-  Genera un token de recuperación de contraseña, de un solo uso y válido por 15 minutos. Todavía no se manda por mail: se escribe en la consola del servidor, de donde hay que copiarlo para "Restablecer contraseña".
+  Genera un token de recuperación de contraseña, de un solo uso y válido por 15 minutos. Se manda por mail un enlace al frontend con el token; si el servidor no tiene SMTP configurado, el mail se escribe en la consola, de donde hay que copiar el token para "Restablecer contraseña".
 
   **Auth:** no requiere.
 

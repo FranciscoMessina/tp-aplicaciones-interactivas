@@ -33,6 +33,10 @@ z.config({
           return `Debe ser mayor o igual a ${issue.minimum}`;
         }
         return undefined;
+      case "too_big":
+        return issue.origin === "string"
+          ? `No puede tener más de ${issue.maximum} caracteres`
+          : undefined;
       case "invalid_format":
         if (issue.format === "email") {
           return "El email no es válido";

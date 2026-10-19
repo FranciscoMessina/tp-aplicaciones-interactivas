@@ -13,7 +13,7 @@ const optionalNonnegativeNumber = z.preprocess(
 );
 
 const productFields = {
-  name: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(150),
   category: objectIdSchema,
   description: z.string().trim().min(1),
   images: z.array(z.url()).min(1),

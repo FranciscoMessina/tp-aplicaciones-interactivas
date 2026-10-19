@@ -55,6 +55,18 @@ function getJwtSecret(): string {
 
 export const env = Object.freeze({
   isProduction: process.env.NODE_ENV === "production",
+  // Para armar los enlaces que se mandan por mail, como el de recuperacion.
+  frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
+  // Opcional: sin SMTP_HOST los mails se escriben en la consola del servidor.
+  smtp: process.env.SMTP_HOST
+    ? {
+        host: process.env.SMTP_HOST,
+        port: parsePositiveInteger(process.env.SMTP_PORT, 587, "SMTP_PORT"),
+        user: process.env.SMTP_USER,
+        password: process.env.SMTP_PASSWORD,
+        from: process.env.MAIL_FROM ?? "TechStore <no-reply@techstore.com>",
+      }
+    : undefined,
   jwtExpirationSeconds: parsePositiveInteger(
     process.env.JWT_EXPIRATION_SECONDS,
     DEFAULT_JWT_EXPIRATION_SECONDS,

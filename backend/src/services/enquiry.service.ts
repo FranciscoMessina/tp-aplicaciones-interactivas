@@ -8,6 +8,8 @@ import {
   type EnquiryStatus as EnquiryStatusValue,
 } from "../domain/enquiry.ts";
 import { Enquiry, EnquiryModel } from "../models/enquiry.model.ts";
+import { sendEnquiryEmails } from "./mail.service.ts";
+import { listAdminEmails } from "./user.service.ts";
 
 export interface CreateEnquiryInput {
   name: string;
@@ -23,13 +25,16 @@ export function listEnquiries(
   return EnquiryModel.find(status ? { status } : {}).sort({ createdAt: -1 });
 }
 
-export function createEnquiry(
+export async function createEnquiry(
   input: CreateEnquiryInput,
 ): Promise<DocumentType<Enquiry>> {
-  return EnquiryModel.create({
+  const enquiry = await EnquiryModel.create({
     ...input,
     status: EnquiryStatus.Pending,
   });
+
+  sendEnquiryEmails(input, await listAdminEmails());
+  return enquiry;
 }
 
 export async function updateEnquiryStatus(

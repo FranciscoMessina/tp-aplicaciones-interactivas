@@ -11,7 +11,6 @@ import { hashPassword } from "../services/auth.service.ts";
 import { catalogSeed } from "./seed-catalog.ts";
 
 const DEFAULT_ADMIN_PASSWORD = "Admin123!";
-const DEFAULT_CUSTOMER_PASSWORD = "Customer123!";
 
 // Atlas no actualiza el indice cuando cambia su definicion en el modelo, asi
 // que si ya existe se le vuelve a mandar. Atlas tarda un rato en reconstruirlo.
@@ -41,33 +40,17 @@ async function clearSeededCollections(): Promise<void> {
   await CategoryModel.syncIndexes();
 }
 
-async function seedUsers(): Promise<void> {
+async function seedAdmin(): Promise<void> {
   const adminPassword =
     process.env.SEED_ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD;
-  const customerPassword =
-    process.env.SEED_CUSTOMER_PASSWORD ?? DEFAULT_CUSTOMER_PASSWORD;
 
-  const [adminPasswordHash, customerPasswordHash] = await Promise.all([
-    hashPassword(adminPassword),
-    hashPassword(customerPassword),
-  ]);
-
-  await UserModel.create([
-    {
-      fullName: "Administrador Demo",
-      email: "admin@example.com",
-      phone: "+54 11 5555 0101",
-      passwordHash: adminPasswordHash,
-      role: UserRole.Admin,
-    },
-    {
-      fullName: "Cliente Demo",
-      email: "cliente@example.com",
-      phone: "+54 11 5555 0102",
-      passwordHash: customerPasswordHash,
-      role: UserRole.Customer,
-    },
-  ]);
+  await UserModel.create({
+    fullName: "Administrador Demo",
+    email: "admin@example.com",
+    phone: "+54 11 5555 0101",
+    passwordHash: await hashPassword(adminPassword),
+    role: UserRole.Admin,
+  });
 }
 
 async function seedCatalog(): Promise<{
@@ -106,14 +89,14 @@ async function seedCatalog(): Promise<{
 
 async function seedBusinessInfo(): Promise<void> {
   await BusinessInfoModel.create({
-    name: "ShopKernel",
+    name: "TechStore",
     description:
       "Tienda de tecnología con consolas, computadoras, celulares, videojuegos y accesorios. Asesoramiento personalizado y garantía oficial en todos los productos.",
     address: "Av. Corrientes 1234, CABA, Buenos Aires",
     phone: "+54 11 5555 0100",
     socialNetworks: [
-      "https://www.instagram.com/shopkernel",
-      "https://www.facebook.com/shopkernel",
+      "https://www.instagram.com/techstore",
+      "https://www.facebook.com/techstore",
       "https://wa.me/5491155550100",
     ],
     openingHours: ["Lunes a viernes de 10 a 20 hs", "Sábados de 10 a 14 hs"],
@@ -162,14 +145,14 @@ async function runSeed(): Promise<void> {
 
   try {
     await clearSeededCollections();
-    await seedUsers();
+    await seedAdmin();
     const { categoryCount, productCount } = await seedCatalog();
     await seedBusinessInfo();
     const enquiryCount = await seedEnquiries();
     await syncProductSearchIndex();
 
     console.log(
-      `Seed completed: 2 users, ${categoryCount} categories, ${productCount} products, ${enquiryCount} enquiries and the business info created`,
+      `Seed completed: 1 admin, ${categoryCount} categories, ${productCount} products, ${enquiryCount} enquiries and the business info created`,
     );
   } finally {
     await disconnectDatabase();
