@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import type { ReactElement } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/auth-context'
@@ -7,6 +8,7 @@ import HomePage from './pages/HomePage'
 import BusinessInfoPage from './pages/BusinessInfoPage'
 import ContactPage from './pages/ContactPage'
 import ProfilePage from './pages/ProfilePage'
+import AdminProductsPage from './pages/AdminProductsPage'
 import './App.css'
 
 function ScrollToSection() {
@@ -33,6 +35,12 @@ function Layout() {
     return user ? <ProfilePage /> : <Navigate to="/login" replace />
   }
 
+  function adminRoute(page: ReactElement) {
+    if (checkingSession) return <main className="profile-loading" role="status">Verificando tu sesión...</main>
+    if (!user) return <Navigate to="/login" replace />
+    return user.role === 'admin' ? page : <Navigate to="/" replace />
+  }
+
   return (
     <div className="app">
       <ScrollToSection />
@@ -49,6 +57,7 @@ function Layout() {
         {user ? (
           <div className="user-actions">
             <span className="user-greeting">Hola, {user.fullName.split(' ')[0]}</span>
+            {user.role === 'admin' && <Link className="profile-nav-link" to="/admin/productos">Administrar productos</Link>}
             <Link className="profile-nav-link" to="/perfil">Mi perfil</Link>
             <button className="login-button" type="button" onClick={() => void leave()}>Cerrar sesión</button>
           </div>
@@ -61,6 +70,7 @@ function Layout() {
         <Route path="/nosotros" element={<BusinessInfoPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/perfil" element={profileRoute()} />
+        <Route path="/admin/productos" element={adminRoute(<AdminProductsPage />)} />
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
         <Route path="/registro" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
         <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
