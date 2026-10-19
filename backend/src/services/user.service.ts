@@ -69,34 +69,25 @@ function toAuthenticatedUser(user: DocumentType<User>): AuthenticatedUser {
   };
 }
 
-async function createUser(
+/** Las unicas cuentas son las de los administradores del comercio. */
+export async function registerUser(
   input: RegisterUserInput,
-  role: UserRole,
-): Promise<DocumentType<User>> {
-  return UserModel.create({
+): Promise<AuthenticatedUser> {
+  const user = await UserModel.create({
     fullName: input.fullName,
     email: input.email,
     phone: input.phone,
     passwordHash: await hashPassword(input.password),
-    role,
+    role: UserRole.Admin,
   });
+
+  return toAuthenticatedUser(user);
 }
 
-export async function registerUser(
-  input: RegisterUserInput,
-): Promise<AuthenticatedUser> {
-  return toAuthenticatedUser(await createUser(input, UserRole.Customer));
-}
-
-/**
- * Nadie se registra como administrador: el primero lo crea el seed y los
- * demas los crea un administrador desde `POST /api/users/admins`. No devuelve
- * token porque la cuenta es para otra persona.
- */
-export async function createAdmin(
-  input: RegisterUserInput,
-): Promise<PublicUser> {
-  return toPublicUser(await createUser(input, UserRole.Admin));
+/** Destinatarios de los avisos del comercio, como las consultas nuevas. */
+export async function listAdminEmails(): Promise<string[]> {
+  const admins = await UserModel.find({ role: UserRole.Admin }).select("email");
+  return admins.map((admin) => admin.email);
 }
 
 export async function loginUser(input: LoginInput) {

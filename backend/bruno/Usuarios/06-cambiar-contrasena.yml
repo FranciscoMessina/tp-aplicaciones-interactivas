@@ -13,13 +13,13 @@ http:
     type: json
     data: |-
       {
-        "currentPassword": "Customer123!",
-        "newPassword": "Customer456!"
+        "currentPassword": "Admin123!",
+        "newPassword": "Admin456!"
       }
   auth: inherit
 
 docs: |-
-  Cambia la contraseña del usuario logueado. Si se usa con el cliente del seed, después hay que iniciar sesión con la contraseña nueva.
+  Cambia la contraseña del usuario logueado. Si se usa con el administrador del seed, después hay que iniciar sesión con la contraseña nueva.
 
   **Auth:** cualquier usuario logueado. Usa el token guardado al iniciar sesión.
 

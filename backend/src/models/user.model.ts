@@ -6,8 +6,10 @@ import {
 } from "@typegoose/typegoose";
 import { baseModelOptions } from "./model-options.ts";
 
+// La consigna solo tiene cuentas para los administradores del comercio: los
+// visitantes navegan y envian consultas sin registrarse. El rol queda en el
+// modelo y en el token para que la autorizacion no dependa de esa suposicion.
 export const UserRole = {
-  Customer: "customer",
   Admin: "admin",
 } as const;
 
@@ -25,7 +27,7 @@ export class User {
   @prop({ required: true, trim: true })
   public phone!: string;
 
-  @prop({ required: true, enum: UserRole, default: UserRole.Customer })
+  @prop({ required: true, enum: UserRole, default: UserRole.Admin })
   public role!: UserRole;
 
   @prop({ required: true, select: false })

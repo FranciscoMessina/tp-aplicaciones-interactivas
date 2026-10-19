@@ -17,11 +17,6 @@ export async function register(req: Request, res: Response): Promise<void> {
   sendSuccess(res, await userService.registerUser(body), 201);
 }
 
-export async function createAdmin(req: Request, res: Response): Promise<void> {
-  const body = validate(registerSchema, req.body);
-  sendSuccess(res, await userService.createAdmin(body), 201);
-}
-
 export async function login(req: Request, res: Response): Promise<void> {
   const body = validate(loginSchema, req.body);
   sendSuccess(res, await userService.loginUser(body));

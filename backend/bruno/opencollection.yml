@@ -40,7 +40,6 @@ docs:
     Usuarios del seed:
 
     - Administrador: `admin@example.com` / `Admin123!`
-    - Cliente: `cliente@example.com` / `Customer123!`
   type: text/markdown
 bundled: false
 extensions:

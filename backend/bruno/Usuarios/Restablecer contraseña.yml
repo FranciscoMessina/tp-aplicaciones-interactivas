@@ -13,9 +13,9 @@ http:
     type: json
     data: |-
       {
-        // Completar con el token que devuelve el servidor, por ahora lo muestra en consola
+        // Completar con el token del enlace que llega por mail (o que muestra la consola)
         "token": "843b2efec9479d10496e9c32fd7bae8590e3308f02fee7ff787c6e72048bb5d6",
-        "password": "Customer1234!"
+        "password": "Admin123!"
       }
 
 settings:
@@ -26,14 +26,14 @@ settings:
   forwardAuthorizationHeader: true
 
 docs: |-
-  Cambia la contraseña usando el token de recuperación. El body deja la contraseña del cliente del seed como estaba.
+  Cambia la contraseña usando el token de recuperación. El body deja la contraseña del administrador del seed como estaba.
 
   **Auth:** no requiere.
 
   **Recibe**
 
   Body:
-  - `token`: el que escribió la consola del servidor después de "Solicitar recuperacion de contraseña".
+  - `token`: el del enlace que llega por mail después de "Solicitar recuperacion de contraseña" (sin SMTP configurado, lo escribe la consola del servidor).
   - `password`: la contraseña nueva, mínimo 8 caracteres.
 
   **Devuelve**

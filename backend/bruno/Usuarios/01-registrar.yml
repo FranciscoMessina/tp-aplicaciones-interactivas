@@ -22,7 +22,7 @@ http:
     type: none
 
 docs: |-
-  Crea una cuenta de cliente. El rol siempre es `customer`: los administradores se crean con "Crear administrador".
+  Crea una cuenta de administrador del comercio. Es el único tipo de cuenta: los visitantes navegan y envían consultas sin registrarse.
 
   **Auth:** no requiere.
 
