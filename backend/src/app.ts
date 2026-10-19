@@ -14,6 +14,7 @@ import { categoryRouter } from "./routes/category.routes.ts";
 import { businessInfoRouter } from "./routes/business-info.routes.ts";
 import { enquiryRouter } from "./routes/enquiry.routes.ts";
 import { imageRouter } from "./routes/image.routes.ts";
+import { statsRouter } from "./routes/stats.routes.ts";
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/users", userRouter);
 app.use("/api/business-info", businessInfoRouter);
 app.use("/api/enquiries", enquiryRouter);
 app.use("/api/images", imageRouter);
+app.use("/api/stats", statsRouter);
 
 // Si el request llego hasta aca, ninguna ruta coincidio.
 app.use(() => {

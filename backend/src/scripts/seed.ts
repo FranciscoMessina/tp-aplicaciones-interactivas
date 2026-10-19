@@ -78,6 +78,8 @@ async function seedCatalog(): Promise<{
         availableQuantity: sequence % 9,
         // Uno de cada diez queda desactivado, para probar el filtro del admin.
         isActive: sequence % 10 !== 0,
+        // Algunos se destacan en la pagina de inicio.
+        isFeatured: sequence % 18 === 4,
       });
     }
   }

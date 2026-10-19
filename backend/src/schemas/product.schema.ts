@@ -22,6 +22,7 @@ const productFields = {
   // El estado de disponibilidad: con 0 el producto se publica como sin stock.
   availableQuantity: z.number().int().nonnegative().optional(),
   isActive: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
 };
 
 export const searchProductsSchema = z
