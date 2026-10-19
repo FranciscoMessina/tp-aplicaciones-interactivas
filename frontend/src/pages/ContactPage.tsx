@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ApiRequestError, getErrorMessage } from '../services/api'
 import { fetchBusinessInfo } from '../services/businessInfo'
 import { sendEnquiry } from '../services/enquiries'
@@ -10,7 +10,8 @@ export default function ContactPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [subject, setSubject] = useState('')
+  const [searchParams] = useSearchParams()
+  const [subject, setSubject] = useState(searchParams.get('asunto') ?? '')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')

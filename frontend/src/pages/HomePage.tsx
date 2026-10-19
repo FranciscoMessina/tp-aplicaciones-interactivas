@@ -1,30 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import ProductCard from '../components/ProductCard'
 import { fetchProducts } from '../services/products'
 import type { Product } from '../types/product'
-import { formatPrice } from '../utils/format'
 
 const PRODUCTS_PER_PAGE = 12
 
-function ProductImage({ product }: { product: Product }) {
-  const [imageFailed, setImageFailed] = useState(false)
-  const imageUrl = product.images?.[0]
-
-  return (
-    <div className="product-image">
-      {imageUrl && !imageFailed ? (
-        <img
-          src={imageUrl}
-          alt={product.name}
-          loading="lazy"
-          onError={() => setImageFailed(true)}
-        />
-      ) : (
-        <span className="image-placeholder" role="img" aria-label="Sin imagen disponible">💻</span>
-      )}
-    </div>
-  )
-}
+const FEATURED_LIMIT = 8
 
 function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -61,6 +43,11 @@ function HomePage() {
 
   const categories = useMemo(
     () => ['Todas', ...Array.from(new Set(products.map((product) => product.category?.name).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'es-AR'))],
+    [products],
+  )
+
+  const featuredProducts = useMemo(
+    () => products.filter((product) => product.isFeatured).slice(0, FEATURED_LIMIT),
     [products],
   )
 
@@ -133,6 +120,19 @@ function HomePage() {
           <div className="benefit"><span aria-hidden="true">✓</span><div><strong>Catálogo simple</strong><p>Buscá y filtrá en segundos.</p></div></div>
           <div className="benefit"><span aria-hidden="true">⌁</span><div><strong>Atención cercana</strong><p>Estamos para ayudarte a elegir.</p></div></div>
         </section>
+
+        {featuredProducts.length > 0 && (
+          <section className="products-section featured-section" aria-labelledby="featured-title">
+            <div className="section-heading">
+              <span className="section-kicker">DESTACADOS</span>
+              <h2 id="featured-title">Elegidos para vos</h2>
+              <p>Los productos que recomendamos esta temporada.</p>
+            </div>
+            <div className="products-grid">
+              {featuredProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+            </div>
+          </section>
+        )}
 
         <section id="productos" className="products-section" aria-labelledby="products-title">
           <div className="section-heading">
@@ -213,20 +213,7 @@ function HomePage() {
           ) : paginatedProducts.length > 0 ? (
             <>
               <div className="products-grid">
-                {paginatedProducts.map((product) => (
-                  <article className="product-card" key={product.id}>
-                    <ProductImage product={product} />
-                    <div className="product-info">
-                      <span className="product-category">{product.category?.name ?? 'Sin categoría'}</span>
-                      <h3>{product.name}</h3>
-                      <p className="product-description">{product.description}</p>
-                      <p className="product-price">{formatPrice(product.price)}</p>
-                      <span className={product.availableQuantity > 0 ? 'product-available' : 'product-unavailable'}>
-                        {product.availableQuantity > 0 ? 'Disponible' : 'Sin stock'}
-                      </span>
-                    </div>
-                  </article>
-                ))}
+                {paginatedProducts.map((product) => <ProductCard key={product.id} product={product} />)}
               </div>
               {totalPages > 1 && (
                 <div className="pagination" aria-label="Paginación de productos">

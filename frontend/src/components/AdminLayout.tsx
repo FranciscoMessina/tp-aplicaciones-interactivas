@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 
 const sections = [
+  { to: 'resumen', label: 'Resumen' },
   { to: 'productos', label: 'Productos' },
   { to: 'categorias', label: 'Categorías' },
   { to: 'consultas', label: 'Consultas' },

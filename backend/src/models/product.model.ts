@@ -67,6 +67,10 @@ export class Product {
 
   @prop({ required: true, default: true })
   public isActive!: boolean;
+
+  // Los destacados se muestran primero en la pagina de inicio.
+  @prop({ required: true, default: false })
+  public isFeatured!: boolean;
 }
 
 export const ProductModel = getModelForClass(Product);

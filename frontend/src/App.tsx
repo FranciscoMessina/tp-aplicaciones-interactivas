@@ -9,6 +9,8 @@ import HomePage from './pages/HomePage'
 import BusinessInfoPage from './pages/BusinessInfoPage'
 import ContactPage from './pages/ContactPage'
 import ProfilePage from './pages/ProfilePage'
+import ProductDetailPage from './pages/ProductDetailPage'
+import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminProductsPage from './pages/AdminProductsPage'
 import AdminCategoriesPage from './pages/AdminCategoriesPage'
 import AdminEnquiriesPage from './pages/AdminEnquiriesPage'
@@ -65,11 +67,13 @@ function Layout() {
       </header>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/productos/:id" element={<ProductDetailPage />} />
         <Route path="/nosotros" element={<BusinessInfoPage />} />
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/perfil" element={privateRoute(<ProfilePage />)} />
         <Route path="/admin" element={privateRoute(<AdminLayout />)}>
-          <Route index element={<Navigate to="productos" replace />} />
+          <Route index element={<Navigate to="resumen" replace />} />
+          <Route path="resumen" element={<AdminDashboardPage />} />
           <Route path="productos" element={<AdminProductsPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="consultas" element={<AdminEnquiriesPage />} />

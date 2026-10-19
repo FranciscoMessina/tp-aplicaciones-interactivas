@@ -37,6 +37,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
   const [price, setPrice] = useState(product ? String(product.price) : '')
   const [stock, setStock] = useState(product ? String(product.availableQuantity) : '0')
   const [isActive, setIsActive] = useState(product?.isActive ?? true)
+  const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false)
   const [images, setImages] = useState<string[]>(product?.images ?? [])
   const [urlInput, setUrlInput] = useState('')
 
@@ -131,6 +132,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
       price: Number(price),
       availableQuantity: Number(stock),
       isActive,
+      isFeatured,
     }
 
     setSaving(true)
@@ -244,6 +246,11 @@ export default function ProductFormModal({ token, categories, product, onClose, 
         <label className="admin-check">
           <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} />
           <span><strong>Publicado</strong> — si lo desmarcás, el producto no se muestra en el sitio público.</span>
+        </label>
+
+        <label className="admin-check">
+          <input type="checkbox" checked={isFeatured} onChange={(event) => setIsFeatured(event.target.checked)} />
+          <span><strong>Destacado</strong> — aparece en la sección de destacados de la página de inicio.</span>
         </label>
 
         <div className="admin-form-actions">

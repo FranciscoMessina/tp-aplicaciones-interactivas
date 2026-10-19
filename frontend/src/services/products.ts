@@ -29,6 +29,11 @@ export async function fetchProducts(signal?: AbortSignal): Promise<Product[]> {
   return products
 }
 
+/** Un producto publicado; los ocultos responden 404. */
+export function fetchProduct(id: string, signal?: AbortSignal) {
+  return apiRequest<Product>(`/api/products/${id}`, { signal })
+}
+
 // ---- Administración (requiere token de administrador) ----
 
 export interface AdminProductFilters {
