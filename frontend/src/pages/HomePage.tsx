@@ -2,15 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { fetchProducts } from '../services/products'
 import type { Product } from '../types/product'
+import { formatPrice } from '../utils/format'
 
 const PRODUCTS_PER_PAGE = 12
-
-const formatPrice = (price: number) =>
-  new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    maximumFractionDigits: 0,
-  }).format(price)
 
 function ProductImage({ product }: { product: Product }) {
   const [imageFailed, setImageFailed] = useState(false)

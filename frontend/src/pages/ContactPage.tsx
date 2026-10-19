@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../context/auth-context'
-import { BusinessInfoError, fetchBusinessInfo } from '../services/businessInfo'
-import { EnquiryRequestError, sendEnquiry } from '../services/enquiries'
+import { ApiRequestError, getErrorMessage } from '../services/api'
+import { fetchBusinessInfo } from '../services/businessInfo'
+import { sendEnquiry } from '../services/enquiries'
 import type { BusinessInfo } from '../types/business'
 
 export default function ContactPage() {
-  const { user } = useAuth()
-  const [name, setName] = useState(user?.fullName ?? '')
-  const [email, setEmail] = useState(user?.email ?? '')
-  const [phone, setPhone] = useState(user?.phone ?? '')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -25,7 +24,7 @@ export default function ContactPage() {
       .then((result) => { if (!controller.signal.aborted) setInfo(result) })
       .catch((cause: unknown) => {
         if (controller.signal.aborted) return
-        if (cause instanceof BusinessInfoError && cause.status === 404) {
+        if (cause instanceof ApiRequestError && cause.status === 404) {
           setInfoNote('Los datos institucionales todavía no están cargados.')
         } else {
           setInfoNote('No se pudieron consultar los datos del comercio.')
@@ -60,12 +59,7 @@ export default function ContactPage() {
       setSubject('')
       setMessage('')
     } catch (cause) {
-      if (cause instanceof EnquiryRequestError) {
-        const fieldMessage = Object.values(cause.fields ?? {})[0]?.[0]
-        setError(fieldMessage ?? cause.message)
-      } else {
-        setError('Ocurrió un error inesperado. Intentá de nuevo.')
-      }
+      setError(getErrorMessage(cause))
     } finally {
       setSending(false)
     }

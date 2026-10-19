@@ -36,7 +36,3 @@ export type ProductPage = {
   pageSize: number
   total: number
 }
-
-export type ApiResponse<T> =
-  | { success: true; data: T }
-  | { success: false; error?: { message?: string } }

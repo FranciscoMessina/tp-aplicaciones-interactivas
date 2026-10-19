@@ -2,14 +2,8 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
-import { ApiRequestError, changePassword, updateProfile } from '../services/auth'
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiRequestError) {
-    return Object.values(error.fields ?? {})[0]?.[0] ?? error.message
-  }
-  return 'Ocurrió un error inesperado. Intentá de nuevo.'
-}
+import { getErrorMessage } from '../services/api'
+import { changePassword, updateProfile } from '../services/auth'
 
 export default function ProfilePage() {
   const { user, accessToken, updateUser } = useAuth()
@@ -89,7 +83,7 @@ export default function ProfilePage() {
     <main className="profile-page">
       <div className="profile-container">
         <div className="profile-heading">
-          <Link className="auth-back" to="/">← Volver a la tienda</Link>
+          <Link className="auth-back" to="/admin">← Volver al panel</Link>
           <span className="section-kicker">MI CUENTA</span>
           <h1>Mi perfil</h1>
           <p>Consultá y administrá tus datos personales y tu contraseña.</p>
@@ -102,7 +96,7 @@ export default function ProfilePage() {
                 <h2 id="profile-data-title">Datos personales</h2>
                 <p>Esta información se guarda en tu cuenta.</p>
               </div>
-              <span className="profile-role">{user?.role === 'admin' ? 'Administrador' : 'Usuario'}</span>
+              <span className="profile-role">Administrador</span>
             </div>
             <form className="auth-form" onSubmit={(event) => void saveProfile(event)}>
               {profileError && <div className="auth-alert auth-alert-error" role="alert">{profileError}</div>}
