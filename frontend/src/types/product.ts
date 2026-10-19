@@ -14,6 +14,22 @@ export type Product = {
   createdAt: string
 }
 
+export type Category = {
+  id: string
+  name: string
+}
+
+// Lo que se envía al crear o modificar un producto (POST / PATCH /api/products).
+export type ProductInput = {
+  name: string
+  category: string
+  description: string
+  images: string[]
+  price: number
+  availableQuantity: number
+  isActive: boolean
+}
+
 export type ProductPage = {
   items: Product[]
   page: number
