@@ -1,98 +1,15 @@
-# Proyecto de Aplicaciones Interactivas
+# API REST
 
-Por ahora solo el backend, despues se sumara el front.
+Referencia de la API del backend (`backend/`). Todas las rutas empiezan con
+`/api`. La colección de [Bruno](https://www.usebruno.com/) en
+`backend/bruno` tiene un ejemplo de cada request.
 
-API REST desarrollada con Node.js, Express, TypeScript, MongoDB, Mongoose y Typegoose.
-
-## Requisitos
-
-- Node.js 24
-- npm 11
-- Un cluster de MongoDB Atlas (sirve el gratuito). La búsqueda de productos usa
-  Atlas Search (`$search`), que no existe en un MongoDB local común: sin Atlas
-  el resto de la API funciona, pero `GET /api/products?search=...` responde 500.
-
-## Configuración
-
-1. Instalar las dependencias:
-
-   ```bash
-   npm install
-   ```
-
-2. Copiar `.env.example` como `.env` y completar las variables requeridas:
-
-   ```dotenv
-   MONGODB_URI=mongodb+srv://usuario:contraseña@cluster.mongodb.net/comercio
-   PORT=8080
-   JWT_SECRET=un-secreto-aleatorio-de-al-menos-32-caracteres
-   JWT_EXPIRATION_SECONDS=3600
-   ```
-
-3. Cargar los datos de demostración (ver abajo):
-
-   ```bash
-   npm run seed
-   ```
-
-4. Iniciar el servidor de desarrollo:
-
-   ```bash
-   npm run dev
-   ```
-
-## Scripts disponibles
-
-- `npm run dev`: compila ante cada cambio y reinicia el servidor.
-- `npm run typecheck`: verifica los tipos de TypeScript sin generar archivos.
-- `npm run build`: limpia y compila el proyecto en `dist`.
-- `npm start`: ejecuta la aplicación compilada.
-- `npm run seed`: borra todos los datos, crea los de demostración y crea o
-  actualiza el índice de Atlas Search.
-- `npm run lint`: analiza el código con ESLint.
-- `npm run lint:fix`: corrige automáticamente los problemas de lint que sea posible resolver.
-- `npm run format`: formatea el proyecto con Prettier.
-- `npm run format:check`: verifica el formato sin modificar archivos.
-
-## Datos de demostración
-
-Con la conexión a MongoDB Atlas y las variables de entorno configuradas, ejecutar:
-
-```bash
-npm run seed
-```
-
-El seed borra productos, categorías, usuarios, consultas e información
-institucional, y después crea:
-
-- 108 productos de tecnología en 11 categorías (consolas, computadoras,
-  celulares, videojuegos, etc.), con algunos inactivos y sin stock.
-  El catálogo está en `src/scripts/seed-catalog.ts`.
-- La información institucional del comercio.
-- Cuatro consultas en distintos estados.
-- Un administrador y un cliente.
-
-También crea el índice de Atlas Search `productSearch`, o lo actualiza si ya
-existe: Atlas no toma solo los cambios de la definición del modelo. Después de
-crearlo o actualizarlo, Atlas tarda un rato en indexar; mientras tanto la
-búsqueda puede devolver menos resultados.
-
-Las cuentas creadas son `admin@example.com` y `cliente@example.com`. Sus
-contraseñas se configuran mediante `SEED_ADMIN_PASSWORD` y
-`SEED_CUSTOMER_PASSWORD`; los valores de demostración están en `.env.example`.
-Nadie puede registrarse como administrador: el del seed es el primero, y los
-demás los crea un administrador con `POST /api/users/admins`.
-
-El modelo de datos está en [docs/modelo-de-datos.md](docs/modelo-de-datos.md) y
-la descripción funcional en
-[docs/descripcion-funcional.md](docs/descripcion-funcional.md).
-
-## API
+## Productos
 
 La colección de productos está disponible en `/api/products`. Cada publicación
 tiene `name`, `category`, `description`, `images` (array de URLs), `price`,
-`availableQuantity` (estado de disponibilidad: con `0` se muestra sin stock) e
-`isActive` (si está publicada). La consigna deja
+`availableQuantity` (estado de disponibilidad: con `0` se muestra sin stock),
+`isActive` (si está publicada) e `isFeatured` (si se destaca en el inicio). La consigna deja
 el precio como opcional según el rubro; en el nuestro es obligatorio. Crear,
 modificar y eliminar publicaciones requiere estar autenticado con un usuario de
 rol `admin`.
@@ -114,17 +31,25 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 - `GET /api/products/:id`: obtiene un producto con su categoría. Un producto
   inactivo responde 404, salvo para un administrador autenticado.
 - `POST /api/products`: crea un producto con `name`, `category`, `description`,
-  `images`, `price` y, opcionales, `availableQuantity` (por defecto `0`) e
-  `isActive` (por defecto `true`). Solo administradores.
+  `images`, `price` y, opcionales, `availableQuantity` (por defecto `0`),
+  `isActive` (por defecto `true`) e `isFeatured` (por defecto `false`).
+  Solo administradores.
 - `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores,
-  `isActive` incluido. Solo administradores.
+  `isActive` e `isFeatured` incluidos. Solo administradores.
 - `DELETE /api/products/:id`: elimina una publicación. Solo administradores.
 
 Las publicaciones inactivas no se devuelven desde el listado público. Cada
 publicación debe incluir al menos una imagen con una URL válida y su categoría
 debe ser el ID de una categoría existente.
 
-### Categorías e información institucional
+### Imágenes
+
+- `POST /api/images`: sube una imagen (`multipart/form-data`, campo `image`;
+  JPG, PNG, WEBP o GIF de hasta 5 MB) y devuelve su URL pública en `data.url`,
+  lista para agregar al array `images` de un producto. Solo administradores.
+  Los archivos quedan en `backend/public/uploads`.
+
+## Categorías e información institucional
 
 - `GET /api/categories`: lista categorías ordenadas por nombre. Los nombres son
   únicos sin distinguir mayúsculas: "Consolas" y "consolas" chocan con un 409.
@@ -132,35 +57,54 @@ debe ser el ID de una categoría existente.
 - `GET /api/business-info`: obtiene la información pública del comercio.
 - `PUT /api/business-info`: crea o actualiza la información institucional. Solo administradores.
 
-### Consultas
+## Consultas
 
 - `POST /api/enquiries`: permite a cualquier visitante enviar una consulta.
 - `GET /api/enquiries`: lista las consultas de la más nueva a la más vieja.
   Acepta `status` (`PENDING`, `READ` o `RESOLVED`) para filtrar.
 - `PATCH /api/enquiries/:id` (con `status`) y `DELETE /api/enquiries/:id`.
 
-Todas salvo `POST` son solo para administradores.
+Todas salvo `POST` son solo para administradores. Al recibir una consulta se
+avisa por mail a los administradores y se le confirma la recepción al
+visitante (ver "Correos").
 
 El estado de una consulta comienza en `PENDING`. Puede pasar a `READ` o
 `RESOLVED`, y desde cualquier estado puede volver a `PENDING`. Lo único que no
 se permite es pasar de `RESOLVED` a `READ`. Los cambios al mismo estado son
 idempotentes.
 
-### Usuarios y autenticación
+## Métricas
 
-- `POST /api/users/register`: registra un usuario con `fullName`, `email`, `phone` y `password` (mínimo 8 caracteres). El rol se asigna siempre como `customer`.
-- `POST /api/users/admins`: crea un administrador con los mismos campos que el registro. Solo administradores. Devuelve el usuario creado, sin token.
+- `GET /api/stats`: datos del dashboard del panel. Solo administradores.
+  Devuelve `products` (`total`, `active`, `outOfStock`, `featured`),
+  `enquiries` (cantidad por estado y `total`) y `productsByCategory`
+  (`name` y `count` de cada categoría, de mayor a menor).
+
+## Usuarios y autenticación
+
+Las únicas cuentas son las de los administradores del comercio: los visitantes
+navegan y envían consultas sin registrarse.
+
+- `POST /api/users/register`: registra un administrador con `fullName`, `email`, `phone` y `password` (mínimo 8 caracteres). Devuelve el JWT y el usuario, como el login.
 - `POST /api/users/login`: inicia sesión con `email` y `password` y devuelve un JWT (incluye el rol del usuario).
 - `POST /api/users/logout`: valida el JWT y responde sin contenido; el cliente debe eliminar el token almacenado.
 - `GET /api/users/me`: obtiene los datos del usuario autenticado.
 - `PATCH /api/users/me`: modifica `fullName`, `email` y/o `phone` del usuario autenticado.
 - `PATCH /api/users/me/password`: cambia la contraseña con `currentPassword` y `newPassword`.
-- `POST /api/users/forgot-password`: genera un token de recuperación y se lo envía al usuario. Todavía no hay envío de mails: el token se escribe en la consola del servidor (`src/services/mail.service.ts`). La respuesta es la misma exista o no la cuenta.
+- `POST /api/users/forgot-password`: genera un token de recuperación y le manda al usuario un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...`. La respuesta es la misma exista o no la cuenta.
 - `POST /api/users/reset-password`: cambia la contraseña con `token` y `password`.
 
 Los correos se normalizan a minúsculas y tienen un índice único en MongoDB. Las
 contraseñas se almacenan con bcrypt y los tokens de recuperación son de un solo
 uso, se guardan hasheados y vencen a los 15 minutos.
+
+## Correos
+
+`src/services/mail.service.ts` envía los mails con nodemailer por SMTP
+(variables `SMTP_*`, ver el README). Si `SMTP_HOST` no está configurado, el
+mail completo se escribe en la consola del servidor, así el proyecto funciona
+sin una cuenta de correo. Un mail que no se puede enviar se registra como error
+pero no hace fallar la operación que lo disparó.
 
 ## Respuestas
 
