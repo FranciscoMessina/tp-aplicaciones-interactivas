@@ -28,7 +28,7 @@ A neighbourhood tech shop (consoles, PCs, phones, games, accessories) with price
 
 ## Brand Commitments
 
-- Name: TechStore.
+- Name: the store name is data, not a constant. Every place that shows it (header, footer, admin sidebar, auth pages, document title) reads it from the business info ("Información del comercio") through `BusinessContext`; "TechStore" is only the project name.
 - All existing Spanish copy on the public site is preserved verbatim through redesigns (confirmed 2026-10-19).
 
 ## Evidence on Hand

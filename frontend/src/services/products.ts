@@ -39,6 +39,9 @@ export function fetchProduct(id: string, signal?: AbortSignal) {
 export interface AdminProductFilters {
   search?: string
   category?: string
+  isActive?: boolean
+  isFeatured?: boolean
+  inStock?: boolean
   page: number
   pageSize: number
 }
@@ -54,6 +57,9 @@ export function fetchAdminProducts(token: string, filters: AdminProductFilters, 
   })
   if (filters.search) params.set('search', filters.search)
   if (filters.category) params.set('category', filters.category)
+  for (const key of ['isActive', 'isFeatured', 'inStock'] as const) {
+    if (filters[key] !== undefined) params.set(key, String(filters[key]))
+  }
   return apiRequest<ProductPage>(`/api/products?${params}`, { token, signal })
 }
 

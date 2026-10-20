@@ -27,7 +27,7 @@ flowchart TD
         Categorias["/admin/categorias"]
         Consultas["/admin/consultas"]
         Comercio["/admin/comercio"]
-        Perfil["/perfil<br/>Datos y contraseña"]
+        Perfil["/admin/perfil<br/>Datos y contraseña"]
     end
 
     Inicio -->|tarjeta de producto| Detalle
@@ -48,8 +48,8 @@ flowchart TD
     Resumen <--> Categorias
     Resumen <--> Consultas
     Resumen <--> Comercio
-    Resumen -->|encabezado: Mi perfil| Perfil
-    Perfil -->|Volver al panel| Resumen
+    Resumen <--> Perfil
+    Resumen -->|encabezado: Ver sitio| Inicio
 ```
 
 ## Pantallas
@@ -68,7 +68,7 @@ flowchart TD
 | `/admin/categorias` | Con sesión | ABM de categorías |
 | `/admin/consultas` | Con sesión | Ver, cambiar de estado y eliminar consultas |
 | `/admin/comercio` | Con sesión | Editar la información institucional |
-| `/perfil` | Con sesión | Modificar datos personales y contraseña |
+| `/admin/perfil` | Con sesión | Modificar datos personales y contraseña |
 
 Sin sesión, las rutas privadas redirigen a `/login`. Cualquier ruta
 desconocida redirige al inicio.

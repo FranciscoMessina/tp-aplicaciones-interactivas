@@ -33,6 +33,8 @@ export const productSearchIndex = {
         category: { type: "objectId" },
         price: { type: "number" },
         isActive: { type: "boolean" },
+        isFeatured: { type: "boolean" },
+        availableQuantity: { type: "number" },
       },
     },
   },

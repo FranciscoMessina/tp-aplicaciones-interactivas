@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import AdminEmpty from '../components/AdminEmpty'
 import AdminNotice from '../components/AdminNotice'
 import type { Notice } from '../components/AdminNotice'
 import { useAuth } from '../context/auth-context'
+import { useBusiness } from '../context/business-context'
 import { ApiRequestError, getErrorMessage as errorMessage } from '../services/api'
 import { fetchBusinessInfo, saveBusinessInfo } from '../services/businessInfo'
 import type { BusinessInfo, BusinessInfoInput } from '../types/business'
@@ -52,6 +54,7 @@ function validate(form: FormState): Errors {
 
 export default function AdminBusinessInfoPage() {
   const { accessToken } = useAuth()
+  const { setBusinessName } = useBusiness()
   const token = accessToken ?? ''
 
   const [form, setForm] = useState<FormState>(toForm())
@@ -119,6 +122,7 @@ export default function AdminBusinessInfoPage() {
     try {
       const saved = await saveBusinessInfo(token, input)
       setForm(toForm(saved))
+      setBusinessName(saved.name)
       setNotCreated(false)
       setNotice({ kind: 'success', text: 'Se guardó la información del comercio.' })
     } catch (error) {
@@ -146,7 +150,6 @@ export default function AdminBusinessInfoPage() {
     <>
       <div className="admin-heading">
         <div>
-          <span className="section-kicker">ADMINISTRACIÓN</span>
           <h1>Información del comercio</h1>
           <p>Estos datos se muestran en las secciones Nosotros y Contacto del sitio.</p>
         </div>
@@ -155,71 +158,85 @@ export default function AdminBusinessInfoPage() {
       <AdminNotice notice={notice} onClose={clearNotice} />
 
       {loadError ? (
-        <div className="empty-state" role="alert">
-          <span aria-hidden="true">⚠️</span>
-          <h3>No pudimos cargar la información del comercio</h3>
-          <p>{loadError}</p>
-          <button type="button" className="primary-button empty-button" onClick={retry}>Reintentar</button>
-        </div>
+        <AdminEmpty icon="alert" title="No pudimos cargar la información del comercio" isError action={<button type="button" className="admin-secondary" onClick={retry}>Reintentar</button>}>
+          {loadError}
+        </AdminEmpty>
       ) : loading ? (
         <div className="admin-skeleton" role="status" aria-label="Cargando información del comercio">
-          <div /><div /><div /><div />
+          <div /><div />
         </div>
       ) : (
-        <section className="profile-card">
-          {notCreated && <p className="admin-hint">Todavía no cargaste la información del comercio.</p>}
-
-          <form className="admin-form" onSubmit={(event) => void submit(event)} noValidate>
-            {formError && <div className="auth-alert auth-alert-error" role="alert">{formError}</div>}
-
-            <div className={fieldClass('name')}>
-              <label htmlFor="bi-name">Nombre del comercio *</label>
-              <input id="bi-name" value={form.name} onChange={(event) => setField('name', event.target.value)} aria-invalid={Boolean(errors.name)} />
-              {errors.name && <span className="admin-error">{errors.name}</span>}
+        <form className="admin-panel admin-settings" onSubmit={(event) => void submit(event)} noValidate>
+          {(notCreated || formError) && (
+            <div className="admin-panel-body">
+              {notCreated && <p className="admin-alert">Todavía no cargaste la información del comercio.</p>}
+              {formError && <p className="admin-alert is-error" role="alert">{formError}</p>}
             </div>
+          )}
 
-            <div className="admin-form-row admin-form-row-2">
-              <div className={fieldClass('address')}>
-                <label htmlFor="bi-address">Dirección *</label>
-                <input id="bi-address" value={form.address} onChange={(event) => setField('address', event.target.value)} aria-invalid={Boolean(errors.address)} />
-                {errors.address && <span className="admin-error">{errors.address}</span>}
+          <fieldset className="admin-settings-group">
+            <legend>
+              <strong>Datos del comercio</strong>
+              <span>Nombre, ubicación y la presentación que leen los visitantes.</span>
+            </legend>
+            <div className="admin-form">
+              <div className={fieldClass('name')}>
+                <label htmlFor="bi-name">Nombre del comercio *</label>
+                <input id="bi-name" value={form.name} onChange={(event) => setField('name', event.target.value)} aria-invalid={Boolean(errors.name)} />
+                {errors.name && <span className="admin-error">{errors.name}</span>}
               </div>
-              <div className={fieldClass('phone')}>
-                <label htmlFor="bi-phone">Teléfono *</label>
-                <input id="bi-phone" type="tel" value={form.phone} onChange={(event) => setField('phone', event.target.value)} aria-invalid={Boolean(errors.phone)} />
-                {errors.phone && <span className="admin-error">{errors.phone}</span>}
+
+              <div className="admin-form-row admin-form-row-2">
+                <div className={fieldClass('address')}>
+                  <label htmlFor="bi-address">Dirección *</label>
+                  <input id="bi-address" value={form.address} onChange={(event) => setField('address', event.target.value)} aria-invalid={Boolean(errors.address)} />
+                  {errors.address && <span className="admin-error">{errors.address}</span>}
+                </div>
+                <div className={fieldClass('phone')}>
+                  <label htmlFor="bi-phone">Teléfono *</label>
+                  <input id="bi-phone" type="tel" value={form.phone} onChange={(event) => setField('phone', event.target.value)} aria-invalid={Boolean(errors.phone)} />
+                  {errors.phone && <span className="admin-error">{errors.phone}</span>}
+                </div>
+              </div>
+
+              <div className={fieldClass('description')}>
+                <label htmlFor="bi-description">Descripción *</label>
+                <textarea id="bi-description" rows={4} value={form.description} onChange={(event) => setField('description', event.target.value)} aria-invalid={Boolean(errors.description)} />
+                {errors.description && <span className="admin-error">{errors.description}</span>}
               </div>
             </div>
+          </fieldset>
 
-            <div className={fieldClass('description')}>
-              <label htmlFor="bi-description">Descripción *</label>
-              <textarea id="bi-description" rows={4} value={form.description} onChange={(event) => setField('description', event.target.value)} aria-invalid={Boolean(errors.description)} />
-              {errors.description && <span className="admin-error">{errors.description}</span>}
-            </div>
+          <fieldset className="admin-settings-group">
+            <legend>
+              <strong>Horarios y redes</strong>
+              <span>Opcionales. Cargá un dato por línea.</span>
+            </legend>
+            <div className="admin-form">
+              <div className={fieldClass('openingHours')}>
+                <label htmlFor="bi-hours">Horarios de atención</label>
+                <textarea id="bi-hours" rows={3} value={form.openingHours} onChange={(event) => setField('openingHours', event.target.value)} aria-invalid={Boolean(errors.openingHours)} />
+                {errors.openingHours
+                  ? <span className="admin-error">{errors.openingHours}</span>
+                  : <span className="admin-hint">Uno por línea, por ejemplo: Lunes a viernes de 10 a 20 hs</span>}
+              </div>
 
-            <div className={fieldClass('openingHours')}>
-              <label htmlFor="bi-hours">Horarios de atención</label>
-              <textarea id="bi-hours" rows={3} value={form.openingHours} onChange={(event) => setField('openingHours', event.target.value)} aria-invalid={Boolean(errors.openingHours)} />
-              {errors.openingHours
-                ? <span className="admin-error">{errors.openingHours}</span>
-                : <span className="admin-hint">Uno por línea, por ejemplo: Lunes a viernes de 10 a 20 hs</span>}
+              <div className={fieldClass('socialNetworks')}>
+                <label htmlFor="bi-social">Redes sociales</label>
+                <textarea id="bi-social" rows={3} value={form.socialNetworks} onChange={(event) => setField('socialNetworks', event.target.value)} aria-invalid={Boolean(errors.socialNetworks)} />
+                {errors.socialNetworks
+                  ? <span className="admin-error">{errors.socialNetworks}</span>
+                  : <span className="admin-hint">Una URL por línea (Instagram, Facebook, WhatsApp...)</span>}
+              </div>
             </div>
+          </fieldset>
 
-            <div className={fieldClass('socialNetworks')}>
-              <label htmlFor="bi-social">Redes sociales</label>
-              <textarea id="bi-social" rows={3} value={form.socialNetworks} onChange={(event) => setField('socialNetworks', event.target.value)} aria-invalid={Boolean(errors.socialNetworks)} />
-              {errors.socialNetworks
-                ? <span className="admin-error">{errors.socialNetworks}</span>
-                : <span className="admin-hint">Una URL por línea (Instagram, Facebook, WhatsApp...)</span>}
-            </div>
-
-            <div className="admin-form-actions">
-              <button type="submit" className="admin-primary" disabled={saving}>
-                {saving ? 'Guardando...' : 'Guardar cambios'}
-              </button>
-            </div>
-          </form>
-        </section>
+          <div className="admin-panel-footer">
+            <button type="submit" className="admin-primary" disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+          </div>
+        </form>
       )}
     </>
   )

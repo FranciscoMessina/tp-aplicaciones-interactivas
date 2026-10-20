@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ProductImage, StockStatus } from '../components/ProductCard'
+import { useBusiness } from '../context/business-context'
 import { ApiRequestError, getErrorMessage } from '../services/api'
 import { fetchProduct } from '../services/products'
 import type { Product } from '../types/product'
 import { formatPartNumber, formatPrice } from '../utils/format'
 
 export default function ProductDetailPage() {
+  const { businessName } = useBusiness()
   const { id = '' } = useParams()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -35,9 +37,9 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!product) return
-    document.title = `${product.name} | TechStore`
-    return () => { document.title = 'TechStore' }
-  }, [product])
+    document.title = businessName ? `${product.name} | ${businessName}` : product.name
+    return () => { document.title = businessName }
+  }, [product, businessName])
 
   function reloadProduct() {
     setLoading(true)

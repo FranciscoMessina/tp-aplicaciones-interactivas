@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import AdminEmpty from '../components/AdminEmpty'
 import AdminNotice from '../components/AdminNotice'
 import type { Notice } from '../components/AdminNotice'
+import Icon from '../components/Icon'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/auth-context'
 import { ApiRequestError, getErrorMessage as errorMessage } from '../services/api'
@@ -130,57 +132,57 @@ export default function AdminCategoriesPage() {
     <>
       <div className="admin-heading">
         <div>
-          <span className="section-kicker">ADMINISTRACIÓN</span>
           <h1>Categorías</h1>
           <p>Organizá el catálogo: cada producto pertenece a una categoría.</p>
         </div>
-        <button type="button" className="admin-primary" onClick={() => setCreating(true)}>+ Nueva categoría</button>
+        <button type="button" className="admin-primary" onClick={() => setCreating(true)}><Icon name="plus" /> Nueva categoría</button>
       </div>
 
       <AdminNotice notice={notice} onClose={clearNotice} />
 
-      {loadError ? (
-        <div className="empty-state" role="alert">
-          <span aria-hidden="true">⚠️</span>
-          <h3>No pudimos cargar las categorías</h3>
-          <p>{loadError}</p>
-          <button type="button" className="primary-button empty-button" onClick={retry}>Reintentar</button>
-        </div>
-      ) : loading ? (
-        <div className="admin-skeleton" role="status" aria-label="Cargando categorías">
-          {Array.from({ length: 5 }, (_, index) => <div key={index} />)}
-        </div>
-      ) : categories.length === 0 ? (
-        <div className="empty-state">
-          <span aria-hidden="true">🏷️</span>
-          <h3>Todavía no hay categorías</h3>
-          <p>Creá la primera con el botón “Nueva categoría”.</p>
-        </div>
-      ) : (
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th scope="col">Nombre</th>
-                <th scope="col"><span className="visually-hidden">Acciones</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories.map((category) => (
-                <tr key={category.id}>
-                  <td data-label="Nombre"><strong>{category.name}</strong></td>
-                  <td className="admin-actions-cell">
-                    <div className="admin-row-actions">
-                      <button type="button" onClick={() => setEditing(category)}>Editar</button>
-                      <button type="button" className="danger" onClick={() => setDeleting(category)}>Eliminar</button>
-                    </div>
-                  </td>
+      <section className="admin-panel" aria-label="Listado de categorías">
+        {loadError ? (
+          <AdminEmpty icon="alert" title="No pudimos cargar las categorías" isError action={<button type="button" className="admin-secondary" onClick={retry}>Reintentar</button>}>
+            {loadError}
+          </AdminEmpty>
+        ) : loading ? (
+          <div className="admin-skeleton is-rows" role="status" aria-label="Cargando categorías">
+            {Array.from({ length: 5 }, (_, index) => <div key={index} />)}
+          </div>
+        ) : categories.length === 0 ? (
+          <AdminEmpty icon="categories" title="Todavía no hay categorías" action={<button type="button" className="admin-primary" onClick={() => setCreating(true)}><Icon name="plus" /> Nueva categoría</button>}>
+            Creá la primera para poder asignarle productos.
+          </AdminEmpty>
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th scope="col">Nombre</th>
+                  <th scope="col"><span className="visually-hidden">Acciones</span></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {categories.map((category) => (
+                  <tr key={category.id}>
+                    <td data-label="Nombre"><strong>{category.name}</strong></td>
+                    <td className="admin-actions-cell">
+                      <div className="admin-row-actions">
+                        <button type="button" className="admin-icon-button" aria-label={`Editar ${category.name}`} title="Editar" onClick={() => setEditing(category)}>
+                          <Icon name="edit" />
+                        </button>
+                        <button type="button" className="admin-icon-button is-danger" aria-label={`Eliminar ${category.name}`} title="Eliminar" onClick={() => setDeleting(category)}>
+                          <Icon name="delete" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {(creating || editing) && (
         <CategoryFormModal

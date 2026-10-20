@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AdminEmpty from '../components/AdminEmpty'
 import { useAuth } from '../context/auth-context'
 import { getErrorMessage } from '../services/api'
 import { fetchDashboardStats } from '../services/stats'
@@ -10,7 +11,6 @@ interface Bar {
   label: string
   count: number
   max: number
-  fillClass?: string
 }
 
 function percentOf(value: number, max: number) {
@@ -24,7 +24,7 @@ function BarList({ bars }: { bars: Bar[] }) {
         <li key={bar.key}>
           <span className="dashboard-bar-label">{bar.label}</span>
           <span className="dashboard-bar-track">
-            <span className={`dashboard-bar-fill${bar.fillClass ? ` ${bar.fillClass}` : ''}`} style={{ width: `${percentOf(bar.count, bar.max)}%` }} />
+            <span className="dashboard-bar-fill" style={{ width: `${percentOf(bar.count, bar.max)}%` }} />
           </span>
           <span className="dashboard-bar-value">{bar.count}</span>
         </li>
@@ -37,47 +37,55 @@ function DashboardBody({ stats }: { stats: DashboardStats }) {
   const { products, enquiries, productsByCategory } = stats
   const maxCategory = Math.max(0, ...productsByCategory.map((category) => category.count))
 
+  // Cada número lleva al listado ya filtrado con lo que cuenta.
   const tiles = [
-    { label: 'Productos publicados', value: products.active, hint: `de ${products.total} en total` },
-    { label: 'Sin stock', value: products.outOfStock, hint: 'publicados sin unidades' },
-    { label: 'Destacados', value: products.featured, hint: 'se muestran en el inicio' },
-    { label: 'Consultas pendientes', value: enquiries.PENDING, hint: `de ${enquiries.total} recibidas`, warning: enquiries.PENDING > 0 },
+    { label: 'Productos publicados', value: products.active, hint: `de ${products.total} en total`, to: '/admin/productos?estado=publicado' },
+    { label: 'Sin stock', value: products.outOfStock, hint: 'publicados sin unidades', to: '/admin/productos?estado=publicado&stock=sin-stock' },
+    { label: 'Destacados', value: products.featured, hint: 'se muestran en el inicio', to: '/admin/productos?estado=publicado&destacados=si' },
+    { label: 'Consultas pendientes', value: enquiries.PENDING, hint: `de ${enquiries.total} recibidas`, to: '/admin/consultas?estado=pendiente', attention: enquiries.PENDING > 0 },
   ]
 
   const categoryBars: Bar[] = productsByCategory.map((category) => ({ key: category.name, label: category.name, count: category.count, max: maxCategory }))
 
   const enquiryBars: Bar[] = [
-    { key: 'PENDING', label: 'Pendientes', count: enquiries.PENDING, max: enquiries.total, fillClass: 'status-pending' },
-    { key: 'READ', label: 'Leídas', count: enquiries.READ, max: enquiries.total, fillClass: 'status-read' },
-    { key: 'RESOLVED', label: 'Respondidas', count: enquiries.RESOLVED, max: enquiries.total, fillClass: 'status-resolved' },
+    { key: 'PENDING', label: 'Pendientes', count: enquiries.PENDING, max: enquiries.total },
+    { key: 'READ', label: 'Leídas', count: enquiries.READ, max: enquiries.total },
+    { key: 'RESOLVED', label: 'Respondidas', count: enquiries.RESOLVED, max: enquiries.total },
   ]
 
   return (
     <>
-      <div className="dashboard-tiles">
+      <div className="dashboard-stats">
         {tiles.map((tile) => (
-          <div key={tile.label} className={`dashboard-tile${tile.warning ? ' is-warning' : ''}`}>
-            <span className="dashboard-tile-label">{tile.label}</span>
-            <strong className="dashboard-tile-value">{tile.value}</strong>
-            {tile.hint && <span className="dashboard-tile-hint">{tile.hint}</span>}
-          </div>
+          <Link key={tile.label} to={tile.to} className={`dashboard-stat${tile.attention ? ' is-attention' : ''}`}>
+            <span className="dashboard-stat-label">{tile.label}</span>
+            <strong className="dashboard-stat-value">{tile.value}</strong>
+            <span className="dashboard-stat-hint">{tile.hint}</span>
+          </Link>
         ))}
       </div>
 
       <div className="dashboard-panels">
-        <section className="dashboard-panel">
-          <h2>Productos por categoría</h2>
-          {productsByCategory.length === 0 ? (
-            <p className="admin-hint">Todavía no hay productos publicados en ninguna categoría.</p>
-          ) : (
-            <BarList bars={categoryBars} />
-          )}
+        <section className="admin-panel">
+          <header className="admin-panel-header">
+            <h2>Productos por categoría</h2>
+            <Link to="/admin/categorias" className="admin-text-link">Categorías</Link>
+          </header>
+          <div className="admin-panel-body">
+            {productsByCategory.length === 0
+              ? <p className="admin-hint">Todavía no hay productos publicados en ninguna categoría.</p>
+              : <BarList bars={categoryBars} />}
+          </div>
         </section>
 
-        <section className="dashboard-panel">
-          <h2>Estado de las consultas</h2>
-          <BarList bars={enquiryBars} />
-          <Link to="/admin/consultas" className="admin-secondary">Ver consultas →</Link>
+        <section className="admin-panel">
+          <header className="admin-panel-header">
+            <h2>Estado de las consultas</h2>
+            <Link to="/admin/consultas" className="admin-text-link">Ver consultas</Link>
+          </header>
+          <div className="admin-panel-body">
+            <BarList bars={enquiryBars} />
+          </div>
         </section>
       </div>
     </>
@@ -113,19 +121,15 @@ export default function AdminDashboardPage() {
     <>
       <div className="admin-heading">
         <div>
-          <span className="section-kicker">ADMINISTRACIÓN</span>
           <h1>Resumen</h1>
           <p>Un vistazo rápido al catálogo y a las consultas.</p>
         </div>
       </div>
 
       {loadError ? (
-        <div className="empty-state" role="alert">
-          <span aria-hidden="true">⚠️</span>
-          <h3>No pudimos cargar el resumen</h3>
-          <p>{loadError}</p>
-          <button type="button" className="primary-button empty-button" onClick={reloadStats}>Reintentar</button>
-        </div>
+        <AdminEmpty icon="alert" title="No pudimos cargar el resumen" isError action={<button type="button" className="admin-secondary" onClick={reloadStats}>Reintentar</button>}>
+          {loadError}
+        </AdminEmpty>
       ) : loading || !stats ? (
         <div className="admin-skeleton" role="status" aria-label="Cargando resumen">
           {Array.from({ length: 4 }, (_, index) => <div key={index} />)}

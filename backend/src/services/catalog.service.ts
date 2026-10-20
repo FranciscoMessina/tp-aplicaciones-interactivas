@@ -49,6 +49,9 @@ export interface ProductSearchFilters {
   sortBy?: "publicationDate" | "price" | "relevance";
   sortOrder?: "asc" | "desc";
   includeInactive?: boolean;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  inStock?: boolean;
   page: number;
   pageSize: number;
 }
@@ -78,12 +81,29 @@ export async function searchProducts(
   filters: ProductSearchFilters,
 ): Promise<ProductPage> {
   const pipeline: PipelineStage[] = [];
+  // El publico solo ve los activos; un administrador puede pedir uno u otro.
+  const isActive = filters.includeInactive ? filters.isActive : true;
 
   if (filters.search) {
     const searchFilter: Record<string, unknown>[] = [];
 
-    if (!filters.includeInactive) {
-      searchFilter.push({ equals: { path: "isActive", value: true } });
+    if (isActive !== undefined) {
+      searchFilter.push({ equals: { path: "isActive", value: isActive } });
+    }
+
+    if (filters.isFeatured !== undefined) {
+      searchFilter.push({
+        equals: { path: "isFeatured", value: filters.isFeatured },
+      });
+    }
+
+    if (filters.inStock !== undefined) {
+      searchFilter.push({
+        range: {
+          path: "availableQuantity",
+          ...(filters.inStock ? { gt: 0 } : { lte: 0 }),
+        },
+      });
     }
 
     if (filters.category) {
@@ -142,8 +162,16 @@ export async function searchProducts(
   } else {
     const match: Record<string, unknown> = {};
 
-    if (!filters.includeInactive) {
-      match.isActive = true;
+    if (isActive !== undefined) {
+      match.isActive = isActive;
+    }
+
+    if (filters.isFeatured !== undefined) {
+      match.isFeatured = filters.isFeatured;
+    }
+
+    if (filters.inStock !== undefined) {
+      match.availableQuantity = filters.inStock ? { $gt: 0 } : 0;
     }
 
     if (filters.category) {

@@ -1,6 +1,6 @@
 # Design
 
-TechStore's public site is styled as a **hardware datasheet**: the shop is a component catalog, each product is a part with a part number, each category is a row in an ordering table, and the home hero is the top view of a 24-pin DIP chip. The admin and auth pages keep their own styling and are not covered here.
+TechStore's public site is styled as a **hardware datasheet**: the shop is a component catalog, each product is a part with a part number, each category is a row in an ordering table, and the home hero is the top view of a 24-pin DIP chip. The admin panel and its auth pages are described at the end.
 
 ## Tokens (`frontend/src/index.css`)
 
@@ -25,11 +25,11 @@ TechStore's public site is styled as a **hardware datasheet**: the shop is a com
 ## Structure
 
 - Square corners everywhere. Elevation comes from rules, never from shadows.
-- Sections open with a 3px `--ink` bar above the heading (`.section-heading`, `.information-heading`, `.information-bottom-cta`).
+- Sections open with a 3px `--ink` bar above the heading (`.information-heading`, `.information-bottom-cta`). The home's product section is the exception: `.section-heading` is a solid ink band attached to the top of the grid, like a table header, so the title doesn't fight the circuit background. The band uses paper text, `#a9aeb5` for the subtitle, and a marker link.
 - Grids share hairlines: the container draws the top/left rule and each cell draws its right/bottom rule (`.products-grid`, `.catalog-filters`, `.business-detail-grid`, `.product-detail`).
 - Figures carry crop marks on two opposite corners (`.product-image::before/::after`).
 - Home: the hero is a DIP-24 package seen from above, in black epoxy (`--ink` ground, paper text), with tin-coloured pin legs (`#b9bec4`) along the top (24–13) and bottom (1–12) edges, numbered inside the outline, plus the notch on the left edge and the pin-1 dimple. The last words of the h1 ("se enchufa.") are set in `--marker`. A 72px gap (48px on mobile) separates it from the ordering table (`.order-table`), whose last row, "Todo el catálogo", is the primary action and is filled with the highlighter.
-- Ink grounds are used for the home chip and one closing band per page (`.contact-section` on the home page, `.contact-aside` on contact). Inside it, the marker becomes the focus and link colour.
+- Ink grounds are used for the home chip, the home's product-section header (`.section-heading`) and one closing band per page (`.contact-section` on the home page, `.contact-aside` on contact). On ink, the marker becomes the focus and link colour.
 
 ## Background
 
@@ -44,3 +44,16 @@ TechStore's public site is styled as a **hardware datasheet**: the shop is a com
 ## Browser surfaces
 
 `::selection` uses the marker, the scrollbar and caret use ink, and focus is a 2px ink outline (marker on ink grounds).
+
+## Admin panel (`frontend/src/Admin.css`)
+
+The panel is the same brand in a tool's tone: same tokens and fonts, but no circuit background, no condensed display titles and no highlighter sweeps.
+
+- Shell: a fixed 248px `--ink` sidebar (sections grouped as Catálogo, Atención and Comercio, with the account, "Ver sitio" and "Cerrar sesión" at the bottom) and the content on `--paper`, max 1200px. Below 900px the sidebar becomes a top bar with a menu button.
+- The highlighter marks only the active section and what needs attention: the pending-enquiries count in the nav, the "Pendiente" status and the pending figure on the summary.
+- Surfaces are `--sheet` panels with a 1px `--rule` border and `#e1e3df` inner hairlines. Square corners, no shadows except on the dialog and the toast.
+- Titles are Archivo 28px, weight 800, 85% width. Controls are 38px tall. Primary buttons are ink with paper text; secondary buttons are white with a `--rule` border.
+- Mono is used only for prices, stock and summary figures.
+- Enquiries form an inbox: a list with a status filter and the detail beside it (on mobile, separate screens).
+- Action results show as a floating ink toast in the bottom-right corner, so the content never shifts.
+- Auth pages (login, registro, recuperar and restablecer contraseña) sit outside the public layout as the entrance to the panel. On the left is a 400px ink column with the brand, what the panel manages and "Volver a la tienda". On the right is the form on paper, max 400px, using the panel's fields and buttons. Below 900px the column shrinks to a top bar.

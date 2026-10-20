@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { getErrorMessage } from '../services/api'
 import { changePassword, updateProfile } from '../services/auth'
@@ -80,74 +79,76 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="profile-page">
-      <div className="profile-container">
-        <div className="profile-heading">
-          <Link className="auth-back" to="/admin">← Volver al panel</Link>
-          <span className="section-kicker">MI CUENTA</span>
+    <>
+      <div className="admin-heading">
+        <div>
           <h1>Mi perfil</h1>
           <p>Consultá y administrá tus datos personales y tu contraseña.</p>
         </div>
+      </div>
 
-        <div className="profile-grid">
-          <section className="profile-card" aria-labelledby="profile-data-title">
-            <div className="profile-section-heading">
-              <div>
-                <h2 id="profile-data-title">Datos personales</h2>
-                <p>Esta información se guarda en tu cuenta.</p>
-              </div>
-              <span className="profile-role">Administrador</span>
+      <div className="profile-grid">
+        <section className="admin-panel" aria-labelledby="profile-data-title">
+          <header className="admin-panel-header">
+            <div>
+              <h2 id="profile-data-title">Datos personales</h2>
+              <p>Esta información se guarda en tu cuenta.</p>
             </div>
-            <form className="auth-form" onSubmit={(event) => void saveProfile(event)}>
-              {profileError && <div className="auth-alert auth-alert-error" role="alert">{profileError}</div>}
-              {profileSuccess && <div className="profile-success" role="status">{profileSuccess}</div>}
-              <label className="auth-field" htmlFor="profile-full-name">
-                Nombre y apellido
-                <input id="profile-full-name" required autoComplete="name" maxLength={150} value={fullName} onChange={(event) => setFullName(event.target.value)} />
-              </label>
-              <label className="auth-field" htmlFor="profile-email">
-                Correo electrónico
-                <input id="profile-email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />
-              </label>
-              <label className="auth-field" htmlFor="profile-phone">
-                Teléfono
-                <input id="profile-phone" required type="tel" autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} />
-              </label>
-              <button className="auth-submit" type="submit" disabled={saving}>
+            <span className="admin-tag">Administrador</span>
+          </header>
+          <form className="admin-form admin-panel-body" onSubmit={(event) => void saveProfile(event)}>
+            {profileError && <p className="admin-alert is-error" role="alert">{profileError}</p>}
+            {profileSuccess && <p className="admin-alert is-success" role="status">{profileSuccess}</p>}
+            <div className="admin-field">
+              <label htmlFor="profile-full-name">Nombre y apellido</label>
+              <input id="profile-full-name" required autoComplete="name" maxLength={150} value={fullName} onChange={(event) => setFullName(event.target.value)} />
+            </div>
+            <div className="admin-field">
+              <label htmlFor="profile-email">Correo electrónico</label>
+              <input id="profile-email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+            </div>
+            <div className="admin-field">
+              <label htmlFor="profile-phone">Teléfono</label>
+              <input id="profile-phone" required type="tel" autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} />
+            </div>
+            <div className="admin-form-actions">
+              <button className="admin-primary" type="submit" disabled={saving}>
                 {saving ? 'Guardando...' : 'Guardar cambios'}
               </button>
-            </form>
-          </section>
-
-          <section className="profile-card" aria-labelledby="password-title">
-            <div className="profile-section-heading">
-              <div>
-                <h2 id="password-title">Cambiar contraseña</h2>
-                <p>Por seguridad, ingresá tu contraseña actual.</p>
-              </div>
             </div>
-            <form className="auth-form" onSubmit={(event) => void savePassword(event)}>
-              {passwordError && <div className="auth-alert auth-alert-error" role="alert">{passwordError}</div>}
-              {passwordSuccess && <div className="profile-success" role="status">{passwordSuccess}</div>}
-              <label className="auth-field" htmlFor="profile-current-password">
-                Contraseña actual
-                <input id="profile-current-password" type="password" required autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
-              </label>
-              <label className="auth-field" htmlFor="profile-new-password">
-                Nueva contraseña
-                <input id="profile-new-password" type="password" required minLength={8} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="Mínimo 8 caracteres" />
-              </label>
-              <label className="auth-field" htmlFor="profile-repeat-password">
-                Confirmar contraseña
-                <input id="profile-repeat-password" type="password" required minLength={8} autoComplete="new-password" value={repeatPassword} onChange={(event) => setRepeatPassword(event.target.value)} />
-              </label>
-              <button className="auth-submit" type="submit" disabled={changingPassword}>
+          </form>
+        </section>
+
+        <section className="admin-panel" aria-labelledby="password-title">
+          <header className="admin-panel-header">
+            <div>
+              <h2 id="password-title">Cambiar contraseña</h2>
+              <p>Por seguridad, ingresá tu contraseña actual.</p>
+            </div>
+          </header>
+          <form className="admin-form admin-panel-body" onSubmit={(event) => void savePassword(event)}>
+            {passwordError && <p className="admin-alert is-error" role="alert">{passwordError}</p>}
+            {passwordSuccess && <p className="admin-alert is-success" role="status">{passwordSuccess}</p>}
+            <div className="admin-field">
+              <label htmlFor="profile-current-password">Contraseña actual</label>
+              <input id="profile-current-password" type="password" required autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
+            </div>
+            <div className="admin-field">
+              <label htmlFor="profile-new-password">Nueva contraseña</label>
+              <input id="profile-new-password" type="password" required minLength={8} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="Mínimo 8 caracteres" />
+            </div>
+            <div className="admin-field">
+              <label htmlFor="profile-repeat-password">Confirmar contraseña</label>
+              <input id="profile-repeat-password" type="password" required minLength={8} autoComplete="new-password" value={repeatPassword} onChange={(event) => setRepeatPassword(event.target.value)} />
+            </div>
+            <div className="admin-form-actions">
+              <button className="admin-primary" type="submit" disabled={changingPassword}>
                 {changingPassword ? 'Actualizando...' : 'Actualizar contraseña'}
               </button>
-            </form>
-          </section>
-        </div>
+            </div>
+          </form>
+        </section>
       </div>
-    </main>
+    </>
   )
 }

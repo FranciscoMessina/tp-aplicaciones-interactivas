@@ -39,6 +39,11 @@ export const searchProductsSchema = z
     pageSize: z.coerce.number().int().min(1).max(100).default(20),
     // Solo la tienen en cuenta los administradores; ver product.controller.
     includeInactive: z.stringbool().optional(),
+    // Filtros del panel. `isActive` solo cambia algo junto con `includeInactive`.
+    isActive: z.stringbool().optional(),
+    isFeatured: z.stringbool().optional(),
+    // true: con unidades disponibles; false: sin stock.
+    inStock: z.stringbool().optional(),
   })
   // Validaciones que dependen de mas de un campo a la vez.
   .superRefine(({ minPrice, maxPrice, search, sortBy }, context) => {

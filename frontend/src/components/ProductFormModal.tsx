@@ -4,6 +4,7 @@ import { ApiRequestError, getErrorMessage } from '../services/api'
 import { uploadImage } from '../services/images'
 import { createProduct, updateProduct } from '../services/products'
 import type { Category, Product, ProductInput } from '../types/product'
+import Icon from './Icon'
 import Modal from './Modal'
 
 const MAX_IMAGE_MB = 5
@@ -40,6 +41,9 @@ export default function ProductFormModal({ token, categories, product, onClose, 
   const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false)
   const [images, setImages] = useState<string[]>(product?.images ?? [])
   const [urlInput, setUrlInput] = useState('')
+  // Reordenar con arrastrar y soltar: la imagen que se arrastra y sobre cuál se va a soltar.
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dropIndex, setDropIndex] = useState<number | null>(null)
 
   const [errors, setErrors] = useState<Errors>({})
   const [formError, setFormError] = useState('')
@@ -107,8 +111,20 @@ export default function ProductFormModal({ token, categories, product, onClose, 
     setUrlInput('')
   }
 
-  function makePrimary(index: number) {
-    setImages((current) => [current[index], ...current.filter((_, position) => position !== index)])
+  // Saca la imagen de su lugar y la inserta en `to`; la primera es la principal.
+  function moveImage(from: number, to: number) {
+    if (from === to) return
+    setImages((current) => {
+      const next = [...current]
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      return next
+    })
+  }
+
+  function endDrag() {
+    setDragIndex(null)
+    setDropIndex(null)
   }
 
   function removeImage(index: number) {
@@ -164,7 +180,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
   return (
     <Modal title={isEdit ? 'Editar producto' : 'Nuevo producto'} onClose={saving ? () => undefined : onClose} wide>
       <form className="admin-form" onSubmit={(event) => void submit(event)} noValidate>
-        {formError && <div className="auth-alert auth-alert-error" role="alert">{formError}</div>}
+        {formError && <p className="admin-alert is-error" role="alert">{formError}</p>}
 
         <div className={fieldClass('name')}>
           <label htmlFor="pf-name">Nombre *</label>
@@ -202,17 +218,49 @@ export default function ProductFormModal({ token, categories, product, onClose, 
         </div>
 
         <div className={fieldClass('images')}>
-          <label htmlFor="pf-files">Imágenes * <span className="admin-hint-inline">La primera es la principal</span></label>
+          <label htmlFor="pf-files">Imágenes * <span className="admin-hint-inline">Arrastralas para ordenarlas. La primera es la principal.</span></label>
 
           {images.length > 0 && (
             <ul className="admin-images">
               {images.map((url, index) => (
-                <li key={url} className={index === 0 ? 'is-primary' : undefined}>
-                  <img src={url} alt={`Imagen ${index + 1}`} />
+                <li
+                  key={url}
+                  className={[
+                    index === 0 && 'is-primary',
+                    index === dragIndex && 'is-dragging',
+                    index === dropIndex && index !== dragIndex && 'is-drop-target',
+                  ].filter(Boolean).join(' ') || undefined}
+                  draggable
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = 'move'
+                    event.dataTransfer.setData('text/plain', String(index))
+                    setDragIndex(index)
+                  }}
+                  onDragOver={(event) => {
+                    if (dragIndex === null) return
+                    event.preventDefault()
+                    if (dropIndex !== index) setDropIndex(index)
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault()
+                    if (dragIndex !== null) moveImage(dragIndex, index)
+                    endDrag()
+                  }}
+                  onDragEnd={endDrag}
+                >
+                  <img src={url} alt={`Imagen ${index + 1}`} draggable={false} />
                   {index === 0 && <span className="admin-image-badge">Principal</span>}
+                  {/* Alternativa al arrastre para teclado y pantallas táctiles. */}
                   <div className="admin-image-actions">
-                    {index !== 0 && <button type="button" onClick={() => makePrimary(index)}>Hacer principal</button>}
-                    <button type="button" className="danger" onClick={() => removeImage(index)}>Quitar</button>
+                    <button type="button" className="admin-icon-button" aria-label={index === 1 ? `Hacer principal la imagen ${index + 1}` : `Mover antes la imagen ${index + 1}`} title={index === 1 ? 'Hacer principal' : 'Mover antes'} disabled={index === 0} onClick={() => moveImage(index, index - 1)}>
+                      <Icon name="back" />
+                    </button>
+                    <button type="button" className="admin-icon-button" aria-label={`Mover después la imagen ${index + 1}`} title="Mover después" disabled={index === images.length - 1} onClick={() => moveImage(index, index + 1)}>
+                      <Icon name="forward" />
+                    </button>
+                    <button type="button" className="admin-icon-button is-danger" aria-label={`Quitar la imagen ${index + 1}`} title="Quitar" onClick={() => removeImage(index)}>
+                      <Icon name="delete" />
+                    </button>
                   </div>
                 </li>
               ))}
@@ -222,7 +270,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
           <div className="admin-upload">
             <input ref={fileInput} id="pf-files" type="file" accept={ACCEPTED_TYPES.join(',')} multiple hidden onChange={(event) => void handleFiles(event)} />
             <button type="button" className="admin-secondary" disabled={uploading} onClick={() => fileInput.current?.click()}>
-              {uploading ? 'Subiendo...' : '⬆ Subir imágenes'}
+              {uploading ? 'Subiendo...' : 'Subir imágenes'}
             </button>
             <span className="admin-hint">JPG, PNG, WEBP o GIF · máx. {MAX_IMAGE_MB} MB c/u</span>
           </div>
