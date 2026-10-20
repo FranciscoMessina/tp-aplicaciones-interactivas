@@ -3,12 +3,33 @@
 }
 
 :root {
-  font-family: Inter, 'Segoe UI', Arial, Helvetica, sans-serif;
-  color: #19243a;
-  background: #f7f9fc;
+  /* Hoja de datos: papel, tinta y un único resaltador */
+  --paper: #f3f4f1;
+  --sheet: #fbfbf9;
+  --ink: #101317;
+  --muted: #565c66;
+  --rule: #c7cac9;
+  --marker: #d9f24a;
+  --ok: #0f7a49;
+  --bad: #b8342a;
+  --display: 'Archivo Variable', 'Segoe UI', sans-serif;
+  --mono: 'Martian Mono Variable', ui-monospace, Consolas, monospace;
+
+  font-family: var(--display);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  caret-color: var(--ink);
+  scrollbar-color: var(--ink) var(--paper);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--marker);
+  color: var(--ink);
 }
 
 html {
@@ -20,7 +41,12 @@ body {
   min-width: 320px;
 }
 
-button, input, select {
+h1, h2, h3 {
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+button, input, select, textarea {
   font: inherit;
 }
 
@@ -42,6 +68,6 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid #f8b851;
-  outline-offset: 3px;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }

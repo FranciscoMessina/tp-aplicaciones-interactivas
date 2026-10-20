@@ -1,252 +1,145 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useRef } from 'react'
+import type { PointerEvent } from 'react'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
-import { fetchProducts } from '../services/products'
-import type { Product } from '../types/product'
-
-const PRODUCTS_PER_PAGE = 12
+import { useProducts } from '../hooks/useProducts'
+import { formatPrice } from '../utils/format'
 
 const FEATURED_LIMIT = 8
 
+// Categorías con más productos que se listan en la tabla del inicio.
+const MAIN_CATEGORIES = 6
+
+// El inicio se dibuja como un chip DIP de 24 patas visto desde arriba, con la muesca a la izquierda:
+// abajo van de la 1 a la 12 y arriba siguen de la 13 a la 24, de derecha a izquierda.
+const PINS_PER_SIDE = 12
+const BOTTOM_PINS = Array.from({ length: PINS_PER_SIDE }, (_, index) => index + 1)
+const TOP_PINS = BOTTOM_PINS.map((pin) => PINS_PER_SIDE * 2 + 1 - pin)
+
 function HomePage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [retryCount, setRetryCount] = useState(0)
-  const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('Todas')
-  const [onlyAvailable, setOnlyAvailable] = useState(false)
-  const [sortBy, setSortBy] = useState('recent')
-  const [currentPage, setCurrentPage] = useState(1)
+  const { products, isLoading, error, retry } = useProducts()
+  const probed = useRef(-1)
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    async function loadProducts() {
-      setIsLoading(true)
-      setError('')
-      try {
-        const result = await fetchProducts(controller.signal)
-        if (!controller.signal.aborted) setProducts(result)
-      } catch (cause) {
-        if (!controller.signal.aborted) {
-          setError(cause instanceof Error ? cause.message : 'No se pudieron cargar los productos.')
-        }
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false)
-      }
+  // Cantidad, precio más bajo y algunos nombres de ejemplo por categoría.
+  const mainCategories = useMemo(() => {
+    const stats = new Map<string, { count: number; minPrice: number; examples: string[] }>()
+    for (const product of products) {
+      const name = product.category?.name
+      if (!name) continue
+      const stat = stats.get(name) ?? { count: 0, minPrice: product.price, examples: [] }
+      stat.count += 1
+      stat.minPrice = Math.min(stat.minPrice, product.price)
+      if (stat.examples.length < 5) stat.examples.push(product.name)
+      stats.set(name, stat)
     }
+    return Array.from(stats, ([name, stat]) => ({ name, ...stat })).sort((a, b) => b.count - a.count)
+      .slice(0, MAIN_CATEGORIES)
+  }, [products])
 
-    void loadProducts()
-    return () => controller.abort()
-  }, [retryCount])
+  // Sin destacados cargados, mostramos lo último que entró.
+  const featuredProducts = products.filter((product) => product.isFeatured).slice(0, FEATURED_LIMIT)
+  const hasFeatured = featuredProducts.length > 0
+  const shownProducts = hasFeatured ? featuredProducts : products.slice(0, FEATURED_LIMIT)
 
-  const categories = useMemo(
-    () => ['Todas', ...Array.from(new Set(products.map((product) => product.category?.name).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'es-AR'))],
-    [products],
-  )
-
-  const featuredProducts = useMemo(
-    () => products.filter((product) => product.isFeatured).slice(0, FEATURED_LIMIT),
-    [products],
-  )
-
-  const visibleProducts = useMemo(() => {
-    const normalizedSearch = search.trim().toLocaleLowerCase('es-AR')
-
-    return products
-      .filter((product) => {
-        const matchesSearch =
-          product.name.toLocaleLowerCase('es-AR').includes(normalizedSearch) ||
-          product.description.toLocaleLowerCase('es-AR').includes(normalizedSearch)
-        const matchesCategory = category === 'Todas' || product.category?.name === category
-        const matchesStock = !onlyAvailable || product.availableQuantity > 0
-
-        return matchesSearch && matchesCategory && matchesStock
-      })
-      .sort((first, second) => {
-        if (sortBy === 'price-asc') return first.price - second.price
-        if (sortBy === 'price-desc') return second.price - first.price
-        if (sortBy === 'name') return first.name.localeCompare(second.name, 'es-AR')
-        return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
-      })
-  }, [products, search, category, onlyAvailable, sortBy])
-
-  const totalPages = Math.ceil(visibleProducts.length / PRODUCTS_PER_PAGE)
-  const paginatedProducts = visibleProducts.slice(
-    (currentPage - 1) * PRODUCTS_PER_PAGE,
-    currentPage * PRODUCTS_PER_PAGE,
-  )
-
-  const changeFilters = (callback: () => void) => {
-    callback()
-    setCurrentPage(1)
+  // La punta de prueba: resalta el par de patas bajo el puntero, sin re-renderizar.
+  function probe(event: PointerEvent<HTMLElement>) {
+    if (event.pointerType !== 'mouse') return
+    const chip = event.currentTarget
+    const pins = chip.querySelectorAll<HTMLElement>('.chip-pins.is-bottom > span')
+    const visible = Array.from(pins).filter((pin) => pin.offsetParent !== null)
+    if (visible.length === 0) return
+    const nearest = visible.reduce((best, pin) => {
+      const distance = Math.abs(pin.getBoundingClientRect().left + pin.offsetWidth / 2 - event.clientX)
+      return distance < best.distance ? { pin, distance } : best
+    }, { pin: visible[0], distance: Infinity }).pin
+    const column = Array.from(pins).indexOf(nearest)
+    if (column === probed.current) return
+    probed.current = column
+    chip.querySelectorAll('.is-probed').forEach((pin) => pin.classList.remove('is-probed'))
+    nearest.classList.add('is-probed')
+    chip.querySelectorAll<HTMLElement>('.chip-pins.is-top > span')[column]?.classList.add('is-probed')
   }
 
-  const clearFilters = () => {
-    setSearch('')
-    setCategory('Todas')
-    setOnlyAvailable(false)
-    setSortBy('recent')
-    setCurrentPage(1)
+  function unprobe(event: PointerEvent<HTMLElement>) {
+    probed.current = -1
+    event.currentTarget.querySelectorAll('.is-probed').forEach((pin) => pin.classList.remove('is-probed'))
   }
 
   return (
-    <div id="inicio">
-      <main>
-        <section className="welcome" aria-labelledby="welcome-title">
-          <div className="welcome-content">
-            <span className="eyebrow">TU TIENDA DE TECNOLOGÍA</span>
-            <h1 id="welcome-title">La tecnología que necesitás, en un solo lugar.</h1>
-            <p>
-              Descubrí productos para trabajar, estudiar y disfrutar. Encontrá lo
-              que buscás de forma simple y rápida.
-            </p>
-            <a className="primary-button" href="#productos">
-              Explorar productos <span aria-hidden="true">→</span>
-            </a>
-          </div>
-          <div className="welcome-art" aria-hidden="true">
-            <div className="art-circle art-circle-one" />
-            <div className="art-circle art-circle-two" />
-            <div className="art-main">💻</div>
-            <div className="art-small art-small-top">🎧</div>
-            <div className="art-small art-small-bottom">⌨️</div>
-          </div>
-        </section>
+    <main>
+      <section className="welcome" aria-labelledby="welcome-title" onPointerMove={probe} onPointerLeave={unprobe}>
+        <div className="chip-pins is-top" aria-hidden="true">
+          {TOP_PINS.map((pin) => <span key={pin}>{pin}</span>)}
+        </div>
+        <div className="chip-pins is-bottom" aria-hidden="true">
+          {BOTTOM_PINS.map((pin) => <span key={pin}>{pin}</span>)}
+        </div>
 
-        <section className="benefits" aria-label="Ventajas de comprar en TechStore">
-          <div className="benefit"><span aria-hidden="true">✦</span><div><strong>Productos seleccionados</strong><p>Equipos y accesorios para vos.</p></div></div>
-          <div className="benefit"><span aria-hidden="true">✓</span><div><strong>Catálogo simple</strong><p>Buscá y filtrá en segundos.</p></div></div>
-          <div className="benefit"><span aria-hidden="true">⌁</span><div><strong>Atención cercana</strong><p>Estamos para ayudarte a elegir.</p></div></div>
-        </section>
+        <div className="welcome-content">
+          <h1 id="welcome-title">Consolas, PCs y todo lo que <span className="welcome-accent">se enchufa.</span></h1>
+          <p>Consolas, computadoras, celulares, juegos y accesorios, con precio en pesos y stock al día.</p>
+        </div>
+      </section>
 
-        {featuredProducts.length > 0 && (
-          <section className="products-section featured-section" aria-labelledby="featured-title">
-            <div className="section-heading">
-              <span className="section-kicker">DESTACADOS</span>
-              <h2 id="featured-title">Elegidos para vos</h2>
-              <p>Los productos que recomendamos esta temporada.</p>
-            </div>
-            <div className="products-grid">
-              {featuredProducts.map((product) => <ProductCard key={product.id} product={product} />)}
-            </div>
-          </section>
-        )}
-
-        <section id="productos" className="products-section" aria-labelledby="products-title">
-          <div className="section-heading">
-            <span className="section-kicker">CATÁLOGO</span>
-            <h2 id="products-title">Nuestros productos</h2>
-            <p>Explorá nuestra selección de tecnología.</p>
-          </div>
-
-          <div className="catalog-filters">
-            <div className="field search-field">
-              <label htmlFor="product-search">Buscar productos</label>
-              <input
-                id="product-search"
-                type="search"
-                placeholder="Ej.: notebook, auriculares..."
-                value={search}
-                onChange={(event) => changeFilters(() => setSearch(event.target.value))}
-              />
-            </div>
-
-            <div className="field">
-              <label htmlFor="category-filter">Categoría</label>
-              <select
-                id="category-filter"
-                value={category}
-                onChange={(event) => changeFilters(() => setCategory(event.target.value))}
-              >
-                {categories.map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="field">
-              <label htmlFor="sort-filter">Ordenar por</label>
-              <select
-                id="sort-filter"
-                value={sortBy}
-                onChange={(event) => changeFilters(() => setSortBy(event.target.value))}
-              >
-                <option value="recent">Más recientes</option>
-                <option value="price-asc">Menor precio</option>
-                <option value="price-desc">Mayor precio</option>
-                <option value="name">Nombre (A-Z)</option>
-              </select>
-            </div>
-
-            <label className="stock-filter">
-              <input
-                type="checkbox"
-                checked={onlyAvailable}
-                onChange={(event) => changeFilters(() => setOnlyAvailable(event.target.checked))}
-              />
-              Solo disponibles
-            </label>
-          </div>
-
-          <div className="catalog-toolbar">
-            <p aria-live="polite">
-              {isLoading ? 'Cargando productos...' : `${visibleProducts.length} ${visibleProducts.length === 1 ? 'producto encontrado' : 'productos encontrados'}`}
-            </p>
-            <button type="button" className="clear-button" onClick={clearFilters}>
-              Limpiar filtros
-            </button>
-          </div>
-
-          {isLoading ? (
-            <div className="empty-state" role="status">Cargando catálogo desde MongoDB...</div>
-          ) : error ? (
-            <div className="empty-state" role="alert">
-              <span aria-hidden="true">⚠️</span>
-              <h3>No pudimos cargar el catálogo</h3>
-              <p>{error} Verificá que el backend esté funcionando en el puerto 8080.</p>
-              <button type="button" className="primary-button empty-button" onClick={() => setRetryCount((previous) => previous + 1)}>
-                Reintentar
-              </button>
-            </div>
-          ) : paginatedProducts.length > 0 ? (
-            <>
-              <div className="products-grid">
-                {paginatedProducts.map((product) => <ProductCard key={product.id} product={product} />)}
-              </div>
-              {totalPages > 1 && (
-                <div className="pagination" aria-label="Paginación de productos">
-                  <button type="button" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)}>Anterior</button>
-                  <span>Página {currentPage} de {totalPages}</span>
-                  <button type="button" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)}>Siguiente</button>
-                </div>
+      {!error && (
+        <nav className="order-table" aria-label="Categorías principales">
+          {isLoading
+            ? Array.from({ length: MAIN_CATEGORIES + 1 }, (_, index) => <div key={index} className="order-row is-placeholder" aria-hidden="true" />)
+            : (
+                <>
+                  {mainCategories.map((stat, index) => (
+                    <Link key={stat.name} className="order-row" to={`/catalogo?categoria=${encodeURIComponent(stat.name)}`}>
+                      <span className="order-code" aria-hidden="true">C-{String(index + 1).padStart(2, '0')}</span>
+                      <span className="order-name">{stat.name}</span>
+                      <span className="order-examples">{stat.examples.join(', ')}</span>
+                      <span className="order-count">{stat.count} {stat.count === 1 ? 'producto' : 'productos'}</span>
+                      <span className="order-price">desde {formatPrice(stat.minPrice)}</span>
+                    </Link>
+                  ))}
+                  <Link className="order-row is-all" to="/catalogo">
+                    <span className="order-code" aria-hidden="true">C-00</span>
+                    <span className="order-name">Todo el catálogo</span>
+                    <span className="order-examples" />
+                    <span className="order-count">{products.length} productos</span>
+                    <span className="order-price">Buscar y filtrar</span>
+                  </Link>
+                </>
               )}
-            </>
-          ) : (
-            <div className="empty-state">
-              <span aria-hidden="true">🔎</span>
-              <h3>No encontramos productos</h3>
-              <p>Probá con otra búsqueda o cambiá los filtros.</p>
-              <button type="button" className="primary-button empty-button" onClick={clearFilters}>
-                Ver todos los productos
-              </button>
-            </div>
-          )}
-        </section>
+        </nav>
+      )}
 
-        <section id="contacto" className="contact-section" aria-labelledby="contact-title">
+      <section className="products-section" aria-labelledby="featured-title">
+        <div className="section-heading">
           <div>
-            <span className="section-kicker">ESTAMOS PARA AYUDARTE</span>
-            <h2 id="contact-title">¿Tenés alguna consulta?</h2>
-            <p>Escribinos y contanos qué necesitás. Podés enviar una consulta sin iniciar sesión.</p>
-            <Link className="contact-cta" to="/contacto">Enviar consulta →</Link>
+            <h2 id="featured-title">{hasFeatured ? 'Destacados' : 'Recién llegados'}</h2>
+            <p>{hasFeatured ? 'Lo que recomendamos esta temporada.' : 'Lo último que sumamos al catálogo.'}</p>
           </div>
-          <span className="contact-icon" aria-hidden="true">✉</span>
-        </section>
-      </main>
+          <Link className="section-link" to="/catalogo">Ver todo el catálogo</Link>
+        </div>
 
-    </div>
+        {isLoading ? (
+          <div className="empty-state" role="status">Cargando productos...</div>
+        ) : error ? (
+          <div className="empty-state" role="alert">
+            <h3>No pudimos cargar los productos</h3>
+            <p>{error} Verificá que el backend esté funcionando en el puerto 8080.</p>
+            <button type="button" className="primary-button empty-button" onClick={retry}>Reintentar</button>
+          </div>
+        ) : (
+          <div className="products-grid">
+            {shownProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+          </div>
+        )}
+      </section>
+
+      <section className="contact-section" aria-labelledby="contact-title">
+        <div>
+          <h2 id="contact-title">¿No encontrás lo que buscás?</h2>
+          <p>Contanos qué equipo necesitás y te respondemos con disponibilidad y precio. No hace falta crear una cuenta.</p>
+        </div>
+        <Link className="primary-button" to="/contacto">Enviar una consulta</Link>
+      </section>
+    </main>
   )
 }
 

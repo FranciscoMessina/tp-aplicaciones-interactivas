@@ -44,9 +44,8 @@ export default function BusinessInfoPage() {
     <main className="information-page">
       <div className="information-container">
         <div className="information-heading">
-          <span className="section-kicker">CONOCÉ NUESTRA TIENDA</span>
           <h1>Sobre nosotros</h1>
-          <p>Información institucional, ubicación y medios de contacto del comercio.</p>
+          <p>Quiénes somos, dónde estamos y cómo hablar con nosotros.</p>
         </div>
 
         {loading ? (
@@ -55,12 +54,11 @@ export default function BusinessInfoPage() {
           <div className="information-message" role="alert">
             <h2>{notConfigured ? 'Información pendiente' : 'No pudimos cargar los datos'}</h2>
             <p>{error}</p>
-            {!notConfigured && <button type="button" className="auth-submit information-retry" onClick={reload}>Reintentar</button>}
+            {!notConfigured && <button type="button" className="primary-button information-retry" onClick={reload}>Reintentar</button>}
           </div>
         ) : info ? (
           <>
             <section className="business-intro">
-              <span className="business-overline">NUESTRO COMERCIO</span>
               <h2>{info.name}</h2>
               <p>{info.description}</p>
             </section>
@@ -69,8 +67,8 @@ export default function BusinessInfoPage() {
         ) : null}
 
         <div className="information-bottom-cta">
-          <div><h2>¿Tenés alguna pregunta?</h2><p>Mandanos tu consulta desde el formulario de contacto.</p></div>
-          <Link className="primary-button" to="/contacto">Contactanos →</Link>
+          <div><h2>¿Tenés alguna pregunta?</h2><p>Escribinos desde el formulario de contacto y te respondemos.</p></div>
+          <Link className="primary-button" to="/contacto">Enviar una consulta</Link>
         </div>
       </div>
     </main>

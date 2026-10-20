@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ProductImage } from '../components/ProductCard'
+import { ProductImage, StockStatus } from '../components/ProductCard'
 import { ApiRequestError, getErrorMessage } from '../services/api'
 import { fetchProduct } from '../services/products'
 import type { Product } from '../types/product'
-import { formatPrice } from '../utils/format'
+import { formatPartNumber, formatPrice } from '../utils/format'
 
 export default function ProductDetailPage() {
   const { id = '' } = useParams()
@@ -56,17 +56,17 @@ export default function ProductDetailPage() {
           <div className="information-message" role="alert">
             <h2>Producto no disponible</h2>
             <p>Este producto no existe o ya no está publicado.</p>
-            <Link className="auth-back" to="/#productos">← Volver al catálogo</Link>
+            <Link className="auth-back" to="/catalogo">← Volver al catálogo</Link>
           </div>
         ) : error ? (
           <div className="information-message" role="alert">
             <h2>No pudimos cargar el producto</h2>
             <p>{getErrorMessage(error)}</p>
-            <button type="button" className="auth-submit information-retry" onClick={reloadProduct}>Reintentar</button>
+            <button type="button" className="primary-button information-retry" onClick={reloadProduct}>Reintentar</button>
           </div>
         ) : product ? (
           <>
-            <Link className="auth-back" to="/#productos">← Volver al catálogo</Link>
+            <Link className="auth-back" to="/catalogo">← Volver al catálogo</Link>
             <div className="product-detail">
               <div className="product-gallery">
                 <ProductImage src={product.images[selected]} alt={product.name} />
@@ -87,17 +87,18 @@ export default function ProductDetailPage() {
                 )}
               </div>
               <div className="product-detail-info">
+                <span className="part-number">{formatPartNumber(product.id)}</span>
                 <span className="product-category">{product.category.name}</span>
                 <h1>{product.name}</h1>
-                {product.isFeatured && <span className="product-featured-badge is-inline">★ Destacado</span>}
-                <p className="product-price">{formatPrice(product.price)}</p>
-                <span className={product.availableQuantity > 0 ? 'product-available' : 'product-unavailable'}>
-                  {product.availableQuantity > 0 ? 'Disponible' : 'Sin stock'}
-                </span>
+                {product.isFeatured && <span className="product-featured-badge is-inline">Destacado</span>}
+                <div className="product-buy">
+                  <p className="product-price">{formatPrice(product.price)}</p>
+                  <StockStatus quantity={product.availableQuantity} />
+                  <Link className="primary-button" to={`/contacto?asunto=${encodeURIComponent(`Consulta por ${product.name}`)}`}>
+                    Consultar por este producto
+                  </Link>
+                </div>
                 <p className="product-detail-description">{product.description}</p>
-                <Link className="primary-button" to={`/contacto?asunto=${encodeURIComponent(`Consulta por ${product.name}`)}`}>
-                  Consultar por este producto →
-                </Link>
               </div>
             </div>
           </>
