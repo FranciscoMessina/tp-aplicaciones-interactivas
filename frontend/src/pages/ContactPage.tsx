@@ -70,19 +70,18 @@ export default function ContactPage() {
     <main className="information-page">
       <div className="information-container">
         <div className="information-heading">
-          <span className="section-kicker">ESTAMOS PARA AYUDARTE</span>
           <h1>Contacto</h1>
-          <p>Contanos qué necesitás. Tu consulta se guardará para que el comercio pueda responderla.</p>
+          <p>Preguntanos por stock, precios o un equipo que no encontrás en el catálogo. Te respondemos por email.</p>
         </div>
 
         <div className="contact-layout">
           <section className="contact-form-card" aria-labelledby="contact-form-title">
-            <h2 id="contact-form-title">Envianos tu consulta</h2>
+            <h2 id="contact-form-title">Tu consulta</h2>
             <p className="contact-form-description">Los campos marcados con * son obligatorios.</p>
 
             {success && (
               <div className="contact-alert contact-success" role="status">
-                <strong>¡Consulta enviada!</strong> Recibimos tu mensaje correctamente.
+                <strong>Consulta enviada.</strong> Te vamos a responder a {email.trim()}.
               </div>
             )}
             {error && <div className="contact-alert contact-error" role="alert">{error}</div>}
@@ -105,17 +104,14 @@ export default function ContactPage() {
               <label className="auth-field">Mensaje *
                 <textarea required minLength={1} maxLength={3000} rows={6} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Escribí tu consulta..." />
               </label>
-              <button className="auth-submit" type="submit" disabled={sending}>
-                {sending ? 'Enviando...' : 'Enviar consulta →'}
+              <button className="primary-button" type="submit" disabled={sending}>
+                {sending ? 'Enviando...' : 'Enviar consulta'}
               </button>
             </form>
           </section>
 
           <aside className="contact-aside" aria-label="Datos de contacto del negocio">
-            <div className="contact-aside-heading">
-              <span className="section-kicker">ENCONTRANOS</span>
-              <h2>Datos del comercio</h2>
-            </div>
+            <h2>Datos del comercio</h2>
             {info ? (
               <>
                 <h3>{info.name}</h3>
@@ -127,7 +123,7 @@ export default function ContactPage() {
                 )}
               </>
             ) : <p className="contact-aside-note">{infoNote || 'Cargando información...'}</p>}
-            <Link to="/nosotros" className="contact-aside-link">Ver información institucional →</Link>
+            <Link to="/nosotros" className="contact-aside-link">Más sobre nosotros</Link>
           </aside>
         </div>
       </div>

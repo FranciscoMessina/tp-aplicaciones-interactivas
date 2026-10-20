@@ -27,24 +27,20 @@ export default function BusinessDetails({ info }: { info: BusinessInfo }) {
   return (
     <div className="business-detail-grid">
       <div className="business-detail-card">
-        <span className="business-detail-icon" aria-hidden="true">⌖</span>
         <h3>Dirección</h3>
         <p>{info.address}</p>
       </div>
       <div className="business-detail-card">
-        <span className="business-detail-icon" aria-hidden="true">☎</span>
         <h3>Teléfono</h3>
         <p><a href={`tel:${info.phone.replace(/[^\d+]/g, '')}`}>{info.phone}</a></p>
       </div>
       <div className="business-detail-card">
-        <span className="business-detail-icon" aria-hidden="true">◷</span>
         <h3>Horarios</h3>
         {info.openingHours.length > 0 ? (
           <ul>{info.openingHours.map((hours, index) => <li key={`${index}-${hours}`}>{hours}</li>)}</ul>
         ) : <p>Horarios no informados.</p>}
       </div>
       <div className="business-detail-card">
-        <span className="business-detail-icon" aria-hidden="true">↗</span>
         <h3>Redes sociales</h3>
         {networks.length > 0 ? (
           <ul>{networks.map((url) => (

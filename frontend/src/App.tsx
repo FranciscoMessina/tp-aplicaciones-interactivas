@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
 import type { ReactElement } from 'react'
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Link, NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/auth-context'
 import AdminLayout from './components/AdminLayout'
 import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from './pages/AuthPages'
 import HomePage from './pages/HomePage'
+import CatalogPage from './pages/CatalogPage'
 import BusinessInfoPage from './pages/BusinessInfoPage'
 import ContactPage from './pages/ContactPage'
 import ProfilePage from './pages/ProfilePage'
@@ -16,6 +17,17 @@ import AdminCategoriesPage from './pages/AdminCategoriesPage'
 import AdminEnquiriesPage from './pages/AdminEnquiriesPage'
 import AdminBusinessInfoPage from './pages/AdminBusinessInfoPage'
 import './App.css'
+
+// Marca: una "T" trazada como pista de circuito, sobre un chip con la esquina cortada del sitio.
+function LogoMark() {
+  return (
+    <svg className="logo-symbol" viewBox="0 0 32 32" aria-hidden="true">
+      <path className="logo-chip" d="M0 0H24L32 8V32H0Z" />
+      <path className="logo-trace" d="M7 10H23M15 10V17.5L20.5 23" />
+      <circle className="logo-pad" cx="21.5" cy="24" r="3.25" />
+    </svg>
+  )
+}
 
 function ScrollToSection() {
   const location = useLocation()
@@ -48,13 +60,13 @@ function Layout() {
       <ScrollToSection />
       <header className="header">
         <Link className="logo" to="/" aria-label="TechStore, ir al inicio">
-          <span className="logo-symbol" aria-hidden="true">T</span> TechStore
+          <LogoMark /> TechStore
         </Link>
         <nav className="nav" aria-label="Navegación principal">
-          <Link to="/">Inicio</Link>
-          <Link to="/#productos">Productos</Link>
-          <Link to="/nosotros">Nosotros</Link>
-          <Link to="/contacto">Contacto</Link>
+          <NavLink to="/" end>Inicio</NavLink>
+          <NavLink to="/catalogo">Catálogo</NavLink>
+          <NavLink to="/nosotros">Nosotros</NavLink>
+          <NavLink to="/contacto">Contacto</NavLink>
         </nav>
         {user && (
           <div className="user-actions">
@@ -67,6 +79,7 @@ function Layout() {
       </header>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/catalogo" element={<CatalogPage />} />
         <Route path="/productos/:id" element={<ProductDetailPage />} />
         <Route path="/nosotros" element={<BusinessInfoPage />} />
         <Route path="/contacto" element={<ContactPage />} />
@@ -86,7 +99,7 @@ function Layout() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <footer className="footer">
-        <Link to="/" className="footer-logo">TechStore</Link>
+        <Link to="/" className="footer-logo"><LogoMark /> TechStore</Link>
         <p>© 2026 TechStore. Todos los derechos reservados.</p>
         <div className="footer-links">
           <Link to="/nosotros">Nosotros</Link>
