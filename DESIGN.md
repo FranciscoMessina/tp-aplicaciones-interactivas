@@ -31,6 +31,10 @@ TechStore's public site is styled as a **hardware datasheet**: the shop is a com
 - Home: the hero is a DIP-24 package seen from above, in black epoxy (`--ink` ground, paper text), with tin-coloured pin legs (`#b9bec4`) along the top (24–13) and bottom (1–12) edges, numbered inside the outline, plus the notch on the left edge and the pin-1 dimple. The last words of the h1 ("se enchufa.") are set in `--marker`. A 72px gap (48px on mobile) separates it from the ordering table (`.order-table`), whose last row, "Todo el catálogo", is the primary action and is filled with the highlighter.
 - Ink grounds are used for the home chip and one closing band per page (`.contact-section` on the home page, `.contact-aside` on contact). Inside it, the marker becomes the focus and link colour.
 
+## Background
+
+`body` carries a 320px tile of printed-circuit traces (45° bends ending in vias) in `#d6d9d6` on `--paper` (SVG data URI in `index.css`). On four of the traces a short highlighter pulse travels in about 2.5s and then rests, on 14–22s cycles with staggered starts, so a signal passes only now and then. With `prefers-reduced-motion` the pulses are removed. Sheets, tables, cards and the header stay solid on top.
+
 ## Motion
 
 - One grammar: a left-to-right highlighter sweep (`background-size` transition, `cubic-bezier(0.16, 1, 0.3, 1)`) on nav links, ordering rows, card titles and the primary button (which sweeps ink over marker).
