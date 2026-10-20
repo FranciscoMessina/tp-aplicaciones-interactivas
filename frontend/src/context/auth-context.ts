@@ -5,6 +5,8 @@ export interface AuthContextValue {
   user: AuthUser | null
   accessToken: string | null
   checkingSession: boolean
+  // La última sesión terminó porque el backend rechazó el token (venció o se cerró).
+  sessionExpired: boolean
   signIn: (session: AuthSession) => void
   updateUser: (user: AuthUser) => void
   signOut: () => Promise<void>

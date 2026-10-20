@@ -1,0 +1,34 @@
+info:
+  name: Eliminar administrador
+  type: http
+  seq: 10
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/users/:id"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: Id del usuario, copiarlo de "Listar administradores"
+  auth: inherit
+
+docs: |-
+  Elimina la cuenta de otro administrador. Sus sesiones abiertas dejan de valer de inmediato. Nadie puede eliminar su propia cuenta, así que siempre queda al menos un administrador.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id del usuario, sale de "Listar administradores".
+
+  **Devuelve**
+
+  - `204` sin cuerpo.
+  - `401` si falta el token o la sesión ya no es válida.
+  - `403` si el usuario no es administrador.
+  - `404` si el usuario no existe.
+  - `409` si es la cuenta de quien hace la request.
+
+settings:
+  encodeUrl: true

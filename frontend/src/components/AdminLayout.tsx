@@ -15,7 +15,7 @@ const groups: { label?: string; links: { to: string; label: string; icon: IconNa
   { links: [{ to: 'resumen', label: 'Resumen', icon: 'summary' }] },
   { label: 'Catálogo', links: [{ to: 'productos', label: 'Productos', icon: 'products' }, { to: 'categorias', label: 'Categorías', icon: 'categories' }] },
   { label: 'Atención', links: [{ to: 'consultas', label: 'Consultas', icon: 'enquiries' }] },
-  { label: 'Comercio', links: [{ to: 'comercio', label: 'Información del comercio', icon: 'business' }] },
+  { label: 'Comercio', links: [{ to: 'comercio', label: 'Información del comercio', icon: 'business' }, { to: 'usuarios', label: 'Administradores', icon: 'users' }] },
 ]
 
 // Marco propio del área privada: barra lateral con las secciones y la cuenta, y el contenido a la derecha.
@@ -33,8 +33,9 @@ export default function AdminLayout() {
   useEffect(() => {
     if (!accessToken) return
     const controller = new AbortController()
-    fetchEnquiries(accessToken, 'PENDING', controller.signal)
-      .then((items) => setPending(items.length))
+    // Alcanza con una página de un elemento: el total viene en la respuesta.
+    fetchEnquiries(accessToken, { status: 'PENDING', page: 1, pageSize: 1 }, controller.signal)
+      .then((result) => setPending(result.total))
       .catch(() => { /* el contador es informativo; la sección de consultas avisa si falla */ })
     return () => controller.abort()
   }, [accessToken, pendingCheck, pathname])

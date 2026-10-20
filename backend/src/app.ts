@@ -18,6 +18,8 @@ import { statsRouter } from "./routes/stats.routes.ts";
 
 const app = express();
 
+app.set("trust proxy", env.trustProxyHops);
+
 // El orden de los `app.use` importa: Express pasa cada request por estas
 // funciones de arriba hacia abajo.
 

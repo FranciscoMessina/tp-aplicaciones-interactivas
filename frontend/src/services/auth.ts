@@ -5,10 +5,6 @@ export function login(email: string, password: string) {
   return apiRequest<AuthSession>('/api/users/login', { method: 'POST', body: { email, password } })
 }
 
-export function register(fullName: string, email: string, phone: string, password: string) {
-  return apiRequest<AuthSession>('/api/users/register', { method: 'POST', body: { fullName, email, phone, password } })
-}
-
 export function fetchProfile(token: string) {
   return apiRequest<AuthUser>('/api/users/me', { token })
 }
@@ -35,8 +31,9 @@ export function updateProfile(token: string, updates: ProfileChanges) {
   return apiRequest<AuthUser>('/api/users/me', { method: 'PATCH', token, body: updates })
 }
 
+// Devuelve un token nuevo: el cambio cierra las demás sesiones, incluida la actual.
 export function changePassword(token: string, currentPassword: string, newPassword: string) {
-  return apiRequest<{ message: string }>('/api/users/me/password', {
+  return apiRequest<{ message: string; accessToken: string }>('/api/users/me/password', {
     method: 'PATCH',
     token,
     body: { currentPassword, newPassword },

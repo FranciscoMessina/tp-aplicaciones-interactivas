@@ -46,7 +46,7 @@ export interface ProductSearchFilters {
   category?: string;
   minPrice?: number;
   maxPrice?: number;
-  sortBy?: "publicationDate" | "price" | "relevance";
+  sortBy?: "publicationDate" | "price" | "name" | "relevance";
   sortOrder?: "asc" | "desc";
   includeInactive?: boolean;
   isActive?: boolean;
@@ -54,6 +54,14 @@ export interface ProductSearchFilters {
   inStock?: boolean;
   page: number;
   pageSize: number;
+}
+
+export interface CategorySummary {
+  id: string;
+  name: string;
+  productCount: number;
+  minPrice: number;
+  examples: string[];
 }
 
 export interface ProductPage {
@@ -210,6 +218,9 @@ export async function searchProducts(
     case "price":
       pipeline.push({ $sort: { price: sortDirection, createdAt: -1 } });
       break;
+    case "name":
+      pipeline.push({ $sort: { name: sortDirection, createdAt: -1 } });
+      break;
     default:
       pipeline.push({ $sort: { createdAt: sortDirection } });
   }
@@ -226,10 +237,19 @@ export async function searchProducts(
     },
   });
 
-  const [result] = await ProductModel.aggregate<{
+  const aggregate = ProductModel.aggregate<{
     items: Product[];
     total: { count: number }[];
   }>(pipeline);
+
+  // Para ordenar por nombre en español ("Ñ" despues de "N", sin separar
+  // mayusculas). `$search` no acepta collation, asi que con texto buscado el
+  // orden por nombre es el binario.
+  if (filters.sortBy === "name" && !filters.search) {
+    aggregate.collation(categoryCollation);
+  }
+
+  const [result] = await aggregate;
 
   // `aggregate` devuelve objetos planos. `hydrate` los convierte en documentos
   // de Mongoose, para que se serialicen igual que en el resto de la API (con
@@ -309,6 +329,45 @@ export async function deleteProduct(productId: string): Promise<void> {
       "No se encontró el producto",
     );
   }
+}
+
+/**
+ * Las categorias con productos publicados, cuantos tiene cada una, el precio
+ * mas bajo y algunos nombres de ejemplo. Las mas grandes primero.
+ */
+export function listCategorySummaries(): Promise<CategorySummary[]> {
+  return ProductModel.aggregate<CategorySummary>([
+    { $match: { isActive: true } },
+    { $sort: { createdAt: -1 } },
+    {
+      $group: {
+        _id: "$category",
+        productCount: { $sum: 1 },
+        minPrice: { $min: "$price" },
+        examples: { $push: "$name" },
+      },
+    },
+    {
+      $lookup: {
+        from: CategoryModel.collection.name,
+        localField: "_id",
+        foreignField: "_id",
+        as: "category",
+      },
+    },
+    { $unwind: "$category" },
+    {
+      $project: {
+        _id: 0,
+        id: { $toString: "$_id" },
+        name: "$category.name",
+        productCount: 1,
+        minPrice: 1,
+        examples: { $slice: ["$examples", 5] },
+      },
+    },
+    { $sort: { productCount: -1, name: 1 } },
+  ]).collation(categoryCollation);
 }
 
 export function listCategories(): Promise<DocumentType<Category>[]> {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { EnquiryStatus } from "../domain/enquiry.ts";
-import { emailSchema } from "./common.schema.ts";
+import { emailSchema, paginationFields } from "./common.schema.ts";
 
 export const createEnquirySchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -12,6 +12,11 @@ export const createEnquirySchema = z.object({
 
 export const listEnquiriesSchema = z.object({
   status: z.enum(EnquiryStatus).optional(),
+  ...paginationFields(20, 50),
+});
+
+export const replyToEnquirySchema = z.object({
+  message: z.string().trim().min(1).max(5000),
 });
 
 export const updateEnquiryStatusSchema = z.object({

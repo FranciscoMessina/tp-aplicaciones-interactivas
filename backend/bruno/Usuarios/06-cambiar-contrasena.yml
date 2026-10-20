@@ -18,8 +18,16 @@ http:
       }
   auth: inherit
 
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        if (res.status === 200) {
+          bru.setVar("accessToken", res.body.data.accessToken);
+        }
+
 docs: |-
-  Cambia la contraseña del usuario logueado. Si se usa con el administrador del seed, después hay que iniciar sesión con la contraseña nueva.
+  Cambia la contraseña del usuario logueado. Cierra las demás sesiones (los tokens anteriores dejan de valer) y anula los enlaces de recuperación pendientes; devuelve un token nuevo, que esta request guarda en `accessToken`. Si se usa con el administrador del seed, después hay que iniciar sesión con la contraseña nueva.
 
   **Auth:** cualquier usuario logueado. Usa el token guardado al iniciar sesión.
 
@@ -27,11 +35,11 @@ docs: |-
 
   Body:
   - `currentPassword`: la contraseña actual.
-  - `newPassword`: mínimo 8 caracteres.
+  - `newPassword`: mínimo 8 caracteres y hasta 72 bytes (bcrypt ignora el resto).
 
   **Devuelve**
 
-  - `200` con `data.message`.
+  - `200` con `data.message` y `data.accessToken`.
   - `400` si `currentPassword` es incorrecta (en `error.fields.currentPassword`) o algún campo es inválido.
   - `401` si falta el token o está vencido.
 

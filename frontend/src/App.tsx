@@ -7,7 +7,7 @@ import { BusinessProvider } from './context/BusinessContext'
 import { useBusiness } from './context/business-context'
 import AdminLayout from './components/AdminLayout'
 import LogoMark from './components/LogoMark'
-import { LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage } from './pages/AuthPages'
+import { LoginPage, ForgotPasswordPage, ResetPasswordPage } from './pages/AuthPages'
 import HomePage from './pages/HomePage'
 import CatalogPage from './pages/CatalogPage'
 import BusinessInfoPage from './pages/BusinessInfoPage'
@@ -19,6 +19,7 @@ import AdminProductsPage from './pages/AdminProductsPage'
 import AdminCategoriesPage from './pages/AdminCategoriesPage'
 import AdminEnquiriesPage from './pages/AdminEnquiriesPage'
 import AdminBusinessInfoPage from './pages/AdminBusinessInfoPage'
+import AdminUsersPage from './pages/AdminUsersPage'
 import './App.css'
 
 function ScrollToSection() {
@@ -85,7 +86,6 @@ function AppRoutes() {
           <Route path="/contacto" element={<ContactPage />} />
         </Route>
         <Route path="/login" element={user ? <Navigate to="/admin" replace /> : <LoginPage />} />
-        <Route path="/registro" element={user ? <Navigate to="/admin" replace /> : <RegisterPage />} />
         <Route path="/recuperar-contrasena" element={<ForgotPasswordPage />} />
         <Route path="/restablecer-contrasena" element={<ResetPasswordPage />} />
         <Route path="/admin" element={privateRoute(<AdminLayout />)}>
@@ -95,6 +95,7 @@ function AppRoutes() {
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="consultas" element={<AdminEnquiriesPage />} />
           <Route path="comercio" element={<AdminBusinessInfoPage />} />
+          <Route path="usuarios" element={<AdminUsersPage />} />
           <Route path="perfil" element={<ProfilePage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

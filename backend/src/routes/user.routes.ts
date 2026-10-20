@@ -1,23 +1,37 @@
 import { Router } from "express";
 import {
   changePassword,
+  createUser,
+  deleteUser,
   getProfile,
+  listUsers,
   login,
   logout,
-  register,
   requestPasswordReset,
   resetPassword,
   updateProfile,
 } from "../controllers/user.controller.ts";
-import { authenticate } from "../middleware/auth.ts";
+import { authenticate, requireAdmin } from "../middleware/auth.ts";
+import {
+  forgotPasswordLimiter,
+  loginLimiter,
+  resetPasswordLimiter,
+} from "../middleware/rate-limit.ts";
 
 const userRouter = Router();
 
-userRouter.post("/register", register);
-userRouter.post("/login", login);
+// No hay registro publico: las cuentas las crea un administrador.
+userRouter.get("/", authenticate, requireAdmin, listUsers);
+userRouter.post("/", authenticate, requireAdmin, createUser);
+userRouter.delete("/:id", authenticate, requireAdmin, deleteUser);
+userRouter.post("/login", loginLimiter, login);
 userRouter.post("/logout", authenticate, logout);
-userRouter.post("/forgot-password", requestPasswordReset);
-userRouter.post("/reset-password", resetPassword);
+userRouter.post(
+  "/forgot-password",
+  forgotPasswordLimiter,
+  requestPasswordReset,
+);
+userRouter.post("/reset-password", resetPasswordLimiter, resetPassword);
 userRouter.get("/me", authenticate, getProfile);
 userRouter.patch("/me", authenticate, updateProfile);
 userRouter.patch("/me/password", authenticate, changePassword);

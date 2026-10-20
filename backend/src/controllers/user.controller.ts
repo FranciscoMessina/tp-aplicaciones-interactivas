@@ -2,19 +2,31 @@ import type { Request, Response } from "express";
 import { sendSuccess } from "../http/responses.ts";
 import { validate } from "../http/validate.ts";
 import { getAuthenticatedUser } from "../middleware/auth.ts";
+import { idParamsSchema } from "../schemas/common.schema.ts";
 import {
   changePasswordSchema,
+  createUserSchema,
   forgotPasswordSchema,
   loginSchema,
-  registerSchema,
   resetPasswordSchema,
   updateProfileSchema,
 } from "../schemas/user.schema.ts";
 import * as userService from "../services/user.service.ts";
 
-export async function register(req: Request, res: Response): Promise<void> {
-  const body = validate(registerSchema, req.body);
-  sendSuccess(res, await userService.registerUser(body), 201);
+export async function listUsers(_req: Request, res: Response): Promise<void> {
+  sendSuccess(res, await userService.listUsers());
+}
+
+export async function createUser(req: Request, res: Response): Promise<void> {
+  const body = validate(createUserSchema, req.body);
+  sendSuccess(res, await userService.createUser(body), 201);
+}
+
+export async function deleteUser(req: Request, res: Response): Promise<void> {
+  const { sub: requesterId } = getAuthenticatedUser(req);
+  const { id } = validate(idParamsSchema, req.params);
+  await userService.deleteUser(requesterId, id);
+  res.status(204).send();
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
@@ -54,8 +66,15 @@ export async function changePassword(
     changePasswordSchema,
     req.body,
   );
-  await userService.changePassword(userId, currentPassword, newPassword);
-  sendSuccess(res, { message: "La contraseña se actualizó correctamente" });
+  const accessToken = await userService.changePassword(
+    userId,
+    currentPassword,
+    newPassword,
+  );
+  sendSuccess(res, {
+    message: "La contraseña se actualizó correctamente",
+    accessToken,
+  });
 }
 
 export async function requestPasswordReset(

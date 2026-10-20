@@ -11,6 +11,8 @@ export interface AccessTokenPayload extends JwtPayload {
   jti: string;
   type: "access";
   role: UserRole;
+  // La `sessionVersion` del usuario al emitir el token.
+  ver: number;
 }
 
 /**
@@ -32,15 +34,24 @@ export function verifyPassword(
 /**
  * Un JWT es un texto con datos (id y rol del usuario, vencimiento) y una firma
  * hecha con `JWT_SECRET`. Cualquiera puede leer los datos, pero sin el secreto
- * nadie puede modificarlos sin romper la firma. Por eso el servidor puede
- * confiar en el rol que viene en el token sin consultar la base de datos.
+ * nadie puede modificarlos sin romper la firma. Igual, en cada request se
+ * consulta al usuario (ver `authenticate`): asi un token deja de servir si la
+ * cuenta se elimino o si se cambio la contraseña.
  */
-export function createAccessToken(userId: string, role: UserRole): string {
-  return jwt.sign({ type: "access", role }, env.jwtSecret, {
-    expiresIn: env.jwtExpirationSeconds,
-    jwtid: randomUUID(),
-    subject: userId,
-  });
+export function createAccessToken(
+  userId: string,
+  role: UserRole,
+  sessionVersion: number,
+): string {
+  return jwt.sign(
+    { type: "access", role, ver: sessionVersion },
+    env.jwtSecret,
+    {
+      expiresIn: env.jwtExpirationSeconds,
+      jwtid: randomUUID(),
+      subject: userId,
+    },
+  );
 }
 
 /**
@@ -57,6 +68,7 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
     payload.type !== "access" ||
     typeof payload.sub !== "string" ||
     typeof payload.jti !== "string" ||
+    typeof payload.ver !== "number" ||
     !Object.values(UserRole).includes(payload.role as UserRole)
   ) {
     throw new Error("Invalid access token payload");

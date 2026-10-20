@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { objectIdSchema } from "./common.schema.ts";
+import { objectIdSchema, paginationFields } from "./common.schema.ts";
 
 // Los filtros llegan como query string (`?minPrice=&category=`), asi que un
 // campo vacio se trata como si no se hubiera mandado.
@@ -32,11 +32,10 @@ export const searchProductsSchema = z
     minPrice: optionalNonnegativeNumber,
     maxPrice: optionalNonnegativeNumber,
     sortBy: z
-      .enum(["publicationDate", "price", "relevance"])
+      .enum(["publicationDate", "price", "name", "relevance"])
       .default("publicationDate"),
     sortOrder: z.enum(["asc", "desc"]).default("desc"),
-    page: z.coerce.number().int().min(1).default(1),
-    pageSize: z.coerce.number().int().min(1).max(100).default(20),
+    ...paginationFields(20, 100),
     // Solo la tienen en cuenta los administradores; ver product.controller.
     includeInactive: z.stringbool().optional(),
     // Filtros del panel. `isActive` solo cambia algo junto con `includeInactive`.

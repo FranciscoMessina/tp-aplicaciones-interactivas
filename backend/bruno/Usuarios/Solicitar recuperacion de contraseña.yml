@@ -30,6 +30,7 @@ docs: |-
 
   - `200` con `data.message`. La respuesta es la misma exista o no la cuenta, para no revelar qué emails están registrados.
   - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `429` después de 5 pedidos en 15 minutos desde la misma IP.
 
 settings:
   encodeUrl: true

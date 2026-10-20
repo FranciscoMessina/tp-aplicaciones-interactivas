@@ -6,6 +6,7 @@ import type { Notice } from '../components/AdminNotice'
 import Icon from '../components/Icon'
 import Modal from '../components/Modal'
 import ProductFormModal from '../components/ProductFormModal'
+import type { CategoriesState } from '../components/ProductFormModal'
 import { useAuth } from '../context/auth-context'
 import { getErrorMessage as errorMessage } from '../services/api'
 import { fetchCategories } from '../services/categories'
@@ -26,6 +27,8 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [total, setTotal] = useState(0)
   const [categories, setCategories] = useState<Category[]>([])
+  const [categoriesState, setCategoriesState] = useState<CategoriesState>('loading')
+  const [categoriesReload, setCategoriesReload] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [reload, setReload] = useState(0)
@@ -80,13 +83,22 @@ export default function AdminProductsPage() {
     return () => window.clearTimeout(timer)
   }, [searchInput, search, updateFilters])
 
+  // Sin categorías no se puede crear un producto: si fallan se avisa y se puede reintentar.
   useEffect(() => {
     const controller = new AbortController()
     fetchCategories(controller.signal)
-      .then(setCategories)
-      .catch(() => { /* el filtro y el formulario quedan sin opciones; el listado avisa si el back falla */ })
+      .then((result) => {
+        setCategories(result)
+        setCategoriesState('ready')
+      })
+      .catch(() => { if (!controller.signal.aborted) setCategoriesState('error') })
     return () => controller.abort()
-  }, [])
+  }, [categoriesReload])
+
+  function retryCategories() {
+    setCategoriesState('loading')
+    setCategoriesReload((value) => value + 1)
+  }
 
   useEffect(() => {
     if (!token) return
@@ -176,6 +188,13 @@ export default function AdminProductsPage() {
       </div>
 
       <AdminNotice notice={notice} onClose={clearNotice} />
+
+      {categoriesState === 'error' && (
+        <p className="admin-alert is-error" role="alert">
+          No pudimos cargar las categorías: el filtro por categoría y la carga de productos no van a funcionar.{' '}
+          <button type="button" className="admin-text-link" onClick={retryCategories}>Reintentar</button>
+        </p>
+      )}
 
       <section className="admin-panel" aria-label="Listado de productos">
         <div className="admin-toolbar">
@@ -312,6 +331,8 @@ export default function AdminProductsPage() {
         <ProductFormModal
           token={token}
           categories={categories}
+          categoriesState={categoriesState}
+          onRetryCategories={retryCategories}
           product={editing}
           onClose={() => { setCreating(false); setEditing(null) }}
           onSaved={handleSaved}

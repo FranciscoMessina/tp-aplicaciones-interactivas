@@ -1,0 +1,23 @@
+info:
+  name: Listar administradores
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/users"
+  auth: inherit
+
+docs: |-
+  Lista las cuentas de administrador ordenadas por nombre.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Devuelve**
+
+  - `200` con la lista de usuarios (`id`, `fullName`, `email`, `phone` y `role`).
+  - `401` si falta el token o la sesión ya no es válida.
+  - `403` si el usuario no es administrador.
+
+settings:
+  encodeUrl: true

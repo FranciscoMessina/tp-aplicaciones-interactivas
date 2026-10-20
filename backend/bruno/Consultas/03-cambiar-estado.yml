@@ -39,7 +39,7 @@ docs: |-
   - `401` si falta el token o está vencido.
   - `403` si el usuario no es administrador.
   - `404` si la consulta no existe.
-  - `409` si el cambio de estado no está permitido.
+  - `409` si el cambio de estado no está permitido, también cuando otro administrador la cambió al mismo tiempo.
 
 settings:
   encodeUrl: true

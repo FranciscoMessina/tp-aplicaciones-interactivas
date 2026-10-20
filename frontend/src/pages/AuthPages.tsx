@@ -4,7 +4,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/auth-context'
 import { useBusiness } from '../context/business-context'
 import { getErrorMessage as errorText } from '../services/api'
-import { forgotPassword, login, register, resetPassword } from '../services/auth'
+import { forgotPassword, login, resetPassword } from '../services/auth'
+import { newPasswordProblem } from '../utils/password'
 import Icon from '../components/Icon'
 import LogoMark from '../components/LogoMark'
 import '../Admin.css'
@@ -51,7 +52,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
-  const { signIn } = useAuth()
+  const { signIn, sessionExpired } = useAuth()
   const navigate = useNavigate()
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -72,58 +73,14 @@ export function LoginPage() {
   return (
     <AuthLayout title="Iniciar sesión" subtitle="Acceso para administradores del comercio.">
       <form className="auth-form" onSubmit={(event) => void submit(event)}>
+        {sessionExpired && !error && <p className="admin-alert" role="status">Tu sesión venció o se cerró. Volvé a iniciar sesión para continuar.</p>}
         <ErrorMessage error={error} />
         <label className="admin-field">Correo electrónico<input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nombre@ejemplo.com" /></label>
         <label className="admin-field">Contraseña<input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Ingresá tu contraseña" /></label>
         <div className="auth-inline"><Link to="/recuperar-contrasena">¿Olvidaste tu contraseña?</Link></div>
         <button className="admin-primary auth-submit" type="submit" disabled={pending}>{pending ? 'Ingresando...' : 'Iniciar sesión'}</button>
       </form>
-      <p className="auth-switch">¿Administrás el comercio y no tenés cuenta? <Link to="/registro">Registrate</Link></p>
-    </AuthLayout>
-  )
-}
-
-export function RegisterPage() {
-  const { businessName } = useBusiness()
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmation, setConfirmation] = useState('')
-  const [error, setError] = useState('')
-  const [pending, setPending] = useState(false)
-  const { signIn } = useAuth()
-  const navigate = useNavigate()
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError('')
-    if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres.'); return }
-    if (password !== confirmation) { setError('Las contraseñas no coinciden.'); return }
-    setPending(true)
-    try {
-      const session = await register(fullName.trim(), email.trim(), phone.trim(), password)
-      signIn(session)
-      navigate('/admin', { replace: true })
-    } catch (cause) {
-      setError(errorText(cause))
-    } finally {
-      setPending(false)
-    }
-  }
-
-  return (
-    <AuthLayout title="Crear cuenta de administrador" subtitle={`Registrate para gestionar los productos, las consultas y la información de ${businessName || 'tu comercio'}.`}>
-      <form className="auth-form" onSubmit={(event) => void submit(event)}>
-        <ErrorMessage error={error} />
-        <label className="admin-field">Nombre y apellido<input required autoComplete="name" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Ej.: Juan Pérez" /></label>
-        <label className="admin-field">Correo electrónico<input type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nombre@ejemplo.com" /></label>
-        <label className="admin-field">Teléfono<input type="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Ej.: +54 11 5555 0101" /></label>
-        <label className="admin-field">Contraseña<input type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mínimo 8 caracteres" /></label>
-        <label className="admin-field">Confirmar contraseña<input type="password" autoComplete="new-password" required minLength={8} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="Repetí la contraseña" /></label>
-        <button className="admin-primary auth-submit" type="submit" disabled={pending}>{pending ? 'Creando cuenta...' : 'Crear cuenta'}</button>
-      </form>
-      <p className="auth-switch">¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link></p>
+      <p className="auth-switch">¿No tenés cuenta? Pedile a un administrador del comercio que te invite desde el panel.</p>
     </AuthLayout>
   )
 }
@@ -168,6 +125,8 @@ export function ForgotPasswordPage() {
 
 export function ResetPasswordPage() {
   const [params] = useSearchParams()
+  // El mail de invitación usa este mismo formulario para elegir la primera contraseña.
+  const isInvitation = params.get('invitacion') === '1'
   const [token, setToken] = useState(params.get('token') ?? '')
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -177,9 +136,9 @@ export function ResetPasswordPage() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setError('')
-    if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres.'); return }
-    if (password !== confirmation) { setError('Las contraseñas no coinciden.'); return }
+    const problem = newPasswordProblem(password, confirmation)
+    setError(problem)
+    if (problem) return
     setPending(true)
     try { await resetPassword(token.trim(), password); setDone(true) }
     catch (cause) { setError(errorText(cause)) }
@@ -187,10 +146,13 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <AuthLayout title="Restablecer contraseña" subtitle="Ingresá el código de recuperación y elegí una nueva contraseña.">
+    <AuthLayout
+      title={isInvitation ? 'Activar tu cuenta' : 'Restablecer contraseña'}
+      subtitle={isInvitation ? 'Elegí la contraseña con la que vas a ingresar al panel.' : 'Ingresá el código de recuperación y elegí una nueva contraseña.'}
+    >
       {done ? (
         <div className="auth-success">
-          <strong>Contraseña actualizada</strong>
+          <strong>{isInvitation ? 'Cuenta activada' : 'Contraseña actualizada'}</strong>
           <p>Ya podés ingresar con tu nueva contraseña.</p>
           <Link className="admin-primary auth-submit" to="/login">Ir a iniciar sesión</Link>
         </div>
@@ -200,7 +162,7 @@ export function ResetPasswordPage() {
           <label className="admin-field">Código de recuperación<input required autoComplete="off" value={token} onChange={(event) => setToken(event.target.value)} placeholder="Pegá el código que recibiste por correo" /></label>
           <label className="admin-field">Nueva contraseña<input type="password" autoComplete="new-password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mínimo 8 caracteres" /></label>
           <label className="admin-field">Confirmar contraseña<input type="password" autoComplete="new-password" required minLength={8} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} placeholder="Repetí la contraseña" /></label>
-          <button className="admin-primary auth-submit" type="submit" disabled={pending}>{pending ? 'Guardando...' : 'Actualizar contraseña'}</button>
+          <button className="admin-primary auth-submit" type="submit" disabled={pending}>{pending ? 'Guardando...' : isInvitation ? 'Activar cuenta' : 'Actualizar contraseña'}</button>
         </form>
       )}
       <p className="auth-switch"><Link to="/login">Volver al inicio de sesión</Link></p>

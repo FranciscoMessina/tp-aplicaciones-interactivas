@@ -3,9 +3,10 @@ import type { FormEvent } from 'react'
 import { useAuth } from '../context/auth-context'
 import { getErrorMessage } from '../services/api'
 import { changePassword, updateProfile } from '../services/auth'
+import { newPasswordProblem } from '../utils/password'
 
 export default function ProfilePage() {
-  const { user, accessToken, updateUser } = useAuth()
+  const { user, accessToken, updateUser, signIn } = useAuth()
   const [fullName, setFullName] = useState(user?.fullName ?? '')
   const [email, setEmail] = useState(user?.email ?? '')
   const [phone, setPhone] = useState(user?.phone ?? '')
@@ -56,21 +57,16 @@ export default function ProfilePage() {
     setPasswordError('')
     setPasswordSuccess('')
     if (!accessToken) { setPasswordError('Tu sesión expiró. Volvé a iniciar sesión.'); return }
-    if (newPassword.length < 8) {
-      setPasswordError('La nueva contraseña debe tener al menos 8 caracteres.')
-      return
-    }
-    if (newPassword !== repeatPassword) {
-      setPasswordError('Las contraseñas nuevas no coinciden.')
-      return
-    }
+    const problem = newPasswordProblem(newPassword, repeatPassword)
+    if (problem) { setPasswordError(problem); return }
     setChangingPassword(true)
     try {
-      await changePassword(accessToken, currentPassword, newPassword)
+      const result = await changePassword(accessToken, currentPassword, newPassword)
+      if (user) signIn({ accessToken: result.accessToken, user })
       setCurrentPassword('')
       setNewPassword('')
       setRepeatPassword('')
-      setPasswordSuccess('Tu contraseña se actualizó correctamente.')
+      setPasswordSuccess('Tu contraseña se actualizó. Se cerraron las sesiones abiertas en otros dispositivos.')
     } catch (error) {
       setPasswordError(getErrorMessage(error))
     } finally {

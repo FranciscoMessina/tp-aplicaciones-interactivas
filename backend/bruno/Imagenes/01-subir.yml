@@ -36,6 +36,6 @@ docs: |-
   **Devuelve**
 
   - `201` con `data.url`, la URL pública de la imagen (se sirve desde `/uploads`).
-  - `400` si falta la imagen, no es de un formato aceptado o pesa más de 5 MB; `error.fields.image` trae el mensaje.
+  - `400` si falta la imagen, no es de un formato aceptado, su contenido no es realmente una imagen (se revisan los primeros bytes, no solo el tipo declarado) o pesa más de 5 MB; `error.fields.image` trae el mensaje.
   - `401` si falta el token o está vencido.
   - `403` si el usuario no es administrador.

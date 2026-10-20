@@ -41,7 +41,8 @@ docs: |-
   **Devuelve**
 
   - `200` con `data.accessToken` (JWT) y `data.user` (`id`, `fullName`, `email`, `phone` y `role`).
-  - `401` si el email o la contraseña son incorrectos.
+  - `401` si el email o la contraseña son incorrectos, o si la cuenta todavía no eligió su contraseña.
+  - `429` después de 10 intentos fallidos en 15 minutos desde la misma IP.
 
 settings:
   encodeUrl: true

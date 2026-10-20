@@ -11,14 +11,18 @@ objetivo es promocionar los productos y recibir consultas.
   ve el detalle de cada producto, conoce la información del comercio y envía
   consultas.
 - **Administrador**: gestiona su perfil, los productos, las categorías, las
-  consultas y la información del comercio. Es el único tipo de cuenta del
-  sistema: el seed crea uno de demostración y cualquier otro se registra desde
-  la pantalla de registro.
+  consultas, la información del comercio y las cuentas de los demás
+  administradores. Es el único tipo de cuenta del sistema: el seed crea uno de
+  demostración y los demás los da de alta un administrador desde el panel. No
+  hay registro público.
 
 ## Sitio público
 
-- **Inicio**: presentación del comercio, productos destacados y catálogo.
-- **Catálogo**: solo los productos publicados, paginados de a 12. Cada tarjeta
+- **Inicio**: presentación del comercio, las categorías principales (con
+  cantidad de productos y precio desde) que llevan al catálogo ya filtrado, y
+  los productos destacados (o los más nuevos, si no hay destacados).
+- **Catálogo** (`/catalogo`): solo los productos publicados, paginados de a 12.
+  El backend filtra, ordena y pagina, así que solo viaja la página visible. Cada tarjeta
   muestra nombre, categoría, imagen, descripción, precio y disponibilidad
   ("Disponible" o "Sin stock").
 - **Búsqueda, filtros y orden**: búsqueda por texto en nombre y descripción,
@@ -35,13 +39,20 @@ objetivo es promocionar los productos y recibir consultas.
 
 ## Cuenta del administrador
 
-- **Registro** con nombre y apellido, email, teléfono y contraseña (mínimo 8
-  caracteres). No puede haber dos cuentas con el mismo email.
-- **Inicio y cierre de sesión**. La sesión es un JWT que vence a la hora.
+- **Alta de administradores** desde el panel, por otro administrador: nombre y
+  apellido, email y teléfono. No puede haber dos cuentas con el mismo email. La
+  persona recibe un correo con un enlace para elegir su contraseña (vence a las
+  72 horas); quien la invita nunca la conoce.
+- **Inicio y cierre de sesión**. La sesión es un JWT que vence a la hora. Si
+  vence o se cierra mientras se usa el panel, la siguiente operación lleva al
+  login con un aviso. Los intentos fallidos de login tienen un límite por IP.
 - **Recuperación de contraseña**: se pide con el email y llega un correo con un
   enlace de un solo uso que vence a los 15 minutos. La respuesta es la misma
   exista o no la cuenta, para no revelar qué emails están registrados.
 - **Perfil**: modificación de los datos personales y cambio de contraseña.
+  Cambiar o restablecer la contraseña cierra las sesiones abiertas en otros
+  dispositivos y anula los enlaces de recuperación pendientes. Las contraseñas
+  tienen entre 8 caracteres y 72 bytes, el máximo que usa bcrypt.
 
 ## Área de administración (`/admin`)
 
@@ -54,26 +65,32 @@ objetivo es promocionar los productos y recibir consultas.
   destacado para aparecer en el inicio.
 - **Categorías**: alta, edición y eliminación. Los nombres no se repiten (sin
   distinguir mayúsculas) y no se puede eliminar una categoría con productos.
-- **Consultas**: listado de la más nueva a la más vieja con filtro por estado;
-  marcar como pendiente, leída o respondida; eliminar; y responder por mail o
-  llamar desde los enlaces de cada consulta.
+- **Consultas**: bandeja paginada (de a 20) de la más nueva a la más vieja con
+  filtro por estado; marcar como pendiente, leída o respondida; eliminar; y
+  responder desde el panel, sin abrir un cliente de correo: la respuesta le
+  llega por mail al visitante, queda guardada en la consulta con su autor y la
+  consulta pasa a respondida. Si el visitante contesta ese mail, le llega a
+  quien respondió. También se puede llamar desde el enlace del teléfono.
 - **Información del comercio**: crear y modificar nombre, descripción,
   dirección, teléfono, horarios y redes sociales.
+- **Administradores**: listado de las cuentas, alta por invitación y
+  eliminación (nadie puede eliminar su propia cuenta, así que siempre queda al
+  menos uno). Una cuenta eliminada pierde el acceso en el acto.
 
 ## Cumplimiento de la consigna
 
 | Requerimiento | Dónde |
 | --- | --- |
 | Información general del comercio | Páginas Nosotros y Contacto |
-| Ver productos con nombre, categoría, imagen, descripción, precio y disponibilidad | Catálogo del inicio y detalle de producto |
-| Buscar y filtrar por categoría | Catálogo del inicio |
+| Ver productos con nombre, categoría, imagen, descripción, precio y disponibilidad | Catálogo (`/catalogo`), destacados del inicio y detalle de producto |
+| Buscar y filtrar por categoría | Catálogo (`/catalogo`); las categorías del inicio llevan al catálogo filtrado |
 | Consultar contacto y enviar consultas | Página Contacto |
-| Registro, login, logout, recuperar contraseña, modificar datos | Pantallas de cuenta y Mi perfil |
+| Registro, login, logout, recuperar contraseña, modificar datos | Panel → Administradores (alta por invitación), pantallas de cuenta y Mi perfil |
 | Administrar información institucional | Panel → Información del comercio |
 | Crear, modificar, eliminar y activar/desactivar publicaciones | Panel → Productos |
 | Al menos 20 productos precargados | El seed carga 108 |
 | ABM de categorías | Panel → Categorías |
-| Gestión de consultas con estados pendiente, leída y respondida | Panel → Consultas |
+| Gestión de consultas con estados pendiente, leída y respondida | Panel → Consultas (incluye responder desde la web) |
 | React Router, componentes reutilizables, API REST, persistencia | `frontend/src/App.tsx`, `frontend/src/components`, `backend/` |
 | Manejo de errores | Formato único de errores en la API y mensajes en cada pantalla |
 | Validaciones en frontend y backend | Formularios del front y schemas de Zod del back |

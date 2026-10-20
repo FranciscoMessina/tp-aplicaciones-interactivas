@@ -30,8 +30,16 @@ export class User {
   @prop({ required: true, enum: UserRole, default: UserRole.Admin })
   public role!: UserRole;
 
-  @prop({ required: true, select: false })
-  public passwordHash!: string;
+  // Las cuentas las crea otro administrador sin contraseña: la elige la
+  // persona invitada con el enlace que recibe por mail. Hasta entonces no
+  // puede iniciar sesion.
+  @prop({ select: false })
+  public passwordHash?: string;
+
+  // Viaja en cada token. Al cambiar la contraseña se incrementa, y los tokens
+  // emitidos antes dejan de ser validos aunque no hayan vencido.
+  @prop({ required: true, default: 0, select: false })
+  public sessionVersion!: number;
 
   @prop({ select: false })
   public passwordResetTokenHash?: string;

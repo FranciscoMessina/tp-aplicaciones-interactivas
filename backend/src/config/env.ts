@@ -43,6 +43,29 @@ function parsePositiveInteger(
   return parsedValue;
 }
 
+const isProduction = process.env.NODE_ENV === "production";
+
+// Sin SMTP los mails se escriben en la consola del servidor. Eso sirve para
+// desarrollar, pero en produccion dejaria enlaces de recuperacion y datos de
+// los visitantes en los logs, y nadie recibiria los correos.
+function getSmtpConfig() {
+  if (!process.env.SMTP_HOST) {
+    if (isProduction) {
+      throw new Error("SMTP_HOST is required in production");
+    }
+
+    return undefined;
+  }
+
+  return {
+    host: process.env.SMTP_HOST,
+    port: parsePositiveInteger(process.env.SMTP_PORT, 587, "SMTP_PORT"),
+    user: process.env.SMTP_USER,
+    password: process.env.SMTP_PASSWORD,
+    from: process.env.MAIL_FROM ?? "TechStore <no-reply@techstore.com>",
+  };
+}
+
 function getJwtSecret(): string {
   const secret = getRequiredEnvironmentVariable("JWT_SECRET");
 
@@ -54,19 +77,11 @@ function getJwtSecret(): string {
 }
 
 export const env = Object.freeze({
-  isProduction: process.env.NODE_ENV === "production",
+  isProduction,
   // Para armar los enlaces que se mandan por mail, como el de recuperacion.
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
-  // Opcional: sin SMTP_HOST los mails se escriben en la consola del servidor.
-  smtp: process.env.SMTP_HOST
-    ? {
-        host: process.env.SMTP_HOST,
-        port: parsePositiveInteger(process.env.SMTP_PORT, 587, "SMTP_PORT"),
-        user: process.env.SMTP_USER,
-        password: process.env.SMTP_PASSWORD,
-        from: process.env.MAIL_FROM ?? "TechStore <no-reply@techstore.com>",
-      }
-    : undefined,
+  // Opcional en desarrollo, obligatorio en produccion.
+  smtp: getSmtpConfig(),
   jwtExpirationSeconds: parsePositiveInteger(
     process.env.JWT_EXPIRATION_SECONDS,
     DEFAULT_JWT_EXPIRATION_SECONDS,
@@ -75,4 +90,10 @@ export const env = Object.freeze({
   jwtSecret: getJwtSecret(),
   mongoUri: getRequiredEnvironmentVariable("MONGODB_URI"),
   port: parsePort(process.env.PORT),
+  // Cuantos proxies hay delante de la API (0 si ninguno). Con proxy, Express
+  // tiene que leer la IP del cliente del header que agrega el proxy: si no, los
+  // limites por IP cuentan a todos los visitantes como uno solo.
+  trustProxyHops: process.env.TRUST_PROXY
+    ? parsePositiveInteger(process.env.TRUST_PROXY, 1, "TRUST_PROXY")
+    : 0,
 });

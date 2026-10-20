@@ -20,6 +20,13 @@ export type Category = {
   name: string
 }
 
+// GET /api/categories/summary: solo cuenta productos publicados.
+export type CategorySummary = Category & {
+  productCount: number
+  minPrice: number
+  examples: string[]
+}
+
 // Lo que se envía al crear o modificar un producto (POST / PATCH /api/products).
 export type ProductInput = {
   name: string
@@ -32,9 +39,12 @@ export type ProductInput = {
   isFeatured: boolean
 }
 
-export type ProductPage = {
-  items: Product[]
+// Forma de todos los listados paginados de la API.
+export type Page<T> = {
+  items: T[]
   page: number
   pageSize: number
   total: number
 }
+
+export type ProductPage = Page<Product>

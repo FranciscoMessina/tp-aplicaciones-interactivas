@@ -8,10 +8,12 @@ TechStore es una tienda de tecnología ficticia. La aplicación tiene:
 - un **sitio público** donde cualquier visitante, sin registrarse, conoce el
   comercio, recorre el catálogo, busca y filtra productos y envía consultas;
 - un **área privada** donde los administradores del comercio gestionan
-  productos, categorías, consultas, la información institucional y su perfil.
+  productos, categorías, consultas, la información institucional, las cuentas
+  de los demás administradores y su perfil.
 
 Las únicas cuentas del sistema son las de los administradores: no existen
-cuentas de clientes.
+cuentas de clientes ni registro público. Un administrador da de alta a otro
+desde el panel y la persona recibe un correo para elegir su contraseña.
 
 ## Documentación
 
@@ -72,9 +74,11 @@ controllers → services → modelos.
   gratuito), con la IP de la máquina habilitada en *Network Access*. La búsqueda
   de productos usa Atlas Search, que no existe en un MongoDB local: sin Atlas el
   resto funciona, pero buscar por texto desde el panel responde un error.
-- Opcional: una cuenta SMTP para enviar correos (por ejemplo, una contraseña de
-  aplicación de Gmail o [Ethereal](https://ethereal.email/) para pruebas). Sin
-  SMTP los correos se muestran en la consola del backend.
+- Una cuenta SMTP para enviar correos (por ejemplo, una contraseña de
+  aplicación de Gmail o [Ethereal](https://ethereal.email/) para pruebas). En
+  desarrollo es opcional: sin SMTP los correos (recuperación, invitaciones,
+  avisos de consultas y respuestas a los visitantes) se muestran en la consola del backend. Con
+  `NODE_ENV=production` es obligatoria y el backend no arranca sin ella.
 
 ### 1. Backend
 
@@ -93,8 +97,9 @@ Completar `.env`:
 | `PORT` | No | Puerto de la API (por defecto `8080`) |
 | `JWT_EXPIRATION_SECONDS` | No | Duración de la sesión (por defecto `3600`) |
 | `SEED_ADMIN_PASSWORD` | No | Contraseña del administrador de demostración (por defecto `Admin123!`) |
+| `TRUST_PROXY` | No | Cantidad de proxies delante de la API (por ejemplo `1`). Hace falta para que los límites de intentos por IP vean la IP real del visitante |
 | `FRONTEND_URL` | No | URL del frontend para los enlaces de los correos (por defecto `http://localhost:5173`) |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | No | Servidor de correo. Sin `SMTP_HOST`, los correos se escriben en la consola |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | En producción | Servidor de correo. En desarrollo, sin `SMTP_HOST` los correos se escriben en la consola |
 
 Crear la base con los datos de demostración e iniciar la API:
 
@@ -126,8 +131,9 @@ llega desde el enlace **Administración** del pie de página).
 
 - Usuario de demostración: `admin@example.com` / `Admin123!` (o la contraseña
   de `SEED_ADMIN_PASSWORD`).
-- También se puede crear otra cuenta de administrador desde **Registrate** en la
-  pantalla de inicio de sesión.
+- Para sumar otro administrador: **Panel → Administradores → Nuevo
+  administrador**. La persona recibe un correo con el enlace para elegir su
+  contraseña (sin SMTP, el enlace aparece en la consola del backend).
 
 ### Build de producción
 
@@ -137,7 +143,8 @@ cd frontend && npm run build   # genera frontend/dist para servir como sitio est
 ```
 
 En producción el frontend tiene que servirse detrás de un proxy que envíe
-`/api` y `/uploads` al backend, igual que hace Vite en desarrollo.
+`/api` y `/uploads` al backend, igual que hace Vite en desarrollo. En ese caso
+hay que definir `TRUST_PROXY=1` en el backend.
 
 ## Base de datos
 

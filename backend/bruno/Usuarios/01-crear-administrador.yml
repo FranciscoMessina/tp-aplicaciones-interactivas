@@ -1,0 +1,45 @@
+info:
+  name: Crear administrador
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/users"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "fullName": "Juan Pérez",
+        "email": "juan.perez@example.com",
+        "phone": "+54 11 4567 8901"
+      }
+  auth: inherit
+
+docs: |-
+  Crea la cuenta de otro administrador del comercio. No hay registro público: solo un administrador puede dar de alta a otro.
+
+  La cuenta se crea sin contraseña. La persona recibe un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...&invitacion=1` para elegirla (vence en 72 horas). Sin SMTP, en desarrollo el mail se escribe en la consola del backend. Hasta que elija la contraseña no puede iniciar sesión.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Body:
+  - `fullName`: nombre y apellido.
+  - `email`: único en todo el sistema.
+  - `phone`
+
+  **Devuelve**
+
+  - `201` con el usuario creado (`id`, `fullName`, `email`, `phone` y `role`).
+  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o la sesión ya no es válida.
+  - `403` si el usuario no es administrador.
+  - `409` si el email ya está registrado.
+
+settings:
+  encodeUrl: true

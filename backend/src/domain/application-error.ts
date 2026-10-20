@@ -10,6 +10,7 @@ export const ApplicationErrorKind = {
   Forbidden: "FORBIDDEN",
   NotFound: "NOT_FOUND",
   Conflict: "CONFLICT",
+  TooManyRequests: "TOO_MANY_REQUESTS",
   Unexpected: "UNEXPECTED",
 } as const;
 

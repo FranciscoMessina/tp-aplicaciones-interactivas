@@ -44,6 +44,7 @@ function CategoryFormModal({ token, category, onClose, onSaved }: CategoryFormMo
       onSaved(saved, isEdit)
     } catch (caught) {
       const duplicated = caught instanceof ApiRequestError && caught.status === 409
+      document.getElementById('cf-name')?.focus()
       setError(duplicated ? 'Ya existe una categoría con ese nombre.' : errorMessage(caught))
     } finally {
       setSaving(false)
@@ -55,8 +56,8 @@ function CategoryFormModal({ token, category, onClose, onSaved }: CategoryFormMo
       <form className="admin-form" onSubmit={(event) => void submit(event)} noValidate>
         <div className={error ? 'admin-field has-error' : 'admin-field'}>
           <label htmlFor="cf-name">Nombre *</label>
-          <input id="cf-name" maxLength={MAX_NAME} value={name} onChange={(event) => setName(event.target.value)} aria-invalid={Boolean(error)} />
-          {error && <span className="admin-error">{error}</span>}
+          <input id="cf-name" maxLength={MAX_NAME} value={name} onChange={(event) => setName(event.target.value)} aria-invalid={Boolean(error)} aria-describedby={error ? 'cf-name-error' : undefined} />
+          {error && <span id="cf-name-error" className="admin-error">{error}</span>}
         </div>
 
         <div className="admin-form-actions">

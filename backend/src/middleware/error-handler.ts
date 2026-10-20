@@ -14,6 +14,7 @@ const applicationErrorStatus: Record<ApplicationErrorKind, number> = {
   [ApplicationErrorKind.Forbidden]: 403,
   [ApplicationErrorKind.NotFound]: 404,
   [ApplicationErrorKind.Conflict]: 409,
+  [ApplicationErrorKind.TooManyRequests]: 429,
   [ApplicationErrorKind.Unexpected]: 500,
 };
 

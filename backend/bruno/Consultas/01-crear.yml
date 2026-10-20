@@ -40,6 +40,7 @@ docs: |-
 
   - `201` con la consulta (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `createdAt`, `updatedAt`).
   - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `429` después de 5 consultas en una hora desde la misma IP.
 
 settings:
   encodeUrl: true

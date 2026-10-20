@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { setSessionRejectedHandler } from '../services/api'
 import { fetchProfile, logout as logoutRequest } from '../services/auth'
 import type { AuthSession, AuthUser } from '../types/auth'
 import { AuthContext } from './auth-context'
@@ -21,25 +22,30 @@ function readSession(): AuthSession | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(readSession)
   const [checkingSession, setCheckingSession] = useState(() => Boolean(readSession()))
+  const [sessionExpired, setSessionExpired] = useState(false)
 
   const token = session?.accessToken
+
+  // Cualquier petición con token que el backend rechace cierra la sesión local;
+  // las rutas privadas redirigen al login, que explica el motivo.
+  useEffect(() => {
+    setSessionRejectedHandler(() => {
+      sessionStorage.removeItem(STORAGE_KEY)
+      setSession(null)
+      setSessionExpired(true)
+    })
+  }, [])
 
   useEffect(() => {
     if (!token) return
     let cancelled = false
+    // Ante fallas de red conservamos la sesión; un token rechazado lo resuelve el handler de arriba.
     void fetchProfile(token)
       .then((profile) => {
         if (cancelled) return
         setSession((current) => current?.accessToken === token ? { accessToken: token, user: profile } : current)
       })
-      .catch((error: unknown) => {
-        if (cancelled) return
-        // Ante fallas de red conservamos la sesión; ante token rechazado la descartamos.
-        if (error && typeof error === 'object' && 'status' in error && error.status === 401) {
-          setSession(null)
-          sessionStorage.removeItem(STORAGE_KEY)
-        }
-      })
+      .catch(() => undefined)
       .finally(() => { if (!cancelled) setCheckingSession(false) })
     return () => { cancelled = true }
   }, [token])
@@ -48,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession))
     setSession(nextSession)
     setCheckingSession(false)
+    setSessionExpired(false)
   }
 
   function updateUser(nextUser: AuthUser) {
@@ -59,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signOut() {
     const token = session?.accessToken
-    // El logout del backend es informativo (JWT sin lista de revocación).
     // Limpiar el token del cliente siempre, incluso si falla la red.
     sessionStorage.removeItem(STORAGE_KEY)
     setSession(null)
@@ -68,9 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user: session?.user ?? null, accessToken: token ?? null, checkingSession, signIn, updateUser, signOut }}>
+    <AuthContext.Provider value={{ user: session?.user ?? null, accessToken: token ?? null, checkingSession, sessionExpired, signIn, updateUser, signOut }}>
       {children}
     </AuthContext.Provider>
   )
 }
-

@@ -14,6 +14,16 @@ type FormState = Record<'name' | 'description' | 'address' | 'phone' | 'socialNe
 type Errors = Partial<Record<keyof FormState, string>>
 
 const FIELDS: (keyof FormState)[] = ['name', 'description', 'address', 'phone', 'socialNetworks', 'openingHours']
+
+// Id de cada control, en el orden en que aparecen en pantalla.
+const FIELD_IDS: Record<keyof FormState, string> = {
+  name: 'bi-name',
+  address: 'bi-address',
+  phone: 'bi-phone',
+  description: 'bi-description',
+  openingHours: 'bi-hours',
+  socialNetworks: 'bi-social',
+}
 const PHONE_PATTERN = /^[+\d\s()-]{6,}$/
 
 function isHttpUrl(value: string) {
@@ -100,13 +110,20 @@ export default function AdminBusinessInfoPage() {
     setForm((current) => ({ ...current, [key]: value }))
   }
 
+  // Muestra los errores y lleva el foco al primer campo marcado, en el orden del formulario.
+  function showErrors(found: Errors) {
+    setErrors(found)
+    const first = Object.entries(FIELD_IDS).find(([key]) => found[key as keyof FormState])
+    if (first) document.getElementById(first[1])?.focus()
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (saving) return
     setFormError('')
 
     const found = validate(form)
-    setErrors(found)
+    showErrors(found)
     if (Object.keys(found).length > 0) return
 
     const input: BusinessInfoInput = {
@@ -134,7 +151,7 @@ export default function AdminBusinessInfoPage() {
           const message = error.fields[key]?.[0]
           if (message && FIELDS.includes(field) && !fromServer[field]) fromServer[field] = message
         }
-        setErrors(fromServer)
+        showErrors(fromServer)
         setFormError(Object.keys(fromServer).length > 0 ? 'Revisá los campos marcados.' : errorMessage(error))
       } else {
         setFormError(errorMessage(error))
@@ -182,27 +199,27 @@ export default function AdminBusinessInfoPage() {
             <div className="admin-form">
               <div className={fieldClass('name')}>
                 <label htmlFor="bi-name">Nombre del comercio *</label>
-                <input id="bi-name" value={form.name} onChange={(event) => setField('name', event.target.value)} aria-invalid={Boolean(errors.name)} />
-                {errors.name && <span className="admin-error">{errors.name}</span>}
+                <input id="bi-name" value={form.name} onChange={(event) => setField('name', event.target.value)} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? `${FIELD_IDS.name}-error` : undefined} />
+                {errors.name && <span id="bi-name-error" className="admin-error">{errors.name}</span>}
               </div>
 
               <div className="admin-form-row admin-form-row-2">
                 <div className={fieldClass('address')}>
                   <label htmlFor="bi-address">Dirección *</label>
-                  <input id="bi-address" value={form.address} onChange={(event) => setField('address', event.target.value)} aria-invalid={Boolean(errors.address)} />
-                  {errors.address && <span className="admin-error">{errors.address}</span>}
+                  <input id="bi-address" value={form.address} onChange={(event) => setField('address', event.target.value)} aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? `${FIELD_IDS.address}-error` : undefined} />
+                  {errors.address && <span id="bi-address-error" className="admin-error">{errors.address}</span>}
                 </div>
                 <div className={fieldClass('phone')}>
                   <label htmlFor="bi-phone">Teléfono *</label>
-                  <input id="bi-phone" type="tel" value={form.phone} onChange={(event) => setField('phone', event.target.value)} aria-invalid={Boolean(errors.phone)} />
-                  {errors.phone && <span className="admin-error">{errors.phone}</span>}
+                  <input id="bi-phone" type="tel" value={form.phone} onChange={(event) => setField('phone', event.target.value)} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? `${FIELD_IDS.phone}-error` : undefined} />
+                  {errors.phone && <span id="bi-phone-error" className="admin-error">{errors.phone}</span>}
                 </div>
               </div>
 
               <div className={fieldClass('description')}>
                 <label htmlFor="bi-description">Descripción *</label>
-                <textarea id="bi-description" rows={4} value={form.description} onChange={(event) => setField('description', event.target.value)} aria-invalid={Boolean(errors.description)} />
-                {errors.description && <span className="admin-error">{errors.description}</span>}
+                <textarea id="bi-description" rows={4} value={form.description} onChange={(event) => setField('description', event.target.value)} aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? `${FIELD_IDS.description}-error` : undefined} />
+                {errors.description && <span id="bi-description-error" className="admin-error">{errors.description}</span>}
               </div>
             </div>
           </fieldset>
@@ -215,17 +232,17 @@ export default function AdminBusinessInfoPage() {
             <div className="admin-form">
               <div className={fieldClass('openingHours')}>
                 <label htmlFor="bi-hours">Horarios de atención</label>
-                <textarea id="bi-hours" rows={3} value={form.openingHours} onChange={(event) => setField('openingHours', event.target.value)} aria-invalid={Boolean(errors.openingHours)} />
+                <textarea id="bi-hours" rows={3} value={form.openingHours} onChange={(event) => setField('openingHours', event.target.value)} aria-invalid={Boolean(errors.openingHours)} aria-describedby={errors.openingHours ? `${FIELD_IDS.openingHours}-error` : undefined} />
                 {errors.openingHours
-                  ? <span className="admin-error">{errors.openingHours}</span>
+                  ? <span id="bi-hours-error" className="admin-error">{errors.openingHours}</span>
                   : <span className="admin-hint">Uno por línea, por ejemplo: Lunes a viernes de 10 a 20 hs</span>}
               </div>
 
               <div className={fieldClass('socialNetworks')}>
                 <label htmlFor="bi-social">Redes sociales</label>
-                <textarea id="bi-social" rows={3} value={form.socialNetworks} onChange={(event) => setField('socialNetworks', event.target.value)} aria-invalid={Boolean(errors.socialNetworks)} />
+                <textarea id="bi-social" rows={3} value={form.socialNetworks} onChange={(event) => setField('socialNetworks', event.target.value)} aria-invalid={Boolean(errors.socialNetworks)} aria-describedby={errors.socialNetworks ? `${FIELD_IDS.socialNetworks}-error` : undefined} />
                 {errors.socialNetworks
-                  ? <span className="admin-error">{errors.socialNetworks}</span>
+                  ? <span id="bi-social-error" className="admin-error">{errors.socialNetworks}</span>
                   : <span className="admin-hint">Una URL por línea (Instagram, Facebook, WhatsApp...)</span>}
               </div>
             </div>

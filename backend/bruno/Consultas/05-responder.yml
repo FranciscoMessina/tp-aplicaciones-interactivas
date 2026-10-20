@@ -1,0 +1,47 @@
+info:
+  name: Responder consulta
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/enquiries/:id/replies"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: Id de la consulta, copiarlo de "Listar consultas"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "message": "¡Hola! Sí, lo tenemos en stock. Podés pasar a retirarlo cuando quieras."
+      }
+  auth: inherit
+
+docs: |-
+  Responde una consulta desde el panel. Le manda la respuesta por mail al visitante (con el mail de quien responde como Reply-To), la guarda en `replies` y deja la consulta como `RESOLVED`. Sin SMTP, en desarrollo el mail se escribe en la consola del backend.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id de la consulta, sale de "Listar consultas".
+
+  Body:
+  - `message`: la respuesta, hasta 5000 caracteres.
+
+  **Devuelve**
+
+  - `201` con la consulta actualizada.
+  - `400` si el mensaje está vacío o es demasiado largo.
+  - `401` si falta el token o la sesión ya no es válida.
+  - `403` si el usuario no es administrador.
+  - `404` si la consulta no existe.
+  - `500` si el servidor de correo no aceptó el mail; en ese caso no se guarda la respuesta.
+
+settings:
+  encodeUrl: true

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom'
 import AdminEmpty from '../components/AdminEmpty'
 import type { AdminOutletContext } from '../components/AdminLayout'
@@ -8,9 +9,12 @@ import Icon from '../components/Icon'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/auth-context'
 import { getErrorMessage } from '../services/api'
-import { deleteEnquiry, fetchEnquiries, updateEnquiryStatus } from '../services/enquiries'
+import { deleteEnquiry, fetchEnquiries, replyToEnquiry, updateEnquiryStatus } from '../services/enquiries'
 import type { Enquiry, EnquiryStatus } from '../types/business'
 import { formatDate } from '../utils/format'
+
+const PAGE_SIZE = 20
+const MAX_REPLY = 5000
 
 const statusLabels: Record<EnquiryStatus, string> = { PENDING: 'Pendiente', READ: 'Leída', RESOLVED: 'Respondida' }
 
@@ -35,17 +39,76 @@ const filters: { value: EnquiryStatus | ''; param: string; label: string }[] = [
   { value: 'RESOLVED', param: 'respondida', label: 'Respondidas' },
 ]
 
+// Responde desde el panel: el backend le manda el correo al visitante y guarda la respuesta.
+function ReplyForm({ token, enquiry, onReplied }: { token: string; enquiry: Enquiry; onReplied: (updated: Enquiry) => void }) {
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [sending, setSending] = useState(false)
+  const input = useRef<HTMLTextAreaElement>(null)
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (sending) return
+    const trimmed = message.trim()
+    if (!trimmed) {
+      setError('Escribí la respuesta.')
+      input.current?.focus()
+      return
+    }
+
+    setError('')
+    setSending(true)
+    try {
+      onReplied(await replyToEnquiry(token, enquiry.id, trimmed))
+      setMessage('')
+    } catch (caught) {
+      setError(getErrorMessage(caught))
+      input.current?.focus()
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <form className="admin-form admin-inbox-reply" onSubmit={(event) => void submit(event)} noValidate>
+      <div className={error ? 'admin-field has-error' : 'admin-field'}>
+        <label htmlFor="enquiry-reply">Responder a {enquiry.name}</label>
+        <textarea
+          ref={input}
+          id="enquiry-reply"
+          rows={5}
+          maxLength={MAX_REPLY}
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          aria-invalid={Boolean(error)}
+          aria-describedby={error ? 'enquiry-reply-error' : 'enquiry-reply-hint'}
+        />
+        {error
+          ? <span id="enquiry-reply-error" className="admin-error">{error}</span>
+          : <span id="enquiry-reply-hint" className="admin-hint">Le llega por correo a {enquiry.email}; si contesta, el mail te llega a vos. La consulta queda como respondida.</span>}
+      </div>
+      <div className="admin-form-actions">
+        <button type="submit" className="admin-primary" disabled={sending}>
+          <Icon name="mail" /> {sending ? 'Enviando...' : 'Enviar respuesta'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 export default function AdminEnquiriesPage() {
   const { accessToken } = useAuth()
   const token = accessToken ?? ''
   const { refreshPending } = useOutletContext<AdminOutletContext>()
 
-  // El filtro y la consulta abierta viven en la URL (?estado=pendiente&consulta=<id>).
+  // El filtro, la página y la consulta abierta viven en la URL (?estado=pendiente&pagina=2&consulta=<id>).
   const [params, setParams] = useSearchParams()
   const status = filters.find((filter) => filter.param === params.get('estado'))?.value ?? ''
+  const page = Math.max(1, Number(params.get('pagina')) || 1)
   const selectedId = params.get('consulta')
 
   const [enquiries, setEnquiries] = useState<Enquiry[]>([])
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [reload, setReload] = useState(0)
@@ -56,18 +119,34 @@ export default function AdminEnquiriesPage() {
   const clearNotice = useCallback(() => setNotice(null), [])
   const detailHeading = useRef<HTMLHeadingElement>(null)
 
-  // Si la consulta elegida sale del listado (filtro o eliminación), el detalle vuelve a quedar vacío.
+  // Si la consulta elegida sale del listado (filtro, página o eliminación), el detalle vuelve a quedar vacío.
   const selected = enquiries.find((item) => item.id === selectedId) ?? null
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
+
+  const setPage = useCallback((next: number) => {
+    setParams((current) => {
+      const nextParams = new URLSearchParams(current)
+      if (next > 1) nextParams.set('pagina', String(next))
+      else nextParams.delete('pagina')
+      nextParams.delete('consulta')
+      return nextParams
+    })
+  }, [setParams])
 
   useEffect(() => {
     if (!token) return
     const controller = new AbortController()
-    fetchEnquiries(token, status || undefined, controller.signal)
-      .then(setEnquiries)
+    fetchEnquiries(token, { status: status || undefined, page, pageSize: PAGE_SIZE }, controller.signal)
+      .then((result) => {
+        // La página quedó vacía (se eliminó o cambió de estado lo último que tenía): vamos a la anterior.
+        if (result.items.length === 0 && page > 1) return setPage(page - 1)
+        setEnquiries(result.items)
+        setTotal(result.total)
+      })
       .catch((error: unknown) => { if (!controller.signal.aborted) setLoadError(getErrorMessage(error)) })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
-  }, [token, status, reload])
+  }, [token, status, page, reload, setPage])
 
   useEffect(() => { detailHeading.current?.focus() }, [selectedId])
 
@@ -89,16 +168,20 @@ export default function AdminEnquiriesPage() {
     })
   }
 
+  // Reemplaza la consulta en la página. Si con el filtro activo ya no corresponde,
+  // se vuelve a pedir la página para completarla con la siguiente.
+  function applyUpdate(updated: Enquiry) {
+    if (status && status !== updated.status) setReload((value) => value + 1)
+    else setEnquiries((current) => current.map((item) => item.id === updated.id ? updated : item))
+    refreshPending()
+  }
+
   async function changeStatus(enquiry: Enquiry, next: EnquiryStatus) {
     setBusyId(enquiry.id)
     try {
       const updated = await updateEnquiryStatus(token, enquiry.id, next)
-      // Con un filtro activo, la consulta deja de pertenecer al listado.
-      setEnquiries((current) => status && status !== updated.status
-        ? current.filter((item) => item.id !== updated.id)
-        : current.map((item) => item.id === updated.id ? updated : item))
+      applyUpdate(updated)
       setNotice({ kind: 'success', text: `La consulta de ${enquiry.name} quedó como ${statusLabels[updated.status].toLowerCase()}.` })
-      refreshPending()
     } catch (error) {
       setNotice({ kind: 'error', text: getErrorMessage(error) })
     } finally {
@@ -106,13 +189,18 @@ export default function AdminEnquiriesPage() {
     }
   }
 
+  function handleReplied(updated: Enquiry) {
+    applyUpdate(updated)
+    setNotice({ kind: 'success', text: `Le enviamos la respuesta a ${updated.email}.` })
+  }
+
   async function confirmDelete() {
     if (!deleting) return
     setDeleteBusy(true)
     try {
       await deleteEnquiry(token, deleting.id)
-      setEnquiries((current) => current.filter((item) => item.id !== deleting.id))
       setNotice({ kind: 'success', text: `Se eliminó la consulta de ${deleting.name}.` })
+      setReload((value) => value + 1)
       refreshPending()
     } catch (error) {
       setNotice({ kind: 'error', text: getErrorMessage(error) })
@@ -146,7 +234,7 @@ export default function AdminEnquiriesPage() {
               ))}
             </div>
             <p className="admin-count" aria-live="polite">
-              {loading ? 'Cargando…' : `${enquiries.length} ${enquiries.length === 1 ? 'consulta' : 'consultas'}`}
+              {loading ? 'Cargando…' : `${total} ${total === 1 ? 'consulta' : 'consultas'}`}
             </p>
           </div>
 
@@ -184,6 +272,14 @@ export default function AdminEnquiriesPage() {
               ))}
             </ul>
           )}
+
+          {!loadError && totalPages > 1 && (
+            <nav className="admin-pagination" aria-label="Paginación de consultas">
+              <span>Página {page} de {totalPages}</span>
+              <button type="button" className="admin-secondary" disabled={page === 1 || loading} onClick={() => setPage(page - 1)}>Anterior</button>
+              <button type="button" className="admin-secondary" disabled={page >= totalPages || loading} onClick={() => setPage(page + 1)}>Siguiente</button>
+            </nav>
+          )}
         </section>
 
         <section className="admin-panel admin-inbox-detail" aria-label="Consulta seleccionada">
@@ -203,10 +299,24 @@ export default function AdminEnquiriesPage() {
                 <div><dt>Recibida</dt><dd><time dateTime={selected.createdAt}>{formatDate(selected.createdAt)}</time></dd></div>
               </dl>
               <p className="admin-inbox-message">{selected.message}</p>
+
+              {selected.replies.length > 0 && (
+                <ol className="admin-inbox-replies" aria-label="Respuestas enviadas">
+                  {selected.replies.map((reply) => (
+                    <li key={reply.id}>
+                      <p className="admin-inbox-reply-meta">
+                        <strong>{reply.authorName}</strong> respondió el <time dateTime={reply.createdAt}>{formatDate(reply.createdAt)}</time>
+                      </p>
+                      <p className="admin-inbox-message">{reply.message}</p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
+              {/* La key reinicia el borrador al cambiar de consulta. */}
+              <ReplyForm key={selected.id} token={token} enquiry={selected} onReplied={handleReplied} />
+
               <div className="admin-inbox-actions">
-                <a className="admin-primary" href={`mailto:${selected.email}?subject=${encodeURIComponent(`Re: ${selected.subject}`)}`}>
-                  <Icon name="mail" /> Responder por correo
-                </a>
                 {nextStatuses[selected.status].map((next) => (
                   <button key={next} type="button" className="admin-secondary" disabled={busyId === selected.id} onClick={() => void changeStatus(selected, next)}>
                     {actionLabels[next]}

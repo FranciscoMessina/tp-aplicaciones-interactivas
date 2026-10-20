@@ -8,6 +8,7 @@ import {
   verifyAccessToken,
   type AccessTokenPayload,
 } from "../services/auth.service.ts";
+import { ensureSessionIsCurrent } from "../services/user.service.ts";
 
 /**
  * Le agrega a TypeScript el campo `req.user` que completan estos middlewares.
@@ -31,7 +32,9 @@ declare global {
  * 2. El front manda ese token en cada request, en el header
  *    `Authorization: Bearer <token>`.
  * 3. Estos middlewares verifican la firma del token. Si es valida, sabemos que
- *    lo emitimos nosotros y que nadie cambio su contenido.
+ *    lo emitimos nosotros y que nadie cambio su contenido. Despues confirman
+ *    contra la base que la sesion siga vigente: que la cuenta exista y que la
+ *    contraseña no haya cambiado desde que se emitio.
  *
  * En las rutas se encadenan en orden, primero quien es y despues que puede hacer:
  *
@@ -42,7 +45,7 @@ declare global {
  */
 
 /** Exige un token valido y deja el usuario en `req.user`. Si no, responde 401. */
-export const authenticate: RequestHandler = (req, _res, next) => {
+export const authenticate: RequestHandler = async (req, _res, next) => {
   const token = getBearerToken(req);
 
   if (!token) {
@@ -52,8 +55,10 @@ export const authenticate: RequestHandler = (req, _res, next) => {
     );
   }
 
+  let payload: AccessTokenPayload;
+
   try {
-    req.user = verifyAccessToken(token);
+    payload = verifyAccessToken(token);
   } catch {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
@@ -61,6 +66,8 @@ export const authenticate: RequestHandler = (req, _res, next) => {
     );
   }
 
+  await ensureSessionIsCurrent(payload);
+  req.user = payload;
   next();
 };
 
@@ -69,14 +76,17 @@ export const authenticate: RequestHandler = (req, _res, next) => {
  * Si el token falta o no es valido, sigue como visitante anonimo en vez de
  * responder 401.
  */
-export const optionalAuthenticate: RequestHandler = (req, _res, next) => {
+export const optionalAuthenticate: RequestHandler = async (req, _res, next) => {
   const token = getBearerToken(req);
 
   if (token) {
     try {
-      req.user = verifyAccessToken(token);
+      const payload = verifyAccessToken(token);
+      await ensureSessionIsCurrent(payload);
+      req.user = payload;
     } catch {
-      // Token invalido: se trata igual que un visitante sin token.
+      // Token invalido, vencido o de una sesion cerrada: se trata igual que
+      // un visitante sin token.
     }
   }
 

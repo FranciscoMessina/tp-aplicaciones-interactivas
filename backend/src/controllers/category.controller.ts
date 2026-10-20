@@ -12,6 +12,13 @@ export async function listCategories(
   sendSuccess(res, await catalog.listCategories());
 }
 
+export async function listCategorySummaries(
+  _req: Request,
+  res: Response,
+): Promise<void> {
+  sendSuccess(res, await catalog.listCategorySummaries());
+}
+
 export async function createCategory(
   req: Request,
   res: Response,

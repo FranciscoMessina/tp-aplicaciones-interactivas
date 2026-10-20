@@ -26,7 +26,7 @@ settings:
   forwardAuthorizationHeader: true
 
 docs: |-
-  Cambia la contraseña usando el token de recuperación. El body deja la contraseña del administrador del seed como estaba.
+  Cambia la contraseña usando el token de recuperación. El body deja la contraseña del administrador del seed como estaba. También activa las cuentas creadas por otro administrador, que reciben el mismo tipo de token en la invitación. Cierra las sesiones abiertas de la cuenta.
 
   **Auth:** no requiere.
 
@@ -34,9 +34,10 @@ docs: |-
 
   Body:
   - `token`: el del enlace que llega por mail después de "Solicitar recuperacion de contraseña" (sin SMTP configurado, lo escribe la consola del servidor).
-  - `password`: la contraseña nueva, mínimo 8 caracteres.
+  - `password`: la contraseña nueva, mínimo 8 caracteres y hasta 72 bytes.
 
   **Devuelve**
 
   - `200` con `data.message`.
   - `400` si el token es inválido, ya se usó o venció.
+  - `429` después de 10 intentos en 15 minutos desde la misma IP.

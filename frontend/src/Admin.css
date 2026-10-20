@@ -351,6 +351,14 @@
 .admin-inbox-meta a:hover { text-decoration-color: var(--ink); }
 .admin-inbox-meta time { font-variant-numeric: tabular-nums; }
 .admin-inbox-message { max-width: 68ch; margin: 0 0 24px; font-size: 15px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+/* Respuestas enviadas: un margen a la izquierda las separa del mensaje del visitante. */
+.admin-inbox-replies { margin: 0 0 24px; padding: 0; list-style: none; }
+.admin-inbox-replies li { padding-left: 16px; border-left: 2px solid var(--rule); }
+.admin-inbox-replies li + li { margin-top: 16px; }
+.admin-inbox-replies .admin-inbox-message { margin-bottom: 0; }
+.admin-inbox-reply-meta { margin: 0 0 4px; color: var(--muted); font-size: 13px; }
+.admin-inbox-reply-meta strong { color: var(--ink); }
+.admin-inbox-reply { max-width: 68ch; padding-top: 20px; margin-bottom: 20px; border-top: 1px solid var(--line); }
 .admin-inbox-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 20px; border-top: 1px solid var(--line); }
 .admin-inbox-actions .admin-icon-button { margin-left: auto; }
 .admin-inbox-placeholder { display: grid; place-content: center; justify-items: center; gap: 10px; height: 100%; min-height: 240px; padding: 24px; color: var(--muted); font-size: 14px; text-align: center; }

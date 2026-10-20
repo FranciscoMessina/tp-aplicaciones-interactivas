@@ -1,8 +1,10 @@
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import type { PointerEvent } from 'react'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
-import { useProducts } from '../hooks/useProducts'
+import { useRequest } from '../hooks/useRequest'
+import { fetchCategorySummaries } from '../services/categories'
+import { fetchProducts } from '../services/products'
 import { formatPrice } from '../utils/format'
 
 const FEATURED_LIMIT = 8
@@ -16,30 +18,23 @@ const PINS_PER_SIDE = 12
 const BOTTOM_PINS = Array.from({ length: PINS_PER_SIDE }, (_, index) => index + 1)
 const TOP_PINS = BOTTOM_PINS.map((pin) => PINS_PER_SIDE * 2 + 1 - pin)
 
+// Los destacados; si no hay ninguno, lo último que entró.
+async function fetchShowcase(signal: AbortSignal) {
+  const page = { page: 1, pageSize: FEATURED_LIMIT }
+  const featured = await fetchProducts({ ...page, isFeatured: true }, signal)
+  if (featured.items.length > 0) return { products: featured.items, hasFeatured: true }
+  const recent = await fetchProducts(page, signal)
+  return { products: recent.items, hasFeatured: false }
+}
+
 function HomePage() {
-  const { products, isLoading, error, retry } = useProducts()
+  const showcase = useRequest(fetchShowcase, 'showcase')
+  const categories = useRequest(fetchCategorySummaries, 'categories')
   const probed = useRef(-1)
 
-  // Cantidad, precio más bajo y algunos nombres de ejemplo por categoría.
-  const mainCategories = useMemo(() => {
-    const stats = new Map<string, { count: number; minPrice: number; examples: string[] }>()
-    for (const product of products) {
-      const name = product.category?.name
-      if (!name) continue
-      const stat = stats.get(name) ?? { count: 0, minPrice: product.price, examples: [] }
-      stat.count += 1
-      stat.minPrice = Math.min(stat.minPrice, product.price)
-      if (stat.examples.length < 5) stat.examples.push(product.name)
-      stats.set(name, stat)
-    }
-    return Array.from(stats, ([name, stat]) => ({ name, ...stat })).sort((a, b) => b.count - a.count)
-      .slice(0, MAIN_CATEGORIES)
-  }, [products])
-
-  // Sin destacados cargados, mostramos lo último que entró.
-  const featuredProducts = products.filter((product) => product.isFeatured).slice(0, FEATURED_LIMIT)
-  const hasFeatured = featuredProducts.length > 0
-  const shownProducts = hasFeatured ? featuredProducts : products.slice(0, FEATURED_LIMIT)
+  const mainCategories = categories.data?.slice(0, MAIN_CATEGORIES) ?? []
+  const productCount = categories.data?.reduce((sum, item) => sum + item.productCount, 0) ?? 0
+  const hasFeatured = showcase.data?.hasFeatured ?? false
 
   // La punta de prueba: resalta el par de patas bajo el puntero, sin re-renderizar.
   function probe(event: PointerEvent<HTMLElement>) {
@@ -81,18 +76,18 @@ function HomePage() {
         </div>
       </section>
 
-      {!error && (
+      {!categories.error && (
         <nav className="order-table" aria-label="Categorías principales">
-          {isLoading
+          {categories.isLoading
             ? Array.from({ length: MAIN_CATEGORIES + 1 }, (_, index) => <div key={index} className="order-row is-placeholder" aria-hidden="true" />)
             : (
                 <>
                   {mainCategories.map((stat, index) => (
-                    <Link key={stat.name} className="order-row" to={`/catalogo?categoria=${encodeURIComponent(stat.name)}`}>
+                    <Link key={stat.id} className="order-row" to={`/catalogo?categoria=${stat.id}`}>
                       <span className="order-code" aria-hidden="true">C-{String(index + 1).padStart(2, '0')}</span>
                       <span className="order-name">{stat.name}</span>
                       <span className="order-examples">{stat.examples.join(', ')}</span>
-                      <span className="order-count">{stat.count} {stat.count === 1 ? 'producto' : 'productos'}</span>
+                      <span className="order-count">{stat.productCount} {stat.productCount === 1 ? 'producto' : 'productos'}</span>
                       <span className="order-price">desde {formatPrice(stat.minPrice)}</span>
                     </Link>
                   ))}
@@ -100,7 +95,7 @@ function HomePage() {
                     <span className="order-code" aria-hidden="true">C-00</span>
                     <span className="order-name">Todo el catálogo</span>
                     <span className="order-examples" />
-                    <span className="order-count">{products.length} productos</span>
+                    <span className="order-count">{productCount} productos</span>
                     <span className="order-price">Buscar y filtrar</span>
                   </Link>
                 </>
@@ -117,17 +112,17 @@ function HomePage() {
           <Link className="section-link" to="/catalogo">Ver todo el catálogo</Link>
         </div>
 
-        {isLoading ? (
+        {showcase.isLoading ? (
           <div className="empty-state" role="status">Cargando productos...</div>
-        ) : error ? (
+        ) : showcase.error ? (
           <div className="empty-state" role="alert">
             <h3>No pudimos cargar los productos</h3>
-            <p>{error} Verificá que el backend esté funcionando en el puerto 8080.</p>
-            <button type="button" className="primary-button empty-button" onClick={retry}>Reintentar</button>
+            <p>{showcase.error} Verificá que el backend esté funcionando en el puerto 8080.</p>
+            <button type="button" className="primary-button empty-button" onClick={showcase.retry}>Reintentar</button>
           </div>
         ) : (
           <div className="products-grid">
-            {shownProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+            {showcase.data?.products.map((product) => <ProductCard key={product.id} product={product} />)}
           </div>
         )}
       </section>

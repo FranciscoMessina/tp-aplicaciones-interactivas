@@ -3,30 +3,37 @@ import { apiRequest } from './api'
 
 // Vite reenvía /api al backend local en el puerto 8080.
 // No hacen falta credenciales MongoDB ni variables secretas en React.
-const PAGE_SIZE = 100
 
-export async function fetchProducts(signal?: AbortSignal): Promise<Product[]> {
-  const products: Product[] = []
-  let page = 1
+export interface ProductFilters {
+  search?: string
+  category?: string
+  isFeatured?: boolean
+  inStock?: boolean
+  sortBy?: 'publicationDate' | 'price' | 'name'
+  sortOrder?: 'asc' | 'desc'
+  page: number
+  pageSize: number
+}
 
-  // El backend pagina los resultados. Recorremos todas las páginas para que
-  // búsqueda, stock y ordenamiento abarquen todo el catálogo, no solo la primera.
-  while (true) {
-    const params = new URLSearchParams({
-      page: String(page),
-      pageSize: String(PAGE_SIZE),
-      sortBy: 'publicationDate',
-      sortOrder: 'desc',
-    })
-
-    const { items, total } = await apiRequest<ProductPage>(`/api/products?${params}`, { signal })
-    products.push(...items)
-
-    if (items.length === 0 || products.length >= total) break
-    page += 1
+// El backend filtra, ordena y pagina: solo viaja la página que se muestra.
+function toQuery(filters: ProductFilters & { isActive?: boolean }) {
+  const params = new URLSearchParams({
+    page: String(filters.page),
+    pageSize: String(filters.pageSize),
+    sortBy: filters.sortBy ?? 'publicationDate',
+    sortOrder: filters.sortOrder ?? 'desc',
+  })
+  if (filters.search) params.set('search', filters.search)
+  if (filters.category) params.set('category', filters.category)
+  for (const key of ['isActive', 'isFeatured', 'inStock'] as const) {
+    if (filters[key] !== undefined) params.set(key, String(filters[key]))
   }
+  return params
+}
 
-  return products
+/** Una página del catálogo publicado. */
+export function fetchProducts(filters: ProductFilters, signal?: AbortSignal) {
+  return apiRequest<ProductPage>(`/api/products?${toQuery(filters)}`, { signal })
 }
 
 /** Un producto publicado; los ocultos responden 404. */
@@ -36,30 +43,10 @@ export function fetchProduct(id: string, signal?: AbortSignal) {
 
 // ---- Administración (requiere token de administrador) ----
 
-export interface AdminProductFilters {
-  search?: string
-  category?: string
-  isActive?: boolean
-  isFeatured?: boolean
-  inStock?: boolean
-  page: number
-  pageSize: number
-}
-
 /** Lista paginada que incluye los productos desactivados. */
-export function fetchAdminProducts(token: string, filters: AdminProductFilters, signal?: AbortSignal) {
-  const params = new URLSearchParams({
-    page: String(filters.page),
-    pageSize: String(filters.pageSize),
-    includeInactive: 'true',
-    sortBy: 'publicationDate',
-    sortOrder: 'desc',
-  })
-  if (filters.search) params.set('search', filters.search)
-  if (filters.category) params.set('category', filters.category)
-  for (const key of ['isActive', 'isFeatured', 'inStock'] as const) {
-    if (filters[key] !== undefined) params.set(key, String(filters[key]))
-  }
+export function fetchAdminProducts(token: string, filters: ProductFilters & { isActive?: boolean }, signal?: AbortSignal) {
+  const params = toQuery(filters)
+  params.set('includeInactive', 'true')
   return apiRequest<ProductPage>(`/api/products?${params}`, { token, signal })
 }
 

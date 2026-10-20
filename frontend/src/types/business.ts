@@ -21,8 +21,16 @@ export interface EnquiryInput {
 // Mismos valores que `EnquiryStatus` en el backend.
 export type EnquiryStatus = 'PENDING' | 'READ' | 'RESOLVED'
 
+export interface EnquiryReply {
+  id: string
+  message: string
+  authorName: string
+  createdAt: string
+}
+
 export interface Enquiry extends EnquiryInput {
   id: string
   status: EnquiryStatus
+  replies: EnquiryReply[]
   createdAt: string
 }

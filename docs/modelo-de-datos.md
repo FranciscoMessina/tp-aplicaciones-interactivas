@@ -28,7 +28,8 @@ erDiagram
         string email "unico"
         string phone
         string role "admin"
-        string passwordHash "bcrypt"
+        string passwordHash "bcrypt, vacio hasta aceptar la invitacion"
+        number sessionVersion "invalida tokens viejos"
         string passwordResetTokenHash "opcional"
         date passwordResetExpiresAt "opcional"
     }
@@ -40,6 +41,7 @@ erDiagram
         string subject
         string message
         string status "PENDING | READ | RESOLVED"
+        object[] replies "message, authorName, createdAt"
     }
     BUSINESS_INFO {
         ObjectId _id
@@ -64,12 +66,20 @@ Tienen un índice de Atlas Search (`productSearch`) para la búsqueda por texto,
 con los filtros por categoría, precio y estado.
 
 **users**: las cuentas de los administradores (no hay cuentas de clientes). `email` se guarda en minúsculas y tiene índice único.
+Las crea otro administrador: la cuenta nace sin `passwordHash` y con un token de
+invitación, que se usa igual que uno de recuperación. `sessionVersion` viaja en
+cada JWT y aumenta al cambiar o restablecer la contraseña, lo que invalida los
+tokens emitidos antes.
 La contraseña y el token de recuperación se guardan hasheados y nunca salen en
 las respuestas.
 
 **enquiries**: las consultas del formulario de contacto. Arrancan en
 `PENDING`; pueden pasar a `READ` o `RESOLVED` y siempre volver a `PENDING`,
-pero una `RESOLVED` no pasa a `READ`.
+pero una `RESOLVED` no pasa a `READ`. Las respuestas enviadas desde el panel
+quedan dentro de la consulta en `replies`, con el nombre de quien respondió (no
+una referencia, para que se conserve aunque esa cuenta se elimine). Tienen
+índices sobre `createdAt` y `status` + `createdAt`, el orden y el filtro de la
+bandeja paginada.
 
 **businessinfos**: la información institucional. Hay un único documento, que se
 crea o reemplaza con `PUT /api/business-info`.

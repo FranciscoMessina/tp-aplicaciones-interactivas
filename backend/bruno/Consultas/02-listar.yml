@@ -12,6 +12,16 @@ http:
       type: query
       description: PENDING, READ o RESOLVED (opcional)
       disabled: true
+    - name: page
+      value: "1"
+      type: query
+      description: Desde 1 (opcional, por defecto 1)
+      disabled: true
+    - name: pageSize
+      value: "20"
+      type: query
+      description: 1 a 50 (opcional, por defecto 20)
+      disabled: true
   auth: inherit
 
 settings:
@@ -22,7 +32,7 @@ settings:
   forwardAuthorizationHeader: true
 
 docs: |-
-  Lista las consultas recibidas, de la más nueva a la más vieja.
+  Lista las consultas recibidas, de la más nueva a la más vieja, de a páginas.
 
   **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
 
@@ -30,10 +40,12 @@ docs: |-
 
   Query:
   - `status` (opcional): `PENDING`, `READ` o `RESOLVED`. Sin él, lista todas.
+  - `page` (opcional): desde 1.
+  - `pageSize` (opcional): de 1 a 50, por defecto 20.
 
   **Devuelve**
 
-  - `200` con un array de consultas (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `createdAt`, `updatedAt`).
+  - `200` con una página: `items` (consultas con `id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `replies`, `createdAt`, `updatedAt`), `page`, `pageSize` y `total`.
   - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
   - `401` si falta el token o está vencido.
   - `403` si el usuario no es administrador.

@@ -5,24 +5,27 @@ import {
 } from "../domain/application-error.ts";
 import { User, UserModel, UserRole } from "../models/user.model.ts";
 import {
+  type AccessTokenPayload,
   createAccessToken,
   createPasswordResetToken,
   hashPassword,
   hashResetToken,
   verifyPassword,
 } from "./auth.service.ts";
-import { sendPasswordResetEmail } from "./mail.service.ts";
+import { sendInvitationEmail, sendPasswordResetEmail } from "./mail.service.ts";
 
 const RESET_TOKEN_DURATION_MS = 15 * 60 * 1000;
+// La invitacion dura mas que una recuperacion: quien la recibe no la pidio y
+// puede tardar en ver el mail.
+const INVITATION_DURATION_MS = 72 * 60 * 60 * 1000;
 
 // Campos que se pueden devolver al cliente sin exponer datos sensibles.
 const PUBLIC_USER_FIELDS = "fullName email phone role createdAt updatedAt";
 
-export interface RegisterUserInput {
+export interface CreateUserInput {
   fullName: string;
   email: string;
   phone: string;
-  password: string;
 }
 
 export interface LoginInput {
@@ -64,24 +67,72 @@ function toPublicUser(user: DocumentType<User>): PublicUser {
 
 function toAuthenticatedUser(user: DocumentType<User>): AuthenticatedUser {
   return {
-    accessToken: createAccessToken(user.id, user.role),
+    accessToken: createAccessToken(user.id, user.role, user.sessionVersion),
     user: toPublicUser(user),
   };
 }
 
-/** Las unicas cuentas son las de los administradores del comercio. */
-export async function registerUser(
-  input: RegisterUserInput,
-): Promise<AuthenticatedUser> {
+/**
+ * Las unicas cuentas son las de los administradores del comercio, y solo otro
+ * administrador las puede crear. La cuenta nace sin contraseña: se le manda a
+ * la persona un enlace para elegirla, que usa el mismo mecanismo que la
+ * recuperacion. Asi quien la crea nunca conoce la contraseña.
+ */
+export async function createUser(input: CreateUserInput): Promise<PublicUser> {
+  const { token, tokenHash } = createPasswordResetToken();
   const user = await UserModel.create({
-    fullName: input.fullName,
-    email: input.email,
-    phone: input.phone,
-    passwordHash: await hashPassword(input.password),
+    ...input,
     role: UserRole.Admin,
+    passwordResetTokenHash: tokenHash,
+    passwordResetExpiresAt: new Date(Date.now() + INVITATION_DURATION_MS),
   });
 
-  return toAuthenticatedUser(user);
+  sendInvitationEmail(user.email, user.fullName, token);
+  return toPublicUser(user);
+}
+
+export function listUsers(): Promise<DocumentType<User>[]> {
+  return UserModel.find().select(PUBLIC_USER_FIELDS).sort({ fullName: 1 });
+}
+
+export async function deleteUser(
+  requesterId: string,
+  userId: string,
+): Promise<void> {
+  // Ademas de evitar quedarse afuera, garantiza que siempre quede al menos un
+  // administrador: quien elimina sigue existiendo.
+  if (requesterId === userId) {
+    throw new ApplicationError(
+      ApplicationErrorKind.Conflict,
+      "No podés eliminar tu propia cuenta",
+    );
+  }
+
+  const user = await UserModel.findByIdAndDelete(userId);
+
+  if (!user) {
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "No se encontró el usuario",
+    );
+  }
+}
+
+/**
+ * La firma del token prueba que lo emitimos nosotros, pero no que siga
+ * vigente: la cuenta pudo eliminarse o la contraseña pudo cambiar despues.
+ */
+export async function ensureSessionIsCurrent(
+  payload: AccessTokenPayload,
+): Promise<void> {
+  const user = await UserModel.findById(payload.sub).select("+sessionVersion");
+
+  if (!user || user.sessionVersion !== payload.ver) {
+    throw new ApplicationError(
+      ApplicationErrorKind.Unauthenticated,
+      "Tu sesión ya no es válida. Volvé a iniciar sesión",
+    );
+  }
 }
 
 /** Destinatarios de los avisos del comercio, como las consultas nuevas. */
@@ -92,10 +143,13 @@ export async function listAdminEmails(): Promise<string[]> {
 
 export async function loginUser(input: LoginInput) {
   const user = await UserModel.findOne({ email: input.email }).select(
-    "+passwordHash",
+    "+passwordHash +sessionVersion",
   );
 
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
+  if (
+    !user?.passwordHash ||
+    !(await verifyPassword(input.password, user.passwordHash))
+  ) {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
       "El email o la contraseña son incorrectos",
@@ -140,12 +194,18 @@ export async function updateUserProfile(
   return user;
 }
 
+/**
+ * Cierra las demas sesiones y anula los enlaces de recuperacion pendientes.
+ * Devuelve un token nuevo para que la sesion desde la que se cambio siga.
+ */
 export async function changePassword(
   userId: string,
   currentPassword: string,
   newPassword: string,
-): Promise<void> {
-  const user = await UserModel.findById(userId).select("+passwordHash");
+): Promise<string> {
+  const user = await UserModel.findById(userId).select(
+    "+passwordHash +sessionVersion",
+  );
 
   if (!user) {
     throw new ApplicationError(
@@ -154,7 +214,10 @@ export async function changePassword(
     );
   }
 
-  if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+  if (
+    !user.passwordHash ||
+    !(await verifyPassword(currentPassword, user.passwordHash))
+  ) {
     throw new ApplicationError(
       ApplicationErrorKind.InvalidInput,
       "Hay campos con errores",
@@ -163,7 +226,12 @@ export async function changePassword(
   }
 
   user.passwordHash = await hashPassword(newPassword);
+  user.sessionVersion += 1;
+  user.passwordResetTokenHash = undefined;
+  user.passwordResetExpiresAt = undefined;
   await user.save();
+
+  return createAccessToken(user.id, user.role, user.sessionVersion);
 }
 
 /**
@@ -191,7 +259,8 @@ export async function requestPasswordReset(email: string): Promise<void> {
 /**
  * Busca al usuario por el hash del token y verifica que no este vencido, todo
  * en la misma consulta. Al cambiar la contraseña borra el token, asi no se
- * puede usar dos veces.
+ * puede usar dos veces, y cierra las sesiones abiertas. Tambien completa las
+ * invitaciones, que usan el mismo token.
  */
 export async function resetPassword(
   token: string,
@@ -205,6 +274,7 @@ export async function resetPassword(
     },
     {
       $set: { passwordHash },
+      $inc: { sessionVersion: 1 },
       $unset: { passwordResetExpiresAt: 1, passwordResetTokenHash: 1 },
     },
   );

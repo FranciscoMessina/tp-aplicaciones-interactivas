@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { ApiRequestError, getErrorMessage } from '../services/api'
 import { uploadImage } from '../services/images'
 import { createProduct, updateProduct } from '../services/products'
@@ -12,9 +13,24 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 type Errors = Partial<Record<'name' | 'category' | 'description' | 'price' | 'availableQuantity' | 'images', string>>
 
+export type CategoriesState = 'loading' | 'ready' | 'error'
+
+// Id del control de cada campo, en el orden del formulario: sirve para asociar el
+// mensaje de error (aria-describedby) y para enfocar el primer campo inválido.
+const fieldIds = {
+  name: 'pf-name',
+  category: 'pf-category',
+  price: 'pf-price',
+  availableQuantity: 'pf-stock',
+  description: 'pf-description',
+  images: 'pf-upload',
+} as const
+
 interface Props {
   token: string
   categories: Category[]
+  categoriesState: CategoriesState
+  onRetryCategories: () => void
   product: Product | null // null = crear
   onClose: () => void
   onSaved: (product: Product, wasEdit: boolean) => void
@@ -28,7 +44,7 @@ function isHttpUrl(value: string) {
   }
 }
 
-export default function ProductFormModal({ token, categories, product, onClose, onSaved }: Props) {
+export default function ProductFormModal({ token, categories, categoriesState, onRetryCategories, product, onClose, onSaved }: Props) {
   const isEdit = product !== null
   const fileInput = useRef<HTMLInputElement>(null)
 
@@ -137,7 +153,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
     setFormError('')
 
     const found = validate()
-    setErrors(found)
+    showErrors(found)
     if (Object.keys(found).length > 0) return
 
     const input: ProductInput = {
@@ -165,7 +181,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
         }
         const imagesKey = Object.keys(fields).find((key) => key.startsWith('images'))
         if (imagesKey) fromServer.images = fields[imagesKey][0]
-        setErrors(fromServer)
+        showErrors(fromServer)
         setFormError(Object.keys(fromServer).length > 0 ? 'Revisá los campos marcados.' : error.message)
       } else {
         setFormError('Ocurrió un error inesperado. Intentá de nuevo.')
@@ -174,6 +190,18 @@ export default function ProductFormModal({ token, categories, product, onClose, 
       setSaving(false)
     }
   }
+
+  // Muestra los errores y lleva el foco al primero, para que se lea su mensaje.
+  function showErrors(found: Errors) {
+    setErrors(found)
+    const first = (Object.keys(fieldIds) as (keyof Errors)[]).find((key) => found[key])
+    if (first) document.getElementById(fieldIds[first])?.focus()
+  }
+
+  const errorProps = (key: keyof Errors) => ({
+    'aria-invalid': Boolean(errors[key]),
+    'aria-describedby': errors[key] ? `${fieldIds[key]}-error` : undefined,
+  })
 
   const fieldClass = (key: keyof Errors) => (errors[key] ? 'admin-field has-error' : 'admin-field')
 
@@ -184,37 +212,45 @@ export default function ProductFormModal({ token, categories, product, onClose, 
 
         <div className={fieldClass('name')}>
           <label htmlFor="pf-name">Nombre *</label>
-          <input id="pf-name" maxLength={150} value={name} onChange={(event) => setName(event.target.value)} aria-invalid={Boolean(errors.name)} />
-          {errors.name && <span className="admin-error">{errors.name}</span>}
+          <input id="pf-name" maxLength={150} value={name} onChange={(event) => setName(event.target.value)} {...errorProps('name')} />
+          {errors.name && <span id={`${fieldIds.name}-error`} className="admin-error">{errors.name}</span>}
         </div>
 
         <div className="admin-form-row">
           <div className={fieldClass('category')}>
             <label htmlFor="pf-category">Categoría *</label>
-            <select id="pf-category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} aria-invalid={Boolean(errors.category)}>
-              <option value="">Elegí una categoría</option>
+            <select id="pf-category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} disabled={categoriesState !== 'ready'} {...errorProps('category')}>
+              <option value="">{categoriesState === 'loading' ? 'Cargando categorías...' : 'Elegí una categoría'}</option>
               {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
-            {errors.category && <span className="admin-error">{errors.category}</span>}
+            {errors.category && <span id={`${fieldIds.category}-error`} className="admin-error">{errors.category}</span>}
+            {categoriesState === 'error' && (
+              <span className="admin-error" role="alert">
+                No se pudieron cargar las categorías. <button type="button" className="admin-text-link" onClick={onRetryCategories}>Reintentar</button>
+              </span>
+            )}
+            {categoriesState === 'ready' && categories.length === 0 && (
+              <span className="admin-hint">Todavía no hay categorías. <Link to="/admin/categorias">Creá una</Link> para poder cargar productos.</span>
+            )}
           </div>
           <div className={fieldClass('price')}>
             <label htmlFor="pf-price">Precio (ARS) *</label>
-            <input id="pf-price" type="number" inputMode="decimal" min={0} step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} aria-invalid={Boolean(errors.price)} />
-            {errors.price && <span className="admin-error">{errors.price}</span>}
+            <input id="pf-price" type="number" inputMode="decimal" min={0} step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} {...errorProps('price')} />
+            {errors.price && <span id={`${fieldIds.price}-error`} className="admin-error">{errors.price}</span>}
           </div>
           <div className={fieldClass('availableQuantity')}>
             <label htmlFor="pf-stock">Stock *</label>
-            <input id="pf-stock" type="number" inputMode="numeric" min={0} step={1} value={stock} onChange={(event) => setStock(event.target.value)} aria-invalid={Boolean(errors.availableQuantity)} />
+            <input id="pf-stock" type="number" inputMode="numeric" min={0} step={1} value={stock} onChange={(event) => setStock(event.target.value)} {...errorProps('availableQuantity')} />
             {errors.availableQuantity
-              ? <span className="admin-error">{errors.availableQuantity}</span>
+              ? <span id={`${fieldIds.availableQuantity}-error`} className="admin-error">{errors.availableQuantity}</span>
               : <span className="admin-hint">Con 0 se muestra como “Sin stock”.</span>}
           </div>
         </div>
 
         <div className={fieldClass('description')}>
           <label htmlFor="pf-description">Descripción *</label>
-          <textarea id="pf-description" rows={4} value={description} onChange={(event) => setDescription(event.target.value)} aria-invalid={Boolean(errors.description)} />
-          {errors.description && <span className="admin-error">{errors.description}</span>}
+          <textarea id="pf-description" rows={4} value={description} onChange={(event) => setDescription(event.target.value)} {...errorProps('description')} />
+          {errors.description && <span id={`${fieldIds.description}-error`} className="admin-error">{errors.description}</span>}
         </div>
 
         <div className={fieldClass('images')}>
@@ -269,7 +305,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
 
           <div className="admin-upload">
             <input ref={fileInput} id="pf-files" type="file" accept={ACCEPTED_TYPES.join(',')} multiple hidden onChange={(event) => void handleFiles(event)} />
-            <button type="button" className="admin-secondary" disabled={uploading} onClick={() => fileInput.current?.click()}>
+            <button id={fieldIds.images} type="button" className="admin-secondary" disabled={uploading} onClick={() => fileInput.current?.click()} aria-describedby={errors.images ? `${fieldIds.images}-error` : undefined}>
               {uploading ? 'Subiendo...' : 'Subir imágenes'}
             </button>
             <span className="admin-hint">JPG, PNG, WEBP o GIF · máx. {MAX_IMAGE_MB} MB c/u</span>
@@ -288,7 +324,7 @@ export default function ProductFormModal({ token, categories, product, onClose, 
           </div>
 
           {uploadError && <span className="admin-error" role="alert">{uploadError}</span>}
-          {errors.images && <span className="admin-error">{errors.images}</span>}
+          {errors.images && <span id={`${fieldIds.images}-error`} className="admin-error">{errors.images}</span>}
         </div>
 
         <label className="admin-check">

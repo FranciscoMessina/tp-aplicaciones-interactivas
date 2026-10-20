@@ -25,6 +25,14 @@ interface RequestOptions {
   signal?: AbortSignal
 }
 
+// Lo registra AuthProvider: una petición con token que vuelve 401 significa
+// que la sesión venció o se cerró (por ejemplo, al cambiar la contraseña).
+let onSessionRejected: () => void = () => undefined
+
+export function setSessionRejectedHandler(handler: () => void) {
+  onSessionRejected = handler
+}
+
 /**
  * Cliente genérico para la API. Agrega el token, interpreta el sobre
  * `{ success, data, error }` del backend y lanza `ApiRequestError`.
@@ -58,6 +66,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   } catch {
     throw new ApiRequestError('El servidor devolvió una respuesta inesperada.', response.status)
   }
+
+  if (response.status === 401 && token) onSessionRejected()
 
   if (!response.ok || !envelope.success || envelope.data === undefined) {
     throw new ApiRequestError(

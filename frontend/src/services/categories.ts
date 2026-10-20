@@ -1,8 +1,13 @@
-import type { Category } from '../types/product'
+import type { Category, CategorySummary } from '../types/product'
 import { apiRequest } from './api'
 
 export function fetchCategories(signal?: AbortSignal) {
   return apiRequest<Category[]>('/api/categories', { signal })
+}
+
+/** Categorías con productos publicados, de la más grande a la más chica. */
+export function fetchCategorySummaries(signal?: AbortSignal) {
+  return apiRequest<CategorySummary[]>('/api/categories/summary', { signal })
 }
 
 // ---- Administración (requiere token de administrador) ----

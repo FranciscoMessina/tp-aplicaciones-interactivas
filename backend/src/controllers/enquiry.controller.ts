@@ -1,10 +1,12 @@
 import type { Request, Response } from "express";
 import { sendSuccess } from "../http/responses.ts";
 import { validate } from "../http/validate.ts";
+import { getAuthenticatedUser } from "../middleware/auth.ts";
 import { idParamsSchema } from "../schemas/common.schema.ts";
 import {
   createEnquirySchema,
   listEnquiriesSchema,
+  replyToEnquirySchema,
   updateEnquiryStatusSchema,
 } from "../schemas/enquiry.schema.ts";
 import * as enquiryService from "../services/enquiry.service.ts";
@@ -13,8 +15,8 @@ export async function listEnquiries(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const { status } = validate(listEnquiriesSchema, req.query);
-  sendSuccess(res, await enquiryService.listEnquiries(status));
+  const query = validate(listEnquiriesSchema, req.query);
+  sendSuccess(res, await enquiryService.listEnquiries(query));
 }
 
 export async function createEnquiry(
@@ -32,6 +34,20 @@ export async function updateEnquiryStatus(
   const { id } = validate(idParamsSchema, req.params);
   const { status } = validate(updateEnquiryStatusSchema, req.body);
   sendSuccess(res, await enquiryService.updateEnquiryStatus(id, status));
+}
+
+export async function replyToEnquiry(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { sub: authorId } = getAuthenticatedUser(req);
+  const { id } = validate(idParamsSchema, req.params);
+  const { message } = validate(replyToEnquirySchema, req.body);
+  sendSuccess(
+    res,
+    await enquiryService.replyToEnquiry(id, authorId, message),
+    201,
+  );
 }
 
 export async function deleteEnquiry(

@@ -18,9 +18,11 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 
 - `GET /api/products`: obtiene la lista de productos activos. No requiere
   autenticación. Acepta `search` (full-text sobre `name` y `description`),
-  `category`, `minPrice`, `maxPrice`, `sortBy`
-  (`publicationDate`, `price` o `relevance`), `sortOrder` (`asc` o `desc`),
-  `page` (desde 1), `pageSize` (1 a 100, por defecto 20) e `includeInactive`. El
+  `category`, `minPrice`, `maxPrice`, `isFeatured`, `inStock` (`true`: con
+  unidades; `false`: sin stock), `sortBy` (`publicationDate`, `price`, `name` o
+  `relevance`), `sortOrder` (`asc` o `desc`), `page` (desde 1), `pageSize` (1 a
+  100, por defecto 20) e `includeInactive`. El catálogo público y el panel piden
+  solo la página que muestran. El
   orden por defecto es fecha de publicación descendente y `relevance` requiere
   `search`. Responde una página:
   `{ "items": [...], "page": 1, "pageSize": 20, "total": 97 }`.
@@ -46,11 +48,17 @@ debe ser el ID de una categoría existente.
 
 - `POST /api/images`: sube una imagen (`multipart/form-data`, campo `image`;
   JPG, PNG, WEBP o GIF de hasta 5 MB) y devuelve su URL pública en `data.url`,
-  lista para agregar al array `images` de un producto. Solo administradores.
+  lista para agregar al array `images` de un producto. Además del tipo que
+  declara el navegador, se comparan los primeros bytes del archivo con la firma
+  del formato: si no coinciden, se borra y responde `400`.
+  Solo administradores.
   Los archivos quedan en `backend/public/uploads`.
 
 ## Categorías e información institucional
 
+- `GET /api/categories/summary`: las categorías con productos publicados, de la
+  más grande a la más chica, con `productCount`, `minPrice` y hasta cinco
+  nombres de ejemplo en `examples`. Es lo que muestra la tabla del inicio.
 - `GET /api/categories`: lista categorías ordenadas por nombre. Los nombres son
   únicos sin distinguir mayúsculas: "Consolas" y "consolas" chocan con un 409.
 - `POST`, `PATCH /:id` y `DELETE /:id` sobre `/api/categories`: solo administradores.
@@ -60,8 +68,17 @@ debe ser el ID de una categoría existente.
 ## Consultas
 
 - `POST /api/enquiries`: permite a cualquier visitante enviar una consulta.
-- `GET /api/enquiries`: lista las consultas de la más nueva a la más vieja.
-  Acepta `status` (`PENDING`, `READ` o `RESOLVED`) para filtrar.
+- `GET /api/enquiries`: lista las consultas de la más nueva a la más vieja, de a
+  páginas: acepta `status` (`PENDING`, `READ` o `RESOLVED`) para filtrar, `page`
+  (desde 1) y `pageSize` (1 a 50, por defecto 20). Responde
+  `{ "items": [...], "page": 1, "pageSize": 20, "total": 4 }`, igual que el
+  listado de productos. Cada consulta incluye `replies` (`id`, `message`,
+  `authorName`, `createdAt`).
+- `POST /api/enquiries/:id/replies` (con `message`, hasta 5000 caracteres): le
+  envía la respuesta por mail al visitante, con el mail de quien responde como
+  `Reply-To`, la guarda en la consulta y la deja en `RESOLVED`. Primero se
+  envía: si el servidor de correo falla responde `500` y no guarda nada.
+  Devuelve la consulta actualizada con `201`.
 - `PATCH /api/enquiries/:id` (con `status`) y `DELETE /api/enquiries/:id`.
 
 Todas salvo `POST` son solo para administradores. Al recibir una consulta se
@@ -71,7 +88,9 @@ visitante (ver "Correos").
 El estado de una consulta comienza en `PENDING`. Puede pasar a `READ` o
 `RESOLVED`, y desde cualquier estado puede volver a `PENDING`. Lo único que no
 se permite es pasar de `RESOLVED` a `READ`. Los cambios al mismo estado son
-idempotentes.
+idempotentes. El cambio se aplica en una sola operación condicionada al estado
+anterior: si dos administradores cambian la misma consulta a la vez, el segundo
+recibe `409` en lugar de pisar al primero.
 
 ## Métricas
 
@@ -83,27 +102,40 @@ idempotentes.
 ## Usuarios y autenticación
 
 Las únicas cuentas son las de los administradores del comercio: los visitantes
-navegan y envían consultas sin registrarse.
+navegan y envían consultas sin registrarse. No hay registro público: un
+administrador da de alta a los demás desde el panel.
 
-- `POST /api/users/register`: registra un administrador con `fullName`, `email`, `phone` y `password` (mínimo 8 caracteres). Devuelve el JWT y el usuario, como el login.
+- `GET /api/users`: lista los administradores. Solo administradores.
+- `POST /api/users`: crea un administrador con `fullName`, `email` y `phone`. La cuenta nace sin contraseña y la persona recibe un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...&invitacion=1` para elegirla; vence a las 72 horas. Solo administradores.
+- `DELETE /api/users/:id`: elimina un administrador; sus sesiones dejan de valer en el acto. Nadie puede eliminar su propia cuenta (`409`), así que siempre queda al menos uno. Solo administradores.
 - `POST /api/users/login`: inicia sesión con `email` y `password` y devuelve un JWT (incluye el rol del usuario).
 - `POST /api/users/logout`: valida el JWT y responde sin contenido; el cliente debe eliminar el token almacenado.
 - `GET /api/users/me`: obtiene los datos del usuario autenticado.
 - `PATCH /api/users/me`: modifica `fullName`, `email` y/o `phone` del usuario autenticado.
-- `PATCH /api/users/me/password`: cambia la contraseña con `currentPassword` y `newPassword`.
+- `PATCH /api/users/me/password`: cambia la contraseña con `currentPassword` y `newPassword`. Cierra las demás sesiones, anula los enlaces de recuperación pendientes y devuelve un `accessToken` nuevo para seguir en la sesión actual.
 - `POST /api/users/forgot-password`: genera un token de recuperación y le manda al usuario un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...`. La respuesta es la misma exista o no la cuenta.
-- `POST /api/users/reset-password`: cambia la contraseña con `token` y `password`.
+- `POST /api/users/reset-password`: cambia la contraseña con `token` y `password`, y cierra las sesiones abiertas. También activa las cuentas invitadas.
 
 Los correos se normalizan a minúsculas y tienen un índice único en MongoDB. Las
 contraseñas se almacenan con bcrypt y los tokens de recuperación son de un solo
-uso, se guardan hasheados y vencen a los 15 minutos.
+uso, se guardan hasheados y vencen a los 15 minutos. Las contraseñas nuevas
+tienen entre 8 caracteres y 72 bytes: bcrypt ignora lo que sigue, y una letra
+con tilde ocupa 2 bytes.
+
+Login, recuperación, restablecimiento y el envío de consultas tienen un límite
+por IP (`src/middleware/rate-limit.ts`): 10 logins fallidos, 5 pedidos de
+recuperación o 10 restablecimientos cada 15 minutos, y 5 consultas por hora.
+Al superarlo la API responde `429`. Si la API se publica detrás de un proxy hay
+que definir `TRUST_PROXY` (ver el README) para que cuente la IP real.
 
 ## Correos
 
 `src/services/mail.service.ts` envía los mails con nodemailer por SMTP
-(variables `SMTP_*`, ver el README). Si `SMTP_HOST` no está configurado, el
-mail completo se escribe en la consola del servidor, así el proyecto funciona
-sin una cuenta de correo. Un mail que no se puede enviar se registra como error
+(variables `SMTP_*`, ver el README). En desarrollo, si `SMTP_HOST` no está
+configurado, el mail completo se escribe en la consola del servidor, así el
+proyecto funciona sin una cuenta de correo. Con `NODE_ENV=production` el
+servidor no arranca sin SMTP: la consola dejaría enlaces de recuperación y datos
+de los visitantes en los logs. Un mail que no se puede enviar se registra como error
 pero no hace fallar la operación que lo disparó.
 
 ## Respuestas
@@ -131,7 +163,8 @@ Si falló:
 ```
 
 `code` es uno de `INVALID_INPUT` (400), `UNAUTHENTICATED` (401), `FORBIDDEN`
-(403), `NOT_FOUND` (404), `CONFLICT` (409) o `UNEXPECTED` (500). `fields` solo
+(403), `NOT_FOUND` (404), `CONFLICT` (409), `TOO_MANY_REQUESTS` (429) o
+`UNEXPECTED` (500). `fields` solo
 aparece cuando el error se puede asociar a campos concretos: la clave es el
 nombre del campo (o su ruta, como `images.0`) y el valor la lista de mensajes.
 Así el front puede mostrar cada error debajo de su input. Un email ya
@@ -160,7 +193,10 @@ productRouter.post("/", authenticate, requireAdmin, createProduct);
 ```
 
 - `authenticate`: exige el header `Authorization: Bearer <token>` y deja el
-  usuario en `req.user`.
+  usuario en `req.user`. Además de la firma y el vencimiento, comprueba en la
+  base que la cuenta exista y que el token sea de la sesión vigente: cada
+  usuario tiene un `sessionVersion` que viaja en el token y aumenta al cambiar
+  la contraseña.
 - `optionalAuthenticate`: igual, pero si no hay token sigue como visitante.
 - `requireAdmin`: solo deja pasar usuarios con rol `admin`.
 
