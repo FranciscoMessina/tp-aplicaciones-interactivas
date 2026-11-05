@@ -5,3 +5,6 @@ dist/
 
 # Imagenes subidas desde la API
 public/uploads/
+
+# Backups locales de imagenes antes de actualizar MongoDB
+.photo-backups/
