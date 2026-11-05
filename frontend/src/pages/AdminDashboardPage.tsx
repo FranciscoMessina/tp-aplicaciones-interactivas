@@ -17,6 +17,25 @@ function percentOf(value: number, max: number) {
   return max > 0 ? Math.round((value / max) * 100) : 0
 }
 
+// Cuenta desde 0 hasta el valor; con "menos movimiento" muestra el número final directamente.
+function CountUp({ value }: { value: number }) {
+  const [shown, setShown] = useState(0)
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(value); return }
+    const duration = 900
+    const start = performance.now()
+    let frame = requestAnimationFrame(function tick(now) {
+      const progress = Math.min((now - start) / duration, 1)
+      setShown(Math.round(value * (1 - (1 - progress) ** 3)))
+      if (progress < 1) frame = requestAnimationFrame(tick)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [value])
+
+  return <>{shown}</>
+}
+
 function BarList({ bars }: { bars: Bar[] }) {
   return (
     <ul className="dashboard-bars">
@@ -59,7 +78,7 @@ function DashboardBody({ stats }: { stats: DashboardStats }) {
         {tiles.map((tile) => (
           <Link key={tile.label} to={tile.to} className={`dashboard-stat${tile.attention ? ' is-attention' : ''}`}>
             <span className="dashboard-stat-label">{tile.label}</span>
-            <strong className="dashboard-stat-value">{tile.value}</strong>
+            <strong className="dashboard-stat-value"><CountUp value={tile.value} /></strong>
             <span className="dashboard-stat-hint">{tile.hint}</span>
           </Link>
         ))}

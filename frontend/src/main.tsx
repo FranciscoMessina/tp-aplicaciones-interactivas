@@ -4,6 +4,7 @@ import '@fontsource-variable/archivo/wdth.css'
 import '@fontsource-variable/martian-mono'
 import './index.css'
 import App from './App.tsx'
+import './motion.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
