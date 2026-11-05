@@ -1,650 +1,434 @@
 [
   {
     "name": "PlayStation 5 Slim 1TB",
-    "category": "Consolas",
-    "filename": "001-playstation-5-slim-1tb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSOcf1CEdVxe0GHZWHlwYsL-PQPRlJHLD1LSZSdu0ixWbpqZ1JlvYVAbKWraYZWLVMky8D0_Opi4_HGnmYkRkjvpwdcbkesOJKGDQYYWwrCZYQHNs2EA-fMxvwcjBcaBNZ1wtRjW_Xu_A&usqp=CAc"
+    "filename": "001-playstation-5-slim-1tb"
   },
   {
     "name": "PlayStation 5 Pro 2TB",
-    "category": "Consolas",
-    "filename": "002-playstation-5-pro-2tb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQf9-NG8uD-aYOf_sSBew4gOZM1V7zsr-0KxKFdsz60hQ&s=10"
+    "filename": "002-playstation-5-pro-2tb"
   },
   {
     "name": "Xbox Series X 1TB",
-    "category": "Consolas",
-    "filename": "003-xbox-series-x-1tb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQEsqbpje_1AtUk6fsOs75g_WFjydnBcc3ENN9bEqUdA&s=10"
+    "filename": "003-xbox-series-x-1tb"
   },
   {
     "name": "Xbox Series S 512GB",
-    "category": "Consolas",
-    "filename": "004-xbox-series-s-512gb",
-    "sourceUrl": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTM2oQ5adX0eVxkjY8MtK89Srrc4kUSG1zvlH8m7RZy9NGQUpRqe-hNkYE5zGk8K-W03c64t6fmi0VTVkdjKWepMdpIdHwnUa7lcAMQsZmN5mZSJ8ZSoZ7XQlzRDXmJtX3JhVVbB_o&usqp=CAc"
+    "filename": "004-xbox-series-s-512gb"
   },
   {
     "name": "Nintendo Switch 2",
-    "category": "Consolas",
-    "filename": "005-nintendo-switch-2",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcKnjpCJyHOncXApGVxMP9plvOvnxuc3ttcnNvleQNZw&s"
+    "filename": "005-nintendo-switch-2"
   },
   {
     "name": "Nintendo Switch OLED",
-    "category": "Consolas",
-    "filename": "006-nintendo-switch-oled",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdoF6NOuDpwxF0CBwAUCp2_Ag2yh8duh1garNnSXOw0Q&s"
+    "filename": "006-nintendo-switch-oled"
   },
   {
     "name": "Nintendo Switch Lite",
-    "category": "Consolas",
-    "filename": "007-nintendo-switch-lite",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrNci1No_XoOeqnomNVC-uwYPYgw_F1-FRusgEvrq2Gg&s=10"
+    "filename": "007-nintendo-switch-lite"
   },
   {
     "name": "Steam Deck OLED 512GB",
-    "category": "Consolas",
-    "filename": "008-steam-deck-oled-512gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdN36C2o8sv_XJM1LvlhQtvXLZXuh_-gilRA0hCydwUQ&s=10"
+    "filename": "008-steam-deck-oled-512gb"
   },
   {
     "name": "ASUS ROG Ally X",
-    "category": "Consolas",
-    "filename": "009-asus-rog-ally-x",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrNw_K5SqofrTw8WiYmR1ePWeTcgOA1vmr-ss-_gbP4A&s=10"
+    "filename": "009-asus-rog-ally-x"
   },
   {
     "name": "PlayStation Portal",
-    "category": "Consolas",
-    "filename": "010-playstation-portal",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfTe0sTPFKNof5cmGMa7vqphVr61eQrvECuFgCkQR57Q&s=10"
+    "filename": "010-playstation-portal"
   },
   {
     "name": "MacBook Air 13\" M4",
-    "category": "Computadoras",
-    "filename": "011-macbook-air-13-m4",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSK_SMNKOfuCgkknWeKdgiyA5sRxI4Flz9hZDKwU-fN_A&s"
+    "filename": "011-macbook-air-13-m4"
   },
   {
     "name": "MacBook Pro 14\" M4 Pro",
-    "category": "Computadoras",
-    "filename": "012-macbook-pro-14-m4-pro",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRyCwyJmCZKOAAUC-qX3VPz4AuhGfIkpJDG0_v1wiW7Ww&s=10"
+    "filename": "012-macbook-pro-14-m4-pro"
   },
   {
     "name": "Lenovo IdeaPad Slim 3 Ryzen 5",
-    "category": "Computadoras",
-    "filename": "013-lenovo-ideapad-slim-3-ryzen-5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7UFDogBKI-pdtcLHYS_07QWDsSVIV59ZEfgiueOObyw&s=10"
+    "filename": "013-lenovo-ideapad-slim-3-ryzen-5"
   },
   {
     "name": "Lenovo Legion 5 RTX 4060",
-    "category": "Computadoras",
-    "filename": "014-lenovo-legion-5-rtx-4060",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnMrsC4vD8CW9CNcF6VqCAPrJpg5-2yMCGyb5MCtzzVQ&s=10"
+    "filename": "014-lenovo-legion-5-rtx-4060"
   },
   {
     "name": "ASUS ROG Strix G16 RTX 4070",
-    "category": "Computadoras",
-    "filename": "015-asus-rog-strix-g16-rtx-4070",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu-x58QgTaVKf37ru9C9N59-_njnLsntvYLJ6Jll_1Fw&s"
+    "filename": "015-asus-rog-strix-g16-rtx-4070"
   },
   {
     "name": "HP Pavilion 15 Core i5",
-    "category": "Computadoras",
-    "filename": "016-hp-pavilion-15-core-i5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0i99-9yvJIJcBM2fndlLlbECf2shkvtUnChUbTMVzIQ&s=10"
+    "filename": "016-hp-pavilion-15-core-i5"
   },
   {
     "name": "Dell XPS 13",
-    "category": "Computadoras",
-    "filename": "017-dell-xps-13",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSldZqigUmSIby7ku9aCAOEEEPZS9CdeUJjlgJggF57zA&s"
+    "filename": "017-dell-xps-13"
   },
   {
     "name": "Acer Aspire 5 Core i3",
-    "category": "Computadoras",
-    "filename": "018-acer-aspire-5-core-i3",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAVK67byyyrJWeju3vr5exeyELTV0rZFhaeyRUnYQA5Q&s"
+    "filename": "018-acer-aspire-5-core-i3"
   },
   {
     "name": "iMac 24\" M4",
-    "category": "Computadoras",
-    "filename": "019-imac-24-m4",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7IP4R5nvkoteyoB2eNl9joPbdSAVW6ipyhxgsofAbSQ&s=10"
+    "filename": "019-imac-24-m4"
   },
   {
     "name": "Mac mini M4",
-    "category": "Computadoras",
-    "filename": "020-mac-mini-m4",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1D55dC1mNOuHCfHKnjDw1whtvNUiqgLUJELb5_3UbbQ&s=10"
+    "filename": "020-mac-mini-m4"
   },
   {
     "name": "PC Gamer Ryzen 7 RTX 4070 Super",
-    "category": "Computadoras",
-    "filename": "021-pc-gamer-ryzen-7-rtx-4070-super",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfKFjZCC9gVLs8QSzyEI7hocMUMNfaDaIPW5cYbMQHHA&s=10"
+    "filename": "021-pc-gamer-ryzen-7-rtx-4070-super"
   },
   {
     "name": "PC de oficina Core i5",
-    "category": "Computadoras",
-    "filename": "022-pc-de-oficina-core-i5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-KFxOXz7ZBLGG49NCpS9l86_XeKaTGIPBzudFAH8anQ&s=10"
+    "filename": "022-pc-de-oficina-core-i5"
   },
   {
     "name": "iPhone 16 128GB",
-    "category": "Celulares",
-    "filename": "023-iphone-16-128gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8SklyDBu9zDSfIdR2Rd0k1BZKTwyTkzAcaPAu1YRUcg&s=10"
+    "filename": "023-iphone-16-128gb"
   },
   {
     "name": "iPhone 16 Pro Max 256GB",
-    "category": "Celulares",
-    "filename": "024-iphone-16-pro-max-256gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvDEY0AP21Jbgu1UlNTflzsufrlXOMGlXSwGLrSeqwqg&s=10"
+    "filename": "024-iphone-16-pro-max-256gb"
   },
   {
     "name": "iPhone 15 128GB",
-    "category": "Celulares",
-    "filename": "025-iphone-15-128gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHvljrFPkr80SlhgDprZiX4oAa5UcN5PdCgsx5q_OQWw&s=10"
+    "filename": "025-iphone-15-128gb"
   },
   {
     "name": "Samsung Galaxy S25 Ultra 256GB",
-    "category": "Celulares",
-    "filename": "026-samsung-galaxy-s25-ultra-256gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxZ0kf9Un1jzwjfDxT3B0t8-2uNNlt-xzX9o0UOepYoA&s=10"
+    "filename": "026-samsung-galaxy-s25-ultra-256gb"
   },
   {
     "name": "Samsung Galaxy S25 128GB",
-    "category": "Celulares",
-    "filename": "027-samsung-galaxy-s25-128gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRRZlF3Jo3DvjLCu_alXqI5gW2XfxtMHGa77jzQkHPERw&s=10"
+    "filename": "027-samsung-galaxy-s25-128gb"
   },
   {
     "name": "Samsung Galaxy Z Flip6",
-    "category": "Celulares",
-    "filename": "028-samsung-galaxy-z-flip6",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0zbu20thvlWa0d25Cekqyy_nqbrTxvTc6AiHpqHhORw&s=10"
+    "filename": "028-samsung-galaxy-z-flip6"
   },
   {
     "name": "Samsung Galaxy A56 5G",
-    "category": "Celulares",
-    "filename": "029-samsung-galaxy-a56-5g",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzGdAyhHTr2Mqec2MTcRDbeyN2iM4t9L1CGOACCE902Q&s=10"
+    "filename": "029-samsung-galaxy-a56-5g"
   },
   {
     "name": "Samsung Galaxy A16",
-    "category": "Celulares",
-    "filename": "030-samsung-galaxy-a16",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSb8HyRtWV65Pq4Zr2Df_1V4lqJEag5q6RK4BdrKpp3Lg&s=10"
+    "filename": "030-samsung-galaxy-a16"
   },
   {
     "name": "Motorola Edge 50 Pro",
-    "category": "Celulares",
-    "filename": "031-motorola-edge-50-pro",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgAtbfryM5qiTPqK3GuE-vmByfNBZ31iageTfR6p8DVg&s=10"
+    "filename": "031-motorola-edge-50-pro"
   },
   {
     "name": "Motorola Moto G85 5G",
-    "category": "Celulares",
-    "filename": "032-motorola-moto-g85-5g",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNlAm_9h1aptXXHVxXNXgbpNlAJ9PNA5fGsED2gyia7Q&s=10"
+    "filename": "032-motorola-moto-g85-5g"
   },
   {
     "name": "Xiaomi Redmi Note 14 Pro",
-    "category": "Celulares",
-    "filename": "033-xiaomi-redmi-note-14-pro",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoMUSHbnuFsME_gyZeNUepKRnuS2cKis73epoDE2faSA&s=10"
+    "filename": "033-xiaomi-redmi-note-14-pro"
   },
   {
     "name": "Google Pixel 9",
-    "category": "Celulares",
-    "filename": "034-google-pixel-9",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPIXvn7JP3hbrE0PixkZOqOqq9WMjIXbsj-VKUDDsQug&s=10"
+    "filename": "034-google-pixel-9"
   },
   {
     "name": "iPad 11\" 128GB",
-    "category": "Tablets",
-    "filename": "035-ipad-11-128gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_TfuvmH0eoOULWCL-eyQ1xp9OCk6Kwkv2Sf-84OGDcg&s=10"
+    "filename": "035-ipad-11-128gb"
   },
   {
     "name": "iPad Air 11\" M3",
-    "category": "Tablets",
-    "filename": "036-ipad-air-11-m3",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4DOn4nrommM3RD1lNgjibaxQKAxsazWFALJrdUqQpzg&s=10"
+    "filename": "036-ipad-air-11-m3"
   },
   {
     "name": "iPad Pro 13\" M4",
-    "category": "Tablets",
-    "filename": "037-ipad-pro-13-m4",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe-rEi8aXrMUHlIvPwM59xfELjl6Hb6vhRQ-Cypo7yiQ&s=10"
+    "filename": "037-ipad-pro-13-m4"
   },
   {
     "name": "iPad mini",
-    "category": "Tablets",
-    "filename": "038-ipad-mini",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROo7A7C1d_WtKFzrZRA72pdKsf27cf2DNfAwmHxOqFyA&s=10"
+    "filename": "038-ipad-mini"
   },
   {
     "name": "Samsung Galaxy Tab S10 FE",
-    "category": "Tablets",
-    "filename": "039-samsung-galaxy-tab-s10-fe",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkU8T2ph2649arAZ3x5BfVq93jmxfjWRReT3NEIqLzlw&s=10"
+    "filename": "039-samsung-galaxy-tab-s10-fe"
   },
   {
     "name": "Samsung Galaxy Tab A9+",
-    "category": "Tablets",
-    "filename": "040-samsung-galaxy-tab-a9",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmmDPYtRriYOSLw0gCa8B7HSju_OwAfzEAn-VzrSNa3w&s=10"
+    "filename": "040-samsung-galaxy-tab-a9"
   },
   {
     "name": "Lenovo Tab M11",
-    "category": "Tablets",
-    "filename": "041-lenovo-tab-m11",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpnMyZQq_qoJz9BX_VSpECE9ILgTlqkZCeWLdc-ozzZA&s=10"
+    "filename": "041-lenovo-tab-m11"
   },
   {
     "name": "Kindle Paperwhite",
-    "category": "Tablets",
-    "filename": "042-kindle-paperwhite",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdFVgdSC13Fbnh_bUkss-mpsNWh1MoevSmu8yNGOr0Tw&s=10"
+    "filename": "042-kindle-paperwhite"
   },
   {
     "name": "EA Sports FC 26 - PS5",
-    "category": "Videojuegos",
-    "filename": "043-ea-sports-fc-26-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2AX0ci58v6pAVBHwKXkdjs9XMKGLdJqxMQeFh8cWEwQ&s=10"
+    "filename": "043-ea-sports-fc-26-ps5"
   },
   {
     "name": "Marvel's Spider-Man 2 - PS5",
-    "category": "Videojuegos",
-    "filename": "044-marvel-s-spider-man-2-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTH9bkKfqeC5AiklCTAh5qhtYlwt4zrUgUy05pBObEnIQ&s=10"
+    "filename": "044-marvel-s-spider-man-2-ps5"
   },
   {
     "name": "God of War Ragnarök - PS5",
-    "category": "Videojuegos",
-    "filename": "045-god-of-war-ragnarok-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzUVovHSWvi1jeBwDYi9Ut7C-nhRN0gx5NORgWfgf4xA&s=10"
+    "filename": "045-god-of-war-ragnarok-ps5"
   },
   {
     "name": "Gran Turismo 7 - PS5",
-    "category": "Videojuegos",
-    "filename": "046-gran-turismo-7-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHF83tYubkBNO_2HO4SQnR3i6Oa9fjZenJzYx82ohtfQ&s=10"
+    "filename": "046-gran-turismo-7-ps5"
   },
   {
     "name": "The Last of Us Part II Remastered - PS5",
-    "category": "Videojuegos",
-    "filename": "047-the-last-of-us-part-ii-remastered-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7Vv1r6E0zRxxub3JuVF1AH3qi9HgqTavF2hUJCK8bGg&s=10"
+    "filename": "047-the-last-of-us-part-ii-remastered-ps5"
   },
   {
     "name": "Elden Ring - PS5",
-    "category": "Videojuegos",
-    "filename": "048-elden-ring-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWTB51j-f66UuJAwm1ljzP1bt-1hebIYLexjV6OsBqHw&s=10"
+    "filename": "048-elden-ring-ps5"
   },
   {
     "name": "Hogwarts Legacy - PS5",
-    "category": "Videojuegos",
-    "filename": "049-hogwarts-legacy-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhwEbIRpkvzk49ozAXnjFBBMs-5DdNGqAuQ0QfNahIyw&s=10"
+    "filename": "049-hogwarts-legacy-ps5"
   },
   {
     "name": "Call of Duty: Black Ops 6 - PS5",
-    "category": "Videojuegos",
-    "filename": "050-call-of-duty-black-ops-6-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGfrv1xbi57NTHfSbInUayX7wG0IT-FYwsvQn9xxb-tA&s=10"
+    "filename": "050-call-of-duty-black-ops-6-ps5"
   },
   {
     "name": "Mario Kart World - Nintendo Switch 2",
-    "category": "Videojuegos",
-    "filename": "051-mario-kart-world-nintendo-switch-2",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwMBtM1Q9p_eS8E1hO-gxk5Kf5WZjrGEsdvXugZGmA8Q&s"
+    "filename": "051-mario-kart-world-nintendo-switch-2"
   },
   {
     "name": "The Legend of Zelda: Tears of the Kingdom - Switch",
-    "category": "Videojuegos",
-    "filename": "052-the-legend-of-zelda-tears-of-the-kingdom-switch",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQT6ELB7gUlIqrGHNhK820hH9-wHi7NccJQArgu4vIM5g&s=10"
+    "filename": "052-the-legend-of-zelda-tears-of-the-kingdom-switch"
   },
   {
     "name": "Super Mario Bros. Wonder - Switch",
-    "category": "Videojuegos",
-    "filename": "053-super-mario-bros-wonder-switch",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3o6AyhyLSLSosmPxaw__L82QfovpGXBqquJprH23WMA&s=10"
+    "filename": "053-super-mario-bros-wonder-switch"
   },
   {
     "name": "Pokémon Legends: Z-A - Switch",
-    "category": "Videojuegos",
-    "filename": "054-pokemon-legends-z-a-switch",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIawXK6jLWwP8so1b9YAnDiqtFMWXLc_6dTRWx7vWxEw&s=10"
+    "filename": "054-pokemon-legends-z-a-switch"
   },
   {
     "name": "Forza Horizon 5 - Xbox",
-    "category": "Videojuegos",
-    "filename": "055-forza-horizon-5-xbox",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsbMRQQYcvro9SHe1r4pfAwNIRvCZvUK-6KWZPM6jFKg&s=10"
+    "filename": "055-forza-horizon-5-xbox"
   },
   {
     "name": "Minecraft - Switch",
-    "category": "Videojuegos",
-    "filename": "056-minecraft-switch",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEcvqRrAudDeLkVdxNgO4p7sCc-F8WSZ_TIsQ7UbA7mA&s=10"
+    "filename": "056-minecraft-switch"
   },
   {
     "name": "Joystick DualSense PS5",
-    "category": "Accesorios gamer",
-    "filename": "057-joystick-dualsense-ps5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpsVLnSsI4bug8q7HFN9lgkqe2VcdBVD3DdrwFZzConQ&s=10"
+    "filename": "057-joystick-dualsense-ps5"
   },
   {
     "name": "Joystick DualSense Edge",
-    "category": "Accesorios gamer",
-    "filename": "058-joystick-dualsense-edge",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUOt3pZMOCpaw8xuU_xnZcvQk7KGNFLUql6omRkLurKQ&s=10"
+    "filename": "058-joystick-dualsense-edge"
   },
   {
     "name": "Control inalámbrico Xbox",
-    "category": "Accesorios gamer",
-    "filename": "059-control-inalambrico-xbox",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUv2Th1SdTrSdn1Mw3GRBEock94dk55NwfExphof227w&s=10"
+    "filename": "059-control-inalambrico-xbox"
   },
   {
     "name": "Nintendo Switch Pro Controller",
-    "category": "Accesorios gamer",
-    "filename": "060-nintendo-switch-pro-controller",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWmurqaGKHwbt7ibFIq6UcEIZrm8RmpbuO09IVRkyDdQ&s"
+    "filename": "060-nintendo-switch-pro-controller"
   },
   {
     "name": "Auriculares HyperX Cloud III",
-    "category": "Accesorios gamer",
-    "filename": "061-auriculares-hyperx-cloud-iii",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLW3GVbcJOxn7cTcd6Iu58KFrnebJMmZOVJrRnSfkYpA&s=10"
+    "filename": "061-auriculares-hyperx-cloud-iii"
   },
   {
     "name": "Auriculares Logitech G Pro X 2 Lightspeed",
-    "category": "Accesorios gamer",
-    "filename": "062-auriculares-logitech-g-pro-x-2-lightspeed",
-    "sourceUrl": ""
+    "filename": "062-auriculares-logitech-g-pro-x-2-lightspeed"
   },
   {
     "name": "Teclado mecánico Redragon Kumara",
-    "category": "Accesorios gamer",
-    "filename": "063-teclado-mecanico-redragon-kumara",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRA0ydwAH7XDlQTFe-AylXe8GUpBqDQknr8j2F7CpBvWA&s=10"
+    "filename": "063-teclado-mecanico-redragon-kumara"
   },
   {
     "name": "Teclado Logitech G915 TKL",
-    "category": "Accesorios gamer",
-    "filename": "064-teclado-logitech-g915-tkl",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTc49xo_cg0qoHVmXn-liAFl7xTu6xRO6L7vHDSHosP_A&s"
+    "filename": "064-teclado-logitech-g915-tkl"
   },
   {
     "name": "Mouse Logitech G502 X",
-    "category": "Accesorios gamer",
-    "filename": "065-mouse-logitech-g502-x",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSd5hrdyJRP5ccrDPRblxbSQ60IndyszSWuIc2rgVWxpw&s=10"
+    "filename": "065-mouse-logitech-g502-x"
   },
   {
     "name": "Mouse Razer DeathAdder V3",
-    "category": "Accesorios gamer",
-    "filename": "066-mouse-razer-deathadder-v3",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0I7ytJ3CPI7nq2O89e-IxMVjNB0RXQoqTdATlvkr-CA&s=10"
+    "filename": "066-mouse-razer-deathadder-v3"
   },
   {
     "name": "Silla gamer ergonómica",
-    "category": "Accesorios gamer",
-    "filename": "067-silla-gamer-ergonomica",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcReKv-td2P5wc_XH6BomRPXJ77L3cvWHHIKKmJKwqXp1Q&s=10"
+    "filename": "067-silla-gamer-ergonomica"
   },
   {
     "name": "Volante Logitech G29",
-    "category": "Accesorios gamer",
-    "filename": "068-volante-logitech-g29",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQkgX7Jn9chDsDvDkiseQ5fRgV8jJXHADUIPRUmp7dHw&s=10"
+    "filename": "068-volante-logitech-g29"
   },
   {
     "name": "AirPods Pro 2",
-    "category": "Audio",
-    "filename": "069-airpods-pro-2",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyX-fAWvbwmH28Chfiz3-MxWcWO6dIMZrBW8yR0Rsa6w&s"
+    "filename": "069-airpods-pro-2"
   },
   {
     "name": "AirPods 4",
-    "category": "Audio",
-    "filename": "070-airpods-4",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlgIErVNbAxDlOLq8O7aZ9Sbj4b71VY03-NeOp41z7BA&s=10"
+    "filename": "070-airpods-4"
   },
   {
     "name": "Samsung Galaxy Buds3 Pro",
-    "category": "Audio",
-    "filename": "071-samsung-galaxy-buds3-pro",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6Jj-MAR2gNBTJrEvq09IeH_wLjVfPMIhqxuNtqBKMAQ&s=10"
+    "filename": "071-samsung-galaxy-buds3-pro"
   },
   {
     "name": "Sony WH-1000XM5",
-    "category": "Audio",
-    "filename": "072-sony-wh-1000xm5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNnomutReNnaRNv2IY0iwAafTtNSAz0Om78ICFiGDSDA&s=10"
+    "filename": "072-sony-wh-1000xm5"
   },
   {
     "name": "JBL Tune 520BT",
-    "category": "Audio",
-    "filename": "073-jbl-tune-520bt",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3TY8Ecj9LSjCtWghFRQiYPgST5kRRk1wUwiRSRpNtOg&s=10"
+    "filename": "073-jbl-tune-520bt"
   },
   {
     "name": "Parlante JBL Flip 6",
-    "category": "Audio",
-    "filename": "074-parlante-jbl-flip-6",
-    "sourceUrl": ""
+    "filename": "074-parlante-jbl-flip-6"
   },
   {
     "name": "Parlante JBL Charge 5",
-    "category": "Audio",
-    "filename": "075-parlante-jbl-charge-5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0XW8cgJwetlv-rY9x0g8DMWs9JXVJPvtgz1JJMDGccQ&s=10"
+    "filename": "075-parlante-jbl-charge-5"
   },
   {
     "name": "Barra de sonido Samsung HW-B550",
-    "category": "Audio",
-    "filename": "076-barra-de-sonido-samsung-hw-b550",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFLjFnDpwExnAzK9ku4PNO8Iz0OftBBdjoke71GgV5sg&s"
+    "filename": "076-barra-de-sonido-samsung-hw-b550"
   },
   {
     "name": "Monitor Samsung Odyssey G5 27\"",
-    "category": "Monitores y TV",
-    "filename": "077-monitor-samsung-odyssey-g5-27",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3rD_VxKW872nbsc-XbDH1VpLtDdIQFshmmMRf-nIfow&s=10"
+    "filename": "077-monitor-samsung-odyssey-g5-27"
   },
   {
     "name": "Monitor LG UltraGear 24\"",
-    "category": "Monitores y TV",
-    "filename": "078-monitor-lg-ultragear-24",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv_NKqc4T-Hi7DYcLwPgA-RlHuxQfQ66L63OedsOHTIw&s=10"
+    "filename": "078-monitor-lg-ultragear-24"
   },
   {
     "name": "Monitor Dell 27\" 4K",
-    "category": "Monitores y TV",
-    "filename": "079-monitor-dell-27-4k",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDb5josxNFPPQYBqeVQin02ZgCWYQPxho64jeU-KW3tQ&s=10"
+    "filename": "079-monitor-dell-27-4k"
   },
   {
     "name": "Monitor LG UltraWide 34\"",
-    "category": "Monitores y TV",
-    "filename": "080-monitor-lg-ultrawide-34",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlRKvdvroUZMVRP7VUdJMTpgxdtUMsB2xRGogNH2mjOw&s=10"
+    "filename": "080-monitor-lg-ultrawide-34"
   },
   {
     "name": "Smart TV Samsung 55\" Crystal UHD 4K",
-    "category": "Monitores y TV",
-    "filename": "081-smart-tv-samsung-55-crystal-uhd-4k",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS92R6g7lxUSi4SN3gxMvCjt4WQz07ea8JWNIqy4_qnKQ&s=10"
+    "filename": "081-smart-tv-samsung-55-crystal-uhd-4k"
   },
   {
     "name": "Smart TV LG OLED 55\" C4",
-    "category": "Monitores y TV",
-    "filename": "082-smart-tv-lg-oled-55-c4",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjsLDrr_7F3rZpVh8PW-9t756WubXdBC5hd0xUvayQuA&s=10"
+    "filename": "082-smart-tv-lg-oled-55-c4"
   },
   {
     "name": "Smart TV TCL 43\" Google TV",
-    "category": "Monitores y TV",
-    "filename": "083-smart-tv-tcl-43-google-tv",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStl6mcISNaKKnZ-FXJsnQGHFIaKn65qjC4EHKPLvTEXQ&s=10"
+    "filename": "083-smart-tv-tcl-43-google-tv"
   },
   {
     "name": "Chromecast con Google TV",
-    "category": "Monitores y TV",
-    "filename": "084-chromecast-con-google-tv",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSniTBg5oKQGBnUZuOdaYZCG1_yJtJDV94GOwlmsK-Pew&s"
+    "filename": "084-chromecast-con-google-tv"
   },
   {
     "name": "Placa de video NVIDIA GeForce RTX 5070 12GB",
-    "category": "Componentes de PC",
-    "filename": "085-placa-de-video-nvidia-geforce-rtx-5070-12gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLYWFtG8tFWe5S8p9EOb9U99ZnQZXFtAC9f4II948XlA&s=10"
+    "filename": "085-placa-de-video-nvidia-geforce-rtx-5070-12gb"
   },
   {
     "name": "Placa de video NVIDIA GeForce RTX 4060 8GB",
-    "category": "Componentes de PC",
-    "filename": "086-placa-de-video-nvidia-geforce-rtx-4060-8gb",
-    "sourceUrl": ""
+    "filename": "086-placa-de-video-nvidia-geforce-rtx-4060-8gb"
   },
   {
     "name": "Placa de video AMD Radeon RX 7800 XT 16GB",
-    "category": "Componentes de PC",
-    "filename": "087-placa-de-video-amd-radeon-rx-7800-xt-16gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxAdIjOFmXDTtCDUeer7AcSd7csybRFHWJzuPBd5o1rQ&s=10"
+    "filename": "087-placa-de-video-amd-radeon-rx-7800-xt-16gb"
   },
   {
     "name": "Procesador AMD Ryzen 7 9800X3D",
-    "category": "Componentes de PC",
-    "filename": "088-procesador-amd-ryzen-7-9800x3d",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkTRvWlCc-CSJKHgCcnyoaiM9Cd5FbBukgz35kmbRXhQ&s=10"
+    "filename": "088-procesador-amd-ryzen-7-9800x3d"
   },
   {
     "name": "Procesador Intel Core i5-14400F",
-    "category": "Componentes de PC",
-    "filename": "089-procesador-intel-core-i5-14400f",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5Ww0s-W-SljrNI4IKjQBnqlrXrJCWSlvB205jcRzyXQ&s=10"
+    "filename": "089-procesador-intel-core-i5-14400f"
   },
   {
     "name": "Memoria RAM Kingston Fury Beast 32GB DDR5",
-    "category": "Componentes de PC",
-    "filename": "090-memoria-ram-kingston-fury-beast-32gb-ddr5",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMX6CQjM_Om05yB2xy_mujYievNwrwwcpMgei0koSKhQ&s=10"
+    "filename": "090-memoria-ram-kingston-fury-beast-32gb-ddr5"
   },
   {
     "name": "SSD Samsung 990 Pro 2TB NVMe",
-    "category": "Componentes de PC",
-    "filename": "091-ssd-samsung-990-pro-2tb-nvme",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVmqazT9oMHmPFvuSK2r_Q43pIcj__HwdRENMQgkaNJQ&s"
+    "filename": "091-ssd-samsung-990-pro-2tb-nvme"
   },
   {
     "name": "SSD Kingston A400 480GB",
-    "category": "Componentes de PC",
-    "filename": "092-ssd-kingston-a400-480gb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbGW4PUaa1vXh0ZNUBidq2gVHJzmIvLj-Usa2PRtZDDg&s=10"
+    "filename": "092-ssd-kingston-a400-480gb"
   },
   {
     "name": "Fuente Corsair RM850e 850W",
-    "category": "Componentes de PC",
-    "filename": "093-fuente-corsair-rm850e-850w",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0HrMVSmHQJ54z27G5b7UIL19SSWIi07SSEyAr7ZxwvA&s=10"
+    "filename": "093-fuente-corsair-rm850e-850w"
   },
   {
     "name": "Motherboard ASUS TUF Gaming B650-Plus",
-    "category": "Componentes de PC",
-    "filename": "094-motherboard-asus-tuf-gaming-b650-plus",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTouRn0Mq_pqGitxiG2JjiDlZNucw3OZPUlTQG4kd5v-g&s"
+    "filename": "094-motherboard-asus-tuf-gaming-b650-plus"
   },
   {
     "name": "Apple Watch Series 10",
-    "category": "Smartwatches",
-    "filename": "095-apple-watch-series-10",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTz2QJ9vkTtYJTNkbv7xCZj3phgrUVHb3ciZiRQTa9ytw&s=10"
+    "filename": "095-apple-watch-series-10"
   },
   {
     "name": "Apple Watch SE",
-    "category": "Smartwatches",
-    "filename": "096-apple-watch-se",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZHH1mlO6redzKf38mj_p9QOFJNcwj6VrQqaRPM_9_0A&s=10"
+    "filename": "096-apple-watch-se"
   },
   {
     "name": "Samsung Galaxy Watch7",
-    "category": "Smartwatches",
-    "filename": "097-samsung-galaxy-watch7",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT1bI0jyqQ9obt2UERL6DrS4yN1z_JBLjC2Ir1W3LpYMg&s"
+    "filename": "097-samsung-galaxy-watch7"
   },
   {
     "name": "Xiaomi Smart Band 9",
-    "category": "Smartwatches",
-    "filename": "098-xiaomi-smart-band-9",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSL--nBfqno3BVLmQT-OeuiD3B1oYjoHuupW4K9lVTeRQ&s=10"
+    "filename": "098-xiaomi-smart-band-9"
   },
   {
     "name": "Garmin Forerunner 265",
-    "category": "Smartwatches",
-    "filename": "099-garmin-forerunner-265",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7hVS5bCuVQ-RFKrlzbmy7vMPgRWefQEFnMuE1hE-MYQ&s"
+    "filename": "099-garmin-forerunner-265"
   },
   {
     "name": "Amazfit GTR 4",
-    "category": "Smartwatches",
-    "filename": "100-amazfit-gtr-4",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTrlOpSHtvpVv0rhB1248r_4dC5YE9r864c0SBZrNBwA&s"
+    "filename": "100-amazfit-gtr-4"
   },
   {
     "name": "Cargador Apple USB-C 20W",
-    "category": "Accesorios",
-    "filename": "101-cargador-apple-usb-c-20w",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfLMk170lMV2jKv2DlBsbZ_xb3F4Q0R9q9pNfzggduOw&s=10"
+    "filename": "101-cargador-apple-usb-c-20w"
   },
   {
     "name": "Power bank Xiaomi 20000mAh",
-    "category": "Accesorios",
-    "filename": "102-power-bank-xiaomi-20000mah",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6QvWJCrHLZvISinKd-qN1tnnEy4aQUkZCxZdbXpGKNA&s"
+    "filename": "102-power-bank-xiaomi-20000mah"
   },
   {
     "name": "Cable USB-C a USB-C 2m",
-    "category": "Accesorios",
-    "filename": "103-cable-usb-c-a-usb-c-2m",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGxi3Nemyi_1SnvoaigANkNXD_t8zg4-6Q0mrMMt_CJw&s=10"
+    "filename": "103-cable-usb-c-a-usb-c-2m"
   },
   {
     "name": "Funda MagSafe iPhone 16",
-    "category": "Accesorios",
-    "filename": "104-funda-magsafe-iphone-16",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAFumVIWmMr_I3Wdd0s8Qa0sUzz0z_5rkK5WjdNLmhAw&s=10"
+    "filename": "104-funda-magsafe-iphone-16"
   },
   {
     "name": "Hub USB-C 7 en 1",
-    "category": "Accesorios",
-    "filename": "105-hub-usb-c-7-en-1",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRL8ALYST_71knhnJhrZibWJa2QBL5sfnYrrnsS3bVolQ&s=10"
+    "filename": "105-hub-usb-c-7-en-1"
   },
   {
     "name": "Webcam Logitech C920",
-    "category": "Accesorios",
-    "filename": "106-webcam-logitech-c920",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrPoQjIrKz5eAS8fRw6maasCGFgTuMQcq5HBztEDsFLA&s=10"
+    "filename": "106-webcam-logitech-c920"
   },
   {
     "name": "Router TP-Link Archer AX55 Wi-Fi 6",
-    "category": "Accesorios",
-    "filename": "107-router-tp-link-archer-ax55-wi-fi-6",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJRCThBOuY6JwoGiuRr8Q-LwpjO03q9fbzEJj7pK_S1g&s=10"
+    "filename": "107-router-tp-link-archer-ax55-wi-fi-6"
   },
   {
     "name": "Disco externo WD Elements 2TB",
-    "category": "Accesorios",
-    "filename": "108-disco-externo-wd-elements-2tb",
-    "sourceUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZvIS2U-hIirRcxOylsGeuKVtkZTmn2Hke_0noVI4mkw&s=10"
+    "filename": "108-disco-externo-wd-elements-2tb"
   }
 ]
