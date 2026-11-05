@@ -3,6 +3,7 @@ import type { ReactElement } from 'react'
 import { BrowserRouter, Link, NavLink, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/auth-context'
+import { useSpotlight } from './hooks/useSpotlight'
 import { BusinessProvider } from './context/BusinessContext'
 import { useBusiness } from './context/business-context'
 import AdminLayout from './components/AdminLayout'
@@ -105,6 +106,7 @@ function AppRoutes() {
 }
 
 function App() {
+  useSpotlight()
   return <BrowserRouter><BusinessProvider><AuthProvider><AppRoutes /></AuthProvider></BusinessProvider></BrowserRouter>
 }
 

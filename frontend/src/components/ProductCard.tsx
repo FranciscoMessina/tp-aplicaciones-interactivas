@@ -10,7 +10,7 @@ export function ProductImage({ src, alt }: { src?: string; alt: string }) {
   return (
     <div className="product-image">
       {src && failedSrc !== src ? (
-        <img src={src} alt={alt} loading="lazy" onError={() => setFailedSrc(src)} />
+        <img key={src} src={src} alt={alt} loading="lazy" onError={() => setFailedSrc(src)} />
       ) : (
         <span className="image-placeholder">Sin imagen</span>
       )}
