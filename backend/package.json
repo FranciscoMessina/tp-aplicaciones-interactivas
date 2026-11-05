@@ -13,7 +13,11 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "photos:plan": "node scripts/update-catalog-photos.mjs --plan",
+    "photos:download": "node scripts/update-catalog-photos.mjs --download",
+    "photos:apply": "node scripts/update-catalog-photos.mjs --apply",
+    "photos:gallery": "node scripts/update-catalog-photos.mjs --gallery"
   },
   "repository": {
     "type": "git",
