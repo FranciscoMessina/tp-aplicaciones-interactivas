@@ -68,7 +68,7 @@ flowchart TD
 | Ruta | Acceso | Qué se hace |
 | --- | --- | --- |
 | `/` | Público | Categorías principales con cantidad y precio desde, promociones vigentes y productos destacados (o los más nuevos) |
-| `/catalogo` | Público | Catálogo paginado con búsqueda, orden y un panel lateral de filtros (categoría, rango de precio, con stock, ofertas). Los filtros aplicados se ven como chips y viven en la URL: `?q=`, `categoria=<id>`, `desde=`, `hasta=`, `stock=1`, `ofertas=1`, `orden=`, `pagina=` |
+| `/catalogo` | Público | Catálogo paginado con búsqueda, orden y un panel lateral de filtros (una o varias categorías, rango de precio, con stock, ofertas). Los filtros aplicados se ven como chips y viven en la URL: `?q=`, `categoria=<id>,<id>`, `desde=`, `hasta=`, `stock=1`, `ofertas=1`, `orden=`, `pagina=` |
 | `/productos/:id` | Público | Detalle del producto con todas sus imágenes, descuento, aviso de pocas unidades, acceso a consultar (o a pedir aviso si no hay stock) y otros productos de la categoría |
 | `/nosotros` | Público | Descripción, dirección, teléfono, horarios y redes del comercio |
 | `/contacto` | Público | Formulario de consulta y datos de contacto. Con `?producto=<id>` muestra el producto y completa el asunto; con `&aviso=1`, pide que avisen cuando vuelva a haber stock. `?asunto=` completa el asunto |

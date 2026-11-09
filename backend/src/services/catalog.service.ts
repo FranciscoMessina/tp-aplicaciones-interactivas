@@ -45,7 +45,8 @@ export interface CategoryInput {
 
 export interface ProductSearchFilters {
   search?: string;
-  category?: string;
+  // Ids de categorias: alcanza con que el producto sea de alguna.
+  category?: string[];
   minPrice?: number;
   maxPrice?: number;
   sortBy?: "publicationDate" | "price" | "name" | "relevance";
@@ -72,6 +73,9 @@ export interface ProductPage {
   page: number;
   pageSize: number;
   total: number;
+  // Precio final mas bajo y mas alto con todos los filtros salvo el de precio,
+  // para sugerir el rango. `null` si no hay productos.
+  priceRange: { min: number; max: number } | null;
 }
 
 /**
@@ -86,7 +90,8 @@ export interface ProductPage {
  * - Sin `search` alcanza con un `$match`, el filtro comun de MongoDB.
  *
  * En los dos casos despues se ordena, se corta la pagina pedida y se completa
- * la categoria de cada producto.
+ * la categoria de cada producto. El rango de precio se aplica recien al cortar
+ * la pagina, porque el rango sugerido tiene que ignorarlo.
  */
 export async function searchProducts(
   filters: ProductSearchFilters,
@@ -128,19 +133,9 @@ export async function searchProducts(
 
     if (filters.category) {
       searchFilter.push({
-        equals: {
+        in: {
           path: "category",
-          value: new Types.ObjectId(filters.category),
-        },
-      });
-    }
-
-    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      searchFilter.push({
-        range: {
-          path: "finalPrice",
-          ...(filters.minPrice !== undefined && { gte: filters.minPrice }),
-          ...(filters.maxPrice !== undefined && { lte: filters.maxPrice }),
+          value: filters.category.map((id) => new Types.ObjectId(id)),
         },
       });
     }
@@ -199,21 +194,9 @@ export async function searchProducts(
     }
 
     if (filters.category) {
-      match.category = new Types.ObjectId(filters.category);
-    }
-
-    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-      const price: Record<string, number> = {};
-
-      if (filters.minPrice !== undefined) {
-        price.$gte = filters.minPrice;
-      }
-
-      if (filters.maxPrice !== undefined) {
-        price.$lte = filters.maxPrice;
-      }
-
-      match.finalPrice = price;
+      match.category = {
+        $in: filters.category.map((id) => new Types.ObjectId(id)),
+      };
     }
 
     if (Object.keys(match).length > 0) {
@@ -223,7 +206,19 @@ export async function searchProducts(
 
   const sortDirection = filters.sortOrder === "asc" ? 1 : -1;
 
-  // Los filtros y el orden por precio usan el precio final, el que se paga.
+  // El filtro y el orden por precio usan el precio final, el que se paga.
+  const finalPrice: Record<string, number> = {};
+
+  if (filters.minPrice !== undefined) {
+    finalPrice.$gte = filters.minPrice;
+  }
+
+  if (filters.maxPrice !== undefined) {
+    finalPrice.$lte = filters.maxPrice;
+  }
+
+  const priceMatch: PipelineStage.FacetPipelineStage[] =
+    Object.keys(finalPrice).length > 0 ? [{ $match: { finalPrice } }] : [];
 
   switch (filters.sortBy) {
     case "relevance":
@@ -243,21 +238,33 @@ export async function searchProducts(
       pipeline.push({ $sort: { createdAt: sortDirection } });
   }
 
-  // `$facet` corre dos sub-pipelines sobre el mismo resultado: uno corta la
-  // pagina y el otro cuenta el total, asi alcanza con una sola consulta.
+  // `$facet` corre varios sub-pipelines sobre el mismo resultado: uno corta la
+  // pagina, otro cuenta el total y otro calcula el rango de precios, asi
+  // alcanza con una sola consulta.
   pipeline.push({
     $facet: {
       items: [
+        ...priceMatch,
         { $skip: (filters.page - 1) * filters.pageSize },
         { $limit: filters.pageSize },
       ],
-      total: [{ $count: "count" }],
+      total: [...priceMatch, { $count: "count" }],
+      priceRange: [
+        {
+          $group: {
+            _id: null,
+            min: { $min: "$finalPrice" },
+            max: { $max: "$finalPrice" },
+          },
+        },
+      ],
     },
   });
 
   const aggregate = ProductModel.aggregate<{
     items: Product[];
     total: { count: number }[];
+    priceRange: { min: number; max: number }[];
   }>(pipeline);
 
   // Para ordenar por nombre en español ("Ñ" despues de "N", sin separar
@@ -281,6 +288,9 @@ export async function searchProducts(
     page: filters.page,
     pageSize: filters.pageSize,
     total: result?.total[0]?.count ?? 0,
+    priceRange: result?.priceRange[0]
+      ? { min: result.priceRange[0].min, max: result.priceRange[0].max }
+      : null,
   };
 }
 

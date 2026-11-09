@@ -29,8 +29,8 @@ objetivo es promocionar los productos y recibir consultas.
   "Quedan 2", "Última unidad" o "Sin stock").
 - **Búsqueda, filtros y orden**: búsqueda por texto en nombre y descripción y
   orden por más recientes, precio o nombre. Los filtros están en un panel
-  lateral: categoría, rango de precio (desde/hasta), solo con stock y solo
-  ofertas. Los filtros aplicados se muestran como chips que se quitan de a uno,
+  lateral: una o varias categorías, rango de precio (desde/hasta, con el
+  precio más bajo y más alto como sugerencia), solo con stock y solo ofertas. Los filtros aplicados se muestran como chips que se quitan de a uno,
   y quedan en la URL para compartir la búsqueda. Si no hay resultados, el
   catálogo ofrece pedir el producto por el formulario de contacto.
 - **Detalle de producto**: galería con todas las imágenes del producto, precio,

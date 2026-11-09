@@ -32,7 +32,8 @@ function parsePrice(value: string | null) {
 export default function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
-  const category = searchParams.get('categoria') ?? ''
+  // Una o varias categorías, separadas por coma en la URL.
+  const selectedCategories = (searchParams.get('categoria') ?? '').split(',').filter(Boolean)
   const minPrice = parsePrice(searchParams.get('desde'))
   const maxPrice = parsePrice(searchParams.get('hasta'))
   const onlyAvailable = searchParams.get('stock') === '1'
@@ -75,7 +76,7 @@ export default function CatalogPage() {
   const categories = useRequest(fetchCategorySummaries, 'categories')
   const filters: ProductFilters = {
     search,
-    category,
+    category: selectedCategories.join(','),
     minPrice,
     maxPrice,
     inStock: onlyAvailable || undefined,
@@ -88,12 +89,13 @@ export default function CatalogPage() {
 
   const total = products.data?.total ?? 0
   const totalPages = Math.ceil(total / PRODUCTS_PER_PAGE)
-  const categoryName = categories.data?.find((item) => item.id === category)?.name
+  const categoryName = (id: string) => categories.data?.find((item) => item.id === id)?.name ?? 'Categoría'
+  const withoutCategory = (id: string) => selectedCategories.filter((item) => item !== id).join(',')
 
   // Un chip por filtro aplicado, cada uno con lo que hay que borrar para quitarlo.
   const chips: { label: string; clear: Partial<Record<Param, string>> }[] = [
     ...(search ? [{ label: `“${search}”`, clear: { q: '' } }] : []),
-    ...(category ? [{ label: categoryName ?? 'Categoría', clear: { categoria: '' } }] : []),
+    ...selectedCategories.map((id) => ({ label: categoryName(id), clear: { categoria: withoutCategory(id) } })),
     ...(minPrice !== undefined ? [{ label: `Desde ${formatPrice(minPrice)}`, clear: { desde: '' } }] : []),
     ...(maxPrice !== undefined ? [{ label: `Hasta ${formatPrice(maxPrice)}`, clear: { hasta: '' } }] : []),
     ...(onlyAvailable ? [{ label: 'Con stock', clear: { stock: '' } }] : []),
@@ -115,7 +117,11 @@ export default function CatalogPage() {
     <main className="information-page">
       <div className="information-container">
         <div className="information-heading">
-          <h1>{onlyOnSale && !category ? 'Ofertas' : categoryName ?? 'Catálogo'}</h1>
+          <h1>
+            {selectedCategories.length === 1
+              ? categoryName(selectedCategories[0])
+              : onlyOnSale && selectedCategories.length === 0 ? 'Ofertas' : 'Catálogo'}
+          </h1>
         </div>
 
         <div className="catalog-bar">
@@ -197,12 +203,14 @@ export default function CatalogPage() {
       {panelOpen && (
         <FilterPanel
           categories={categories.data ?? []}
-          category={category}
+          selectedCategories={selectedCategories}
+          onToggleCategory={(id) => updateParams({ categoria: selectedCategories.includes(id) ? withoutCategory(id) : [...selectedCategories, id].join(',') })}
           minPrice={minPrice}
           maxPrice={maxPrice}
           onlyAvailable={onlyAvailable}
           onlyOnSale={onlyOnSale}
           total={products.isLoading ? null : total}
+          priceRange={products.data?.priceRange ?? null}
           onChange={updateParams}
           onClear={() => updateParams({ categoria: '', desde: '', hasta: '', stock: '', ofertas: '' })}
           onClose={() => setPanelOpen(false)}
@@ -245,12 +253,14 @@ function EmptyResults({ search, onlyOnSale, hasFilters, onClear }: { search: str
 
 interface FilterPanelProps {
   categories: { id: string; name: string; productCount: number }[]
-  category: string
+  selectedCategories: string[]
+  onToggleCategory: (id: string) => void
   minPrice?: number
   maxPrice?: number
   onlyAvailable: boolean
   onlyOnSale: boolean
   total: number | null
+  priceRange: { min: number; max: number } | null
   onChange: (changes: Partial<Record<Param, string>>) => void
   onClear: () => void
   onClose: () => void
@@ -258,10 +268,13 @@ interface FilterPanelProps {
 
 // Panel lateral con los filtros. Cada cambio se aplica en el momento y el pie
 // muestra cuántos productos quedan; el <dialog> nativo bloquea el foco y cierra con Escape.
-function FilterPanel({ categories, category, minPrice, maxPrice, onlyAvailable, onlyOnSale, total, onChange, onClear, onClose }: FilterPanelProps) {
+function FilterPanel({ categories, selectedCategories, onToggleCategory, minPrice, maxPrice, onlyAvailable, onlyOnSale, total, priceRange, onChange, onClear, onClose }: FilterPanelProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const [from, setFrom] = useState(minPrice === undefined ? '' : String(minPrice))
   const [to, setTo] = useState(maxPrice === undefined ? '' : String(maxPrice))
+  // Los campos guardan solo dígitos y los muestran con formato de precio ("$ 200.000").
+  const showPrice = (digits: string) => (digits === '' ? '' : formatPrice(Number(digits)))
+  const onlyDigits = (text: string) => text.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
   const priceError = from !== '' && to !== '' && Number(from) > Number(to) ? 'El “desde” es mayor que el “hasta”.' : ''
 
   useEffect(() => {
@@ -298,34 +311,45 @@ function FilterPanel({ categories, category, minPrice, maxPrice, onlyAvailable, 
 
       <div className="filter-panel-body">
         <fieldset className="filter-group">
-          <legend>Categoría</legend>
-          <label className="filter-option">
-            <input type="radio" name="filter-category" checked={category === ''} onChange={() => onChange({ categoria: '' })} />
-            <span>Todas</span>
-          </label>
-          {categories.map((item) => (
-            <label key={item.id} className="filter-option">
-              <input type="radio" name="filter-category" checked={category === item.id} onChange={() => onChange({ categoria: item.id })} />
-              <span>{item.name}</span>
-              <span className="filter-option-count">{item.productCount}</span>
+          <legend>Categorías</legend>
+          {/* Casillas ocultas con forma de chip: se pueden marcar varias. "Todas" las desmarca. */}
+          <div className="filter-chip-list">
+            <label className="filter-chip">
+              <input className="visually-hidden" type="checkbox" checked={selectedCategories.length === 0} onChange={() => onChange({ categoria: '' })} />
+              Todas
             </label>
-          ))}
+            {categories.map((item) => (
+              <label key={item.id} className="filter-chip">
+                <input className="visually-hidden" type="checkbox" checked={selectedCategories.includes(item.id)} onChange={() => onToggleCategory(item.id)} />
+                {item.name}
+                <span className="filter-chip-count">{item.productCount}</span>
+              </label>
+            ))}
+          </div>
         </fieldset>
 
-        <fieldset className="filter-group">
-          <legend>Precio</legend>
+        {/* Un grupo sin <fieldset>: el <legend> no deja poner el botón en su misma fila. */}
+        <div className="filter-group" role="group" aria-labelledby="filter-price-title">
+          <div className="filter-group-header">
+            <span id="filter-price-title" className="filter-group-title">Precio</span>
+            {(from !== '' || to !== '') && (
+              <button type="button" className="clear-button" onClick={() => { setFrom(''); setTo(''); document.getElementById('filter-from')?.focus() }}>
+                Borrar precios
+              </button>
+            )}
+          </div>
           <div className="filter-price">
             <div className="field">
               <label htmlFor="filter-from">Desde</label>
-              <input id="filter-from" type="number" inputMode="numeric" min={0} placeholder="$ 0" value={from} onChange={(event) => setFrom(event.target.value)} aria-invalid={Boolean(priceError)} aria-describedby={priceError ? 'filter-price-error' : undefined} />
+              <input id="filter-from" type="text" inputMode="numeric" autoComplete="off" placeholder={priceRange ? formatPrice(priceRange.min) : '$ 0'} value={showPrice(from)} onChange={(event) => setFrom(onlyDigits(event.target.value))} aria-invalid={Boolean(priceError)} aria-describedby={priceError ? 'filter-price-error' : undefined} />
             </div>
             <div className="field">
               <label htmlFor="filter-to">Hasta</label>
-              <input id="filter-to" type="number" inputMode="numeric" min={0} placeholder="Sin tope" value={to} onChange={(event) => setTo(event.target.value)} aria-invalid={Boolean(priceError)} aria-describedby={priceError ? 'filter-price-error' : undefined} />
+              <input id="filter-to" type="text" inputMode="numeric" autoComplete="off" placeholder={priceRange ? formatPrice(priceRange.max) : 'Sin tope'} value={showPrice(to)} onChange={(event) => setTo(onlyDigits(event.target.value))} aria-invalid={Boolean(priceError)} aria-describedby={priceError ? 'filter-price-error' : undefined} />
             </div>
           </div>
           {priceError && <p id="filter-price-error" className="filter-error" role="alert">{priceError}</p>}
-        </fieldset>
+        </div>
 
         <fieldset className="filter-group">
           <legend>Mostrar solo</legend>

@@ -321,11 +321,32 @@
 /* El legend se dibuja sobre el borde del fieldset: el aire de arriba va en el legend,
    así el padding del fieldset no queda entre el título y las opciones. */
 .filter-group { min-width: 0; margin: 0; padding: 0 24px 16px; border: 0; border-bottom: 1px solid var(--rule); }
-.filter-group legend { padding: 20px 0 6px; font-size: 19px; font-weight: 800; font-stretch: 85%; line-height: 1.2; }
+.filter-group legend, .filter-group-title { display: block; padding: 20px 0 6px; font-size: 19px; font-weight: 800; font-stretch: 85%; line-height: 1.2; }
+/* Título del grupo con una acción a la derecha, en la misma fila */
+.filter-group-header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.filter-group-header .clear-button { padding: 0; }
 .filter-option { display: flex; align-items: center; gap: 12px; min-height: 36px; font-size: 16px; font-weight: 500; cursor: pointer; }
 .filter-option:has(input:checked) { font-weight: 700; }
 .filter-option input { width: 18px; height: 18px; margin: 0; flex: none; accent-color: var(--ink); }
-.filter-option-count { margin-left: auto; color: var(--muted); font-family: var(--mono); font-size: 12px; font-weight: 400; }
+.filter-chip-list { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; }
+.filter-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--ink);
+  background: var(--sheet) linear-gradient(var(--marker), var(--marker)) no-repeat left / 0 100%;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background-size 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.filter-chip:hover { background-size: 100% 100%; }
+.filter-chip:has(input:checked) { background-color: var(--marker); background-size: 100% 100%; box-shadow: inset 0 0 0 1px var(--ink); font-weight: 800; }
+.filter-chip:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+.filter-chip-count { color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 400; }
+.filter-chip:has(input:checked) .filter-chip-count, .filter-chip:hover .filter-chip-count { color: var(--ink); }
 .filter-price { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding-top: 4px; }
 .filter-error { margin: 10px 0 0; color: var(--bad); font-size: 14px; font-weight: 600; }
 .filter-panel-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 24px; border-top: 1px solid var(--ink); }
@@ -698,7 +719,7 @@
   html { scroll-behavior: auto; }
   .order-row.is-placeholder { animation: none; }
   .chip-pins span::before { transition: none; }
-  .nav a, .primary-button, .order-row, .product-info h3 a, .filters-button, .promotion-link { transition: none; }
+  .nav a, .primary-button, .order-row, .product-info h3 a, .filters-button, .promotion-link, .filter-chip { transition: none; }
 }
 
 /* Verificación de la sesión antes de entrar al panel */

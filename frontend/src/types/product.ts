@@ -51,4 +51,8 @@ export type Page<T> = {
   total: number
 }
 
-export type ProductPage = Page<Product>
+// GET /api/products agrega el precio final más bajo y más alto con los filtros
+// actuales salvo el de precio (`null` si no hay productos).
+export type ProductPage = Page<Product> & {
+  priceRange: { min: number; max: number } | null
+}

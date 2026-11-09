@@ -20,7 +20,8 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 
 - `GET /api/products`: obtiene la lista de productos activos. No requiere
   autenticación. Acepta `search` (full-text sobre `name` y `description`),
-  `category`, `minPrice`, `maxPrice`, `isFeatured`, `inStock` (`true`: con
+  `category` (uno o varios ids separados por coma: alcanza con que el producto
+  sea de alguna), `minPrice`, `maxPrice`, `isFeatured`, `inStock` (`true`: con
   unidades; `false`: sin stock), `onSale` (`true`: solo con descuento), `sortBy` (`publicationDate`, `price`, `name` o
   `relevance`), `sortOrder` (`asc` o `desc`), `page` (desde 1), `pageSize` (1 a
   100, por defecto 20) e `includeInactive`. El catálogo público y el panel piden
@@ -28,7 +29,10 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
   orden por defecto es fecha de publicación descendente y `relevance` requiere
   `search`. El rango de precio y el orden por precio usan `finalPrice`, lo que
   se paga. Responde una página:
-  `{ "items": [...], "page": 1, "pageSize": 20, "total": 97 }`.
+  `{ "items": [...], "page": 1, "pageSize": 20, "total": 97, "priceRange": { "min": 14999, "max": 3899999 } }`.
+  `priceRange` es el precio final más bajo y más alto con todos los filtros
+  salvo `minPrice`/`maxPrice` (`null` si no hay productos): el catálogo lo usa
+  para sugerir el rango en los campos de precio.
   Un administrador autenticado que envie `includeInactive=true` recibe tambien
   las publicaciones desactivadas; para cualquier otro visitante el parametro
   se ignora en silencio, porque el endpoint es publico y un 403 delataria que

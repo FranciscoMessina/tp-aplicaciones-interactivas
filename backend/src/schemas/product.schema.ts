@@ -30,7 +30,14 @@ const productFields = {
 export const searchProductsSchema = z
   .object({
     search: z.preprocess(emptyStringAsUndefined, z.string().trim().optional()),
-    category: z.preprocess(emptyStringAsUndefined, objectIdSchema.optional()),
+    // Uno o varios ids separados por coma (`?category=id1,id2`).
+    category: z.preprocess(
+      (value) =>
+        typeof value === "string" && value.trim() !== ""
+          ? value.split(",").map((id) => id.trim())
+          : undefined,
+      z.array(objectIdSchema).optional(),
+    ),
     minPrice: optionalNonnegativeNumber,
     maxPrice: optionalNonnegativeNumber,
     sortBy: z
