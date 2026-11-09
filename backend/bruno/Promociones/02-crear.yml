@@ -31,14 +31,16 @@ docs: |-
   - `title`: hasta 80 caracteres.
   - `description`: hasta 300 caracteres.
   - `image` (opcional): URL de la imagen, por ejemplo la que devuelve "Subir imagen".
-  - `category` (opcional): id de la categoría a la que lleva el aviso. Sin ella, lleva a los productos con descuento.
+  - `category` (opcional): id de la categoría a la que lleva el aviso.
+  - `linkedCollection` (opcional): id de la colección a la que lleva el aviso. No se puede enviar junto con `category`; sin ninguna de las dos, lleva a los productos con descuento.
+  - `discountPercent` (opcional, solo con `linkedCollection`): entero de 1 a 90. Mientras la promoción esté vigente, los productos de la colección se muestran con ese descuento, salvo los que ya tienen uno propio igual o mayor.
   - `startDate` / `endDate` (opcionales): fechas `AAAA-MM-DD`, en horario de Argentina.
   - `isActive` (opcional, por defecto `true`).
 
   **Devuelve**
 
   - `201` con la promoción creada.
-  - `400` si algún campo es inválido o la fecha de fin es anterior a la de inicio; `error.fields` trae los mensajes por campo.
+  - `400` si algún campo es inválido, la fecha de fin es anterior a la de inicio, vienen categoría y colección a la vez o hay descuento sin colección; `error.fields` trae los mensajes por campo.
   - `401` si falta el token o está vencido.
   - `403` si el usuario no es administrador.
 

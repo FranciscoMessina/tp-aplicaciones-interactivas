@@ -20,8 +20,12 @@ objetivo es promocionar los productos y recibir consultas.
 
 - **Inicio**: presentación del comercio, las categorías principales (con
   cantidad de productos y precio desde) que llevan al catálogo ya filtrado, las
-  promociones vigentes y los productos destacados (o los más nuevos, si no hay
-  destacados).
+  promociones vigentes, los productos destacados (o los más nuevos, si no hay
+  destacados) y las colecciones del comercio, cada una con sus primeros cuatro
+  productos.
+- **Colecciones** (`/colecciones/:id`): selecciones de productos armadas por el
+  comercio, como "Armá tu setup gamer", con sus productos publicados en el
+  orden elegido.
 - **Catálogo** (`/catalogo`): solo los productos publicados, paginados de a 12.
   El backend filtra, ordena y pagina, así que solo viaja la página visible. Cada tarjeta
   muestra nombre, categoría, imagen, descripción, precio (con el de lista
@@ -32,12 +36,17 @@ objetivo es promocionar los productos y recibir consultas.
   lateral: una o varias categorías, rango de precio (desde/hasta, con el
   precio más bajo y más alto como sugerencia), solo con stock y solo ofertas. Los filtros aplicados se muestran como chips que se quitan de a uno,
   y quedan en la URL para compartir la búsqueda. Si no hay resultados, el
-  catálogo ofrece pedir el producto por el formulario de contacto.
+  catálogo ofrece pedir el producto por el formulario de contacto. La búsqueda
+  por texto usa Atlas Search si la base es Atlas (tolera errores de tipeo) y,
+  si no, un respaldo que busca cada palabra sin distinguir mayúsculas ni
+  tildes.
 - **Detalle de producto**: galería con todas las imágenes del producto, precio,
   disponibilidad, descripción y un botón para consultar por ese producto, que
   abre el formulario de contacto con el producto y el asunto completos. Sin
   stock, el botón pasa a "Avisame cuando entre". Abajo se muestran otros
-  productos de la misma categoría.
+  productos de su colección (si está en una) o de su categoría. Abrir la ficha cuenta como una visita para
+  las métricas del panel (una por producto y por sesión del navegador; las de
+  los administradores no cuentan).
 - **Nosotros**: nombre, descripción, dirección, teléfono, horarios y redes
   sociales del comercio.
 - **Contacto**: datos del comercio y formulario con nombre, email, teléfono
@@ -65,17 +74,30 @@ objetivo es promocionar los productos y recibir consultas.
 
 ## Área de administración (`/admin`)
 
-- **Resumen**: dashboard con productos publicados, sin stock y destacados,
-  consultas pendientes, productos por categoría y consultas por estado.
+- **Resumen**: dashboard con las visitas a las fichas de productos de los
+  últimos 30 días (total y variación contra los 30 anteriores, un gráfico por
+  día y los cinco productos más vistos), productos publicados y sin stock,
+  consultas pendientes y consultas por estado, con las recibidas en el período.
+  Cada número lleva al listado filtrado con lo que cuenta.
 - **Productos**: listado con búsqueda y filtro por categoría (incluye los
   ocultos), alta, edición, eliminación con confirmación, y publicar u ocultar
   con un clic. Cada producto tiene varias imágenes (subidas desde la
   computadora o por URL, la primera es la principal), puede marcarse como
   destacado para aparecer en el inicio y puede tener un descuento en porcentaje
   (hasta 90 %); el sitio muestra el precio final y el anterior tachado.
+- **Colecciones**: alta, edición, eliminación y encendido/apagado de
+  colecciones con título, descripción opcional y hasta 48 productos. Los
+  productos se buscan por nombre, se agregan y se ordenan con subir y bajar.
+  El listado avisa si una colección encendida no tiene productos publicados
+  (en ese caso no se ve en el sitio).
 - **Promociones**: avisos para el inicio con título, descripción, imagen
-  opcional, fechas de vigencia opcionales y una categoría a la que llevan (o,
-  sin categoría, a los productos con descuento). Se encienden y apagan con un
+  opcional, fechas de vigencia opcionales y a dónde llevan: una colección, una
+  categoría o los productos con descuento. Si llevan a una colección pueden
+  tener un descuento en porcentaje para todos sus productos: mientras la
+  promoción está vigente, el sitio los muestra con ese precio, el anterior
+  tachado y el nombre de la promoción, que lleva a la colección (un descuento
+  propio del producto muestra solo el precio tachado y el porcentaje). Los
+  descuentos no se suman: vale el mayor. Se encienden y apagan con un
   clic, y el listado muestra si cada una se ve hoy, empieza más adelante o venció.
 - **Categorías**: alta, edición y eliminación. Los nombres no se repiten (sin
   distinguir mayúsculas) y no se puede eliminar una categoría con productos.
@@ -116,8 +138,20 @@ objetivo es promocionar los productos y recibir consultas.
 - **Envío de correos desde el formulario de contacto**: aviso a los
   administradores y confirmación al visitante (además del correo de
   recuperación de contraseña).
-- **Dashboard con métricas**: pestaña Resumen del panel.
+- **Dashboard con métricas**: pestaña Resumen del panel, con visitas por día,
+  productos más vistos y estado de las consultas.
 - **Múltiples imágenes por publicación**: carga y orden en el panel, galería en
   el detalle.
+- **Buscador avanzado**: texto, varias categorías, rango de precio, solo con
+  stock, solo ofertas y orden, todo guardado en la URL.
+- **Sistema de promociones**: avisos con vigencia en el inicio, descuentos
+  por producto y promociones que aplican un descuento a toda una colección.
 - **Publicación destacada**: marca en el panel y sección de destacados en el
   inicio.
+
+Además, por iniciativa propia:
+
+- **Colecciones**: selecciones de productos armadas a mano, en el inicio y con
+  página propia.
+- **Visitas por producto**: se registran al abrir cada ficha y alimentan las
+  métricas del dashboard.

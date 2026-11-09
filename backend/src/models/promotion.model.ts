@@ -5,11 +5,12 @@ import {
   type Ref,
 } from "@typegoose/typegoose";
 import { Category } from "./category.model.ts";
+import { Collection } from "./collection.model.ts";
 import { baseModelOptions } from "./model-options.ts";
 
 /**
- * Un aviso que se muestra en el inicio, como "2x1 en auriculares todo
- * noviembre". No cambia precios: los descuentos son de cada producto.
+ * Un aviso que se muestra en el inicio, como "Semana del audio". Si lleva a
+ * una coleccion puede aplicarle un descuento a todos sus productos.
  */
 @modelOptions(baseModelOptions)
 export class Promotion {
@@ -22,10 +23,19 @@ export class Promotion {
   @prop()
   public image?: string;
 
-  // Si tiene categoria, el aviso lleva al catalogo filtrado por ella; si no,
-  // a los productos con descuento.
+  // A donde lleva el aviso: una coleccion, una categoria (el catalogo filtrado)
+  // o, sin ninguna de las dos, los productos con descuento. Nunca las dos.
   @prop({ ref: () => Category })
   public category?: Ref<Category>;
+
+  // No se llama `collection`: Mongoose reserva ese nombre en los documentos.
+  @prop({ ref: () => Collection })
+  public linkedCollection?: Ref<Collection>;
+
+  // Solo con coleccion: mientras la promocion este vigente, sus productos
+  // tienen este descuento (si es mayor que el propio del producto).
+  @prop({ min: 1, max: 90 })
+  public discountPercent?: number;
 
   // Fechas de calendario ("2026-11-30"), en horario de Argentina. Sin fechas,
   // la promocion vale mientras este activa.

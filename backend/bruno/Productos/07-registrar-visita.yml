@@ -1,0 +1,33 @@
+info:
+  name: Registrar visita
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/products/:id/views"
+  params:
+    - name: id
+      value: 6ab6f7514bd9c966c17cf5c2
+      type: path
+      description: Id del producto, copiarlo de "Listar productos"
+  auth:
+    type: none
+
+docs: |-
+  Suma una visita a la ficha del producto en el contador del día. Lo llama la página de detalle cuando un visitante la abre.
+
+  **Auth:** no requiere. Límite de 120 por IP cada 15 minutos.
+
+  **Recibe**
+
+  - Param `id`: id de un producto publicado.
+
+  **Devuelve**
+
+  - `204` sin contenido.
+  - `404` si el producto no existe o está oculto.
+  - `429` si se superó el límite de intentos.
+
+settings:
+  encodeUrl: true

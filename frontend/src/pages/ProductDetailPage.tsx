@@ -1,31 +1,50 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ProductCard, { ProductImage, ProductPrice, StockStatus } from '../components/ProductCard'
+import { useAuth } from '../context/auth-context'
 import { useBusiness } from '../context/business-context'
 import { useRequest } from '../hooks/useRequest'
 import { ApiRequestError, getErrorMessage } from '../services/api'
-import { fetchProduct, fetchProducts } from '../services/products'
+import { fetchCollections } from '../services/collections'
+import { fetchProduct, fetchProducts, recordProductView } from '../services/products'
 import type { Product } from '../types/product'
 import { formatPartNumber } from '../utils/format'
 
 const RELATED_LIMIT = 4
 
-// Otros productos de la misma categoría. Se pide uno de más por si viene el actual.
+// Si el producto está en una colección, otros productos de esa colección (la de su promoción, si
+// tiene una); si no, de su categoría. Se pide uno de más por si viene el actual.
+async function fetchRelated(product: Product, signal: AbortSignal) {
+  const collections = await fetchCollections(signal).catch(() => [])
+  const withProduct = collections.filter((collection) => collection.products.some((item) => item.id === product.id))
+  const collection = withProduct.find((item) => item.id === product.promotion?.collection) ?? withProduct[0]
+  const others = collection?.products.filter((item) => item.id !== product.id) ?? []
+
+  if (collection && others.length > 0) {
+    return { title: `Más de ${collection.title}`, to: `/colecciones/${collection.id}`, linkLabel: 'Ver la colección', items: others }
+  }
+
+  const page = await fetchProducts({ category: product.category.id, page: 1, pageSize: RELATED_LIMIT + 1 }, signal)
+  return {
+    title: `También en ${product.category.name}`,
+    to: `/catalogo?categoria=${product.category.id}`,
+    linkLabel: 'Ver todos',
+    items: page.items.filter((item) => item.id !== product.id),
+  }
+}
+
 function RelatedProducts({ product }: { product: Product }) {
-  const related = useRequest(
-    (signal) => fetchProducts({ category: product.category.id, page: 1, pageSize: RELATED_LIMIT + 1 }, signal),
-    product.id,
-  )
-  const items = related.data?.items.filter((item) => item.id !== product.id).slice(0, RELATED_LIMIT) ?? []
-  if (items.length === 0) return null
+  const related = useRequest((signal) => fetchRelated(product, signal), product.id)
+  const items = related.data?.items.slice(0, RELATED_LIMIT) ?? []
+  if (!related.data || items.length === 0) return null
 
   return (
     <section className="related-section" aria-labelledby="related-title">
       <div className="section-heading">
         <div>
-          <h2 id="related-title">También en {product.category.name}</h2>
+          <h2 id="related-title">{related.data.title}</h2>
         </div>
-        <Link className="section-link" to={`/catalogo?categoria=${product.category.id}`}>Ver todos</Link>
+        <Link className="section-link" to={related.data.to}>{related.data.linkLabel}</Link>
       </div>
       <div className="products-grid">
         {items.map((item) => <ProductCard key={item.id} product={item} />)}
@@ -36,6 +55,7 @@ function RelatedProducts({ product }: { product: Product }) {
 
 export default function ProductDetailPage() {
   const { businessName } = useBusiness()
+  const { user, checkingSession } = useAuth()
   const { id = '' } = useParams()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -61,6 +81,18 @@ export default function ProductDetailPage() {
     })()
     return () => controller.abort()
   }, [id, reload])
+
+  // Una visita por producto y por sesión del navegador; las de los administradores no cuentan.
+  const viewedId = product?.id
+  useEffect(() => {
+    if (!viewedId || checkingSession || user) return
+    const key = `visita:${viewedId}`
+    try {
+      if (sessionStorage.getItem(key)) return
+      sessionStorage.setItem(key, '1')
+    } catch { /* sin sessionStorage la visita se cuenta igual */ }
+    recordProductView(viewedId).catch(() => { /* es una métrica: si falla, el visitante no se entera */ })
+  }, [viewedId, checkingSession, user])
 
   useEffect(() => {
     if (!product) return
