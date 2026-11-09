@@ -285,7 +285,9 @@ export default function AdminProductsPage() {
                     <td data-label="Categoría">{product.category?.name ?? 'Sin categoría'}</td>
                     <td data-label="Precio" className="is-numeric">
                       {formatPrice(product.finalPrice)}
-                      {product.discountPercent > 0 && <> <span className="admin-tag">-{product.discountPercent}%</span></>}
+                      {product.promotion
+                        ? <> <span className="admin-tag" title={`Por la promoción ${product.promotion.title}`}>-{product.promotion.discountPercent}% promo</span></>
+                        : product.discountPercent > 0 && <> <span className="admin-tag">-{product.discountPercent}%</span></>}
                     </td>
                     <td data-label="Stock" className="is-numeric">
                       {product.availableQuantity > 0

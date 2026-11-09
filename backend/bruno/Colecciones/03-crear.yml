@@ -1,0 +1,44 @@
+info:
+  name: Crear colección
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/collections"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Para regalar",
+        "description": "Ideas para todos los presupuestos.",
+        "products": ["6ab6f7514bd9c966c17cf5c2"],
+        "isActive": true
+      }
+  auth: inherit
+
+docs: |-
+  Crea una colección.
+
+  **Auth:** administrador.
+
+  **Recibe**
+
+  Body:
+  - `title`: hasta 80 caracteres.
+  - `description`: opcional, hasta 300.
+  - `products`: de 1 a 48 ids de productos existentes, sin repetir, en el orden en que se muestran.
+  - `isActive`: opcional, por defecto `true`.
+
+  **Devuelve**
+
+  - `201` con la colección creada.
+  - `400` si algún campo es inválido o algún producto no existe; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+
+settings:
+  encodeUrl: true

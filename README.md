@@ -31,8 +31,9 @@ desde el panel y la persona recibe un correo para elegir su contraseña.
 - **Frontend** (`frontend/`): React 19, React Router 7, TypeScript, CSS propio y Vite.
 - **Backend** (`backend/`): Node.js 24, Express 5, TypeScript, Zod para validar,
   JWT para la autenticación y nodemailer para los correos.
-- **Base de datos**: MongoDB Atlas con Mongoose y Typegoose. La búsqueda de
-  texto usa Atlas Search.
+- **Base de datos**: MongoDB (Atlas o local) con Mongoose y Typegoose. Con
+  Atlas, la búsqueda de texto usa Atlas Search; sin Atlas, un respaldo con
+  expresiones regulares.
 
 El frontend y el backend son proyectos separados que se comunican solo por la
 API REST. El backend está organizado en capas: rutas → middlewares →
@@ -70,10 +71,12 @@ controllers → services → modelos.
 ### Requisitos
 
 - Node.js 24 y npm 11. El proyecto usa solo Node y npm.
-- Un cluster de [MongoDB Atlas](https://www.mongodb.com/atlas) (alcanza con el
-  gratuito), con la IP de la máquina habilitada en *Network Access*. La búsqueda
-  de productos usa Atlas Search, que no existe en un MongoDB local: sin Atlas el
-  resto funciona, pero buscar por texto desde el panel responde un error.
+- Una base MongoDB: un cluster de [MongoDB Atlas](https://www.mongodb.com/atlas)
+  (alcanza con el gratuito, con la IP de la máquina habilitada en *Network
+  Access*) o un MongoDB local. Con Atlas la búsqueda por texto usa Atlas Search,
+  que tolera errores de tipeo. Con un MongoDB local todo funciona igual y la
+  búsqueda usa un respaldo que busca cada palabra en el nombre y la descripción,
+  sin distinguir mayúsculas ni tildes.
 - Una cuenta SMTP para enviar correos (por ejemplo, una contraseña de
   aplicación de Gmail o [Ethereal](https://ethereal.email/) para pruebas). En
   desarrollo es opcional: sin SMTP los correos (recuperación, invitaciones,
@@ -92,7 +95,7 @@ Completar `.env`:
 
 | Variable | Obligatoria | Descripción |
 | --- | --- | --- |
-| `MONGODB_URI` | Sí | Cadena de conexión de Atlas, por ejemplo `mongodb+srv://usuario:clave@cluster.mongodb.net/techstore` |
+| `MONGODB_URI` | Sí | Cadena de conexión, por ejemplo `mongodb+srv://usuario:clave@cluster.mongodb.net/techstore` (Atlas) o `mongodb://localhost:27017/techstore` (local) |
 | `JWT_SECRET` | Sí | Texto aleatorio de al menos 32 caracteres para firmar los tokens |
 | `PORT` | No | Puerto de la API (por defecto `8080`) |
 | `JWT_EXPIRATION_SECONDS` | No | Duración de la sesión (por defecto `3600`) |
@@ -166,13 +169,19 @@ carga:
 
 - 108 productos de tecnología en 11 categorías, con imágenes, algunos sin stock,
   algunos desactivados y algunos destacados;
+- cuatro promociones (una apagada y una, "Mes gamer", con 10 % de descuento
+  en la colección "Armá tu setup gamer") y tres colecciones (una apagada);
+- 60 días de visitas de ejemplo a las fichas de productos, para que el
+  dashboard tenga métricas desde el primer momento (generadas con una semilla
+  fija: cada corrida da lo mismo);
 - la información institucional del comercio;
 - cuatro consultas en distintos estados;
 - el administrador de demostración.
 
-También crea (o actualiza) el índice de Atlas Search `productSearch`. Atlas
-tarda unos minutos en indexar; mientras tanto la búsqueda puede devolver menos
-resultados.
+Si la base es Atlas, también crea (o actualiza) el índice de Atlas Search
+`productSearch`. Atlas tarda unos minutos en indexar; mientras tanto la
+búsqueda puede devolver menos resultados. Con un MongoDB local el seed lo avisa
+y sigue: la búsqueda usa el respaldo.
 
 ## Scripts
 

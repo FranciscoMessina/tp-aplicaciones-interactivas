@@ -210,7 +210,11 @@
   background: var(--ink);
   color: var(--paper);
 }
-.section-heading h2 { margin: 0; font-size: clamp(34px, 4.4vw, 56px); font-weight: 850; font-stretch: 75%; letter-spacing: -0.01em; }
+.section-heading h2, .section-heading h1 { margin: 0; font-size: clamp(34px, 4.4vw, 56px); font-weight: 850; font-stretch: 75%; letter-spacing: -0.01em; }
+/* Las colecciones van una debajo de otra: sin el aire de arriba quedan como un bloque. */
+.products-section + .products-section.is-collection { padding-top: 0; }
+.collection-heading { margin-top: 20px; }
+.section-heading .collection-promotion { display: inline-block; margin-top: 12px; padding: 2px 8px; background: var(--marker); color: var(--ink); font-weight: 700; }
 .section-heading p { margin: 6px 0 0; color: #a9aeb5; }
 .section-heading .section-link { color: var(--marker); text-decoration-color: currentColor; }
 .section-heading .section-link:hover { color: var(--paper); }
@@ -450,6 +454,8 @@
 /* Descuento: precio final, el de lista tachado y el porcentaje en tinta */
 .product-price.has-discount { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; }
 .product-price del { color: var(--muted); font-size: 0.75em; font-weight: 400; }
+.product-promotion { flex-basis: 100%; color: var(--ink); font-family: var(--display); font-size: 13px; font-weight: 700; text-decoration: underline; text-decoration-color: var(--marker); text-decoration-thickness: 3px; text-underline-offset: 3px; }
+.product-promotion:hover { text-decoration-color: var(--ink); }
 .product-discount { align-self: center; padding: 1px 6px; background: var(--ink); color: var(--marker); font-size: 12px; font-weight: 600; line-height: 1.5; }
 
 .product-featured-badge {
@@ -631,6 +637,12 @@
 .product-buy .primary-button { align-self: stretch; margin-top: 8px; }
 .product-buy .product-price del { font-size: 0.5em; }
 .product-buy .product-discount { font-size: 14px; }
+.product-buy .product-promotion { text-decoration-color: var(--ink); }
+/* En la ficha, en columna: arriba el precio anterior con el porcentaje y abajo el que se paga. */
+.product-buy .product-price.has-discount { display: grid; grid-template-columns: auto 1fr; justify-content: start; align-items: center; column-gap: 10px; row-gap: 2px; }
+.product-buy .product-price.has-discount del, .product-buy .product-price.has-discount .product-discount { grid-row: 1; justify-self: start; }
+.product-buy .product-price-final { grid-row: 2; grid-column: 1 / -1; }
+.product-buy .product-price.has-discount .product-promotion { grid-column: 1 / -1; }
 .product-buy-note { margin: 0; color: var(--muted); font-size: 14px; }
 
 .related-section { margin-top: 72px; }

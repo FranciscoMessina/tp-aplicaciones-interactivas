@@ -11,12 +11,14 @@ import LogoMark from './components/LogoMark'
 import { LoginPage, ForgotPasswordPage, ResetPasswordPage } from './pages/AuthPages'
 import HomePage from './pages/HomePage'
 import CatalogPage from './pages/CatalogPage'
+import CollectionPage from './pages/CollectionPage'
 import BusinessInfoPage from './pages/BusinessInfoPage'
 import ContactPage from './pages/ContactPage'
 import ProfilePage from './pages/ProfilePage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import NotFoundPage from './pages/NotFoundPage'
 import AdminPromotionsPage from './pages/AdminPromotionsPage'
+import AdminCollectionsPage from './pages/AdminCollectionsPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AdminProductsPage from './pages/AdminProductsPage'
 import AdminCategoriesPage from './pages/AdminCategoriesPage'
@@ -85,6 +87,7 @@ function AppRoutes() {
           <Route path="/" element={<HomePage />} />
           <Route path="/catalogo" element={<CatalogPage />} />
           <Route path="/productos/:id" element={<ProductDetailPage />} />
+          <Route path="/colecciones/:id" element={<CollectionPage />} />
           <Route path="/nosotros" element={<BusinessInfoPage />} />
           <Route path="/contacto" element={<ContactPage />} />
           <Route path="*" element={<NotFoundPage />} />
@@ -98,6 +101,7 @@ function AppRoutes() {
           <Route path="productos" element={<AdminProductsPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
           <Route path="promociones" element={<AdminPromotionsPage />} />
+          <Route path="colecciones" element={<AdminCollectionsPage />} />
           <Route path="consultas" element={<AdminEnquiriesPage />} />
           <Route path="comercio" element={<AdminBusinessInfoPage />} />
           <Route path="usuarios" element={<AdminUsersPage />} />

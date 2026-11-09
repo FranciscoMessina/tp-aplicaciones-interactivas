@@ -41,3 +41,5 @@ export const loginLimiter = limitPerIp(10, 15, {
 export const forgotPasswordLimiter = limitPerIp(5, 15);
 export const resetPasswordLimiter = limitPerIp(10, 15);
 export const enquiryLimiter = limitPerIp(5, 60);
+// Holgado para quien recorre muchas fichas, pero corta a quien infla visitas.
+export const productViewLimiter = limitPerIp(120, 15);

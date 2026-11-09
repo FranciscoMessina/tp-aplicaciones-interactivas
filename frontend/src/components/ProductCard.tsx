@@ -28,15 +28,22 @@ export function StockStatus({ quantity }: { quantity: number }) {
   return <span className="product-available">En stock</span>
 }
 
-// Precio final y, si tiene descuento, el de lista tachado y el porcentaje.
+// Precio final y, si tiene descuento, el de lista tachado y el porcentaje. Si el descuento
+// viene de una promoción, se la nombra y lleva a su colección.
 export function ProductPrice({ product }: { product: Product }) {
-  if (product.discountPercent <= 0) return <p className="product-price">{formatPrice(product.finalPrice)}</p>
+  const { promotion } = product
+  const percent = promotion?.discountPercent ?? product.discountPercent
+  if (percent <= 0) return <p className="product-price">{formatPrice(product.finalPrice)}</p>
   return (
     <p className="product-price has-discount">
-      <span className="visually-hidden">Precio con descuento: </span>
-      {formatPrice(product.finalPrice)}
+      <span className="product-price-final"><span className="visually-hidden">Precio con descuento: </span>{formatPrice(product.finalPrice)}</span>
       <del><span className="visually-hidden">Precio anterior: </span>{formatPrice(product.price)}</del>
-      <span className="product-discount">-{product.discountPercent}%</span>
+      <span className="product-discount">-{percent}%</span>
+      {promotion && (
+        <Link className="product-promotion" to={`/colecciones/${promotion.collection}`} aria-label={`Descuento por la promoción ${promotion.title}: ver la colección`}>
+          Promoción {promotion.title}
+        </Link>
+      )}
     </p>
   )
 }

@@ -16,6 +16,16 @@ export type Product = {
   isActive: boolean
   isFeatured: boolean
   createdAt: string
+  // La promoción que le baja el precio hoy (por estar en su colección), o null. Cuando hay una,
+  // `finalPrice` ya tiene aplicado su descuento.
+  promotion?: AppliedPromotion | null
+}
+
+export type AppliedPromotion = {
+  id: string
+  title: string
+  discountPercent: number
+  collection: string
 }
 
 export type Category = {

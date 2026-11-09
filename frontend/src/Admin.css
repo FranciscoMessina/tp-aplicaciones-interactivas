@@ -294,6 +294,24 @@
 .dashboard-bar-track { height: 8px; background: #e8e9e5; }
 .dashboard-bar-fill { display: block; height: 100%; background: var(--ink); }
 .dashboard-bar-value { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+.dashboard-panels .admin-panel.is-wide { grid-column: 1 / -1; }
+
+/* Visitas por día: cada columna ocupa todo el alto, así el puntero la encuentra aunque la barra sea baja. */
+.dashboard-chart-readout { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+.dashboard-chart-readout strong { margin-right: 2px; color: var(--ink); font-family: var(--mono); font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.dashboard-chart { display: flex; align-items: stretch; gap: 2px; height: 160px; border-bottom: 1px solid var(--rule); }
+.dashboard-chart-column { display: flex; flex: 1; align-items: flex-end; min-width: 0; }
+.dashboard-chart-column > span { width: 100%; min-height: 1px; background: var(--ink); opacity: 0.85; transition: opacity 0.15s; }
+.dashboard-chart:hover .dashboard-chart-column > span { opacity: 0.35; }
+.dashboard-chart .dashboard-chart-column.is-active > span { opacity: 1; background: var(--ink); box-shadow: 0 -4px 0 var(--marker); }
+.dashboard-chart-axis { display: flex; justify-content: space-between; margin-top: 6px; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+
+.dashboard-ranking { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; counter-reset: ranking; }
+.dashboard-ranking li { display: grid; grid-template-columns: 20px 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; font-size: 14px; counter-increment: ranking; }
+.dashboard-ranking li::before { content: counter(ranking); color: var(--muted); font-family: var(--mono); font-size: 13px; }
+.dashboard-ranking img { width: 40px; height: 40px; object-fit: contain; border: 1px solid var(--line); background: #fff; }
+.dashboard-ranking-name { color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+.dashboard-ranking-name:hover { text-decoration: underline; }
 
 /* ===== Consultas: bandeja con detalle ===== */
 .admin-inbox { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); height: calc(100vh - 190px); min-height: 480px; }
@@ -477,3 +495,15 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-shell *, .admin-shell *::before { transition: none !important; animation: none !important; }
 }
+
+/* ===== Colecciones: buscador y lista de productos elegidos ===== */
+.admin-field .admin-search { flex: none; max-width: none; }
+.collection-results { padding: 8px 12px; border: 1px solid var(--line); background: #fafaf8; }
+.collection-items { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.collection-items li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 4px 0; font-size: 14px; }
+.collection-items img { width: 40px; height: 40px; object-fit: contain; border: 1px solid var(--line); background: #fff; }
+.collection-item-name { overflow: hidden; text-overflow: ellipsis; }
+.collection-item-name small { display: block; color: var(--muted); font-size: 12px; }
+.collection-items.is-selected { counter-reset: selected; }
+.collection-items.is-selected li { grid-template-columns: 20px 40px minmax(0, 1fr) auto; padding: 6px 0; border-bottom: 1px solid var(--line); counter-increment: selected; }
+.collection-items.is-selected li::before { content: counter(selected); color: var(--muted); font-family: var(--mono); font-size: 13px; }

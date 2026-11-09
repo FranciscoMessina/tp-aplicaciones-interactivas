@@ -8,8 +8,10 @@ import Modal from '../components/Modal'
 import { useAuth } from '../context/auth-context'
 import { getErrorMessage as errorMessage } from '../services/api'
 import { fetchCategories } from '../services/categories'
+import { fetchAdminCollections } from '../services/collections'
 import { uploadImage } from '../services/images'
 import { createPromotion, deletePromotion, fetchAdminPromotions, updatePromotion } from '../services/promotions'
+import type { Collection } from '../types/collection'
 import type { Category } from '../types/product'
 import type { Promotion, PromotionInput } from '../types/promotion'
 import { formatDay } from '../utils/format'
@@ -21,10 +23,28 @@ const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argent
 function promotionStatus(promotion: Promotion): { label: string; isOn: boolean } {
   const day = today()
   if (!promotion.isActive) return { label: 'Apagada', isOn: false }
+  if (promotion.linkedCollection && !promotion.linkedCollection.isActive) return { label: 'Su colección está apagada', isOn: false }
   if (promotion.startDate && promotion.startDate > day) return { label: `Empieza el ${formatDay(promotion.startDate)}`, isOn: false }
   if (promotion.endDate && promotion.endDate < day) return { label: 'Vencida', isOn: false }
   return { label: 'Visible en el sitio', isOn: true }
 }
+
+// A dónde lleva el aviso, para el listado.
+function destination(promotion: Promotion) {
+  if (promotion.linkedCollection) {
+    return promotion.discountPercent ? `${promotion.linkedCollection.title} (-${promotion.discountPercent}%)` : promotion.linkedCollection.title
+  }
+  return promotion.category?.name ?? 'Ofertas'
+}
+
+// El destino viaja en un solo <select>: "" (ofertas), "categoria:<id>" o "coleccion:<id>".
+function destinationValue(promotion: Promotion | null) {
+  if (promotion?.linkedCollection) return `coleccion:${promotion.linkedCollection.id}`
+  if (promotion?.category) return `categoria:${promotion.category.id}`
+  return ''
+}
+
+const MAX_DISCOUNT = 90
 
 function validity(promotion: Promotion) {
   if (promotion.startDate && promotion.endDate) return `${formatDay(promotion.startDate)} al ${formatDay(promotion.endDate)}`
@@ -36,18 +56,20 @@ function validity(promotion: Promotion) {
 interface PromotionFormModalProps {
   token: string
   categories: Category[]
+  collections: Collection[]
   promotion: Promotion | null // null = crear
   onClose: () => void
   onSaved: (promotion: Promotion, wasEdit: boolean) => void
 }
 
-function PromotionFormModal({ token, categories, promotion, onClose, onSaved }: PromotionFormModalProps) {
+function PromotionFormModal({ token, categories, collections, promotion, onClose, onSaved }: PromotionFormModalProps) {
   const isEdit = promotion !== null
   const fileInput = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState(promotion?.title ?? '')
   const [description, setDescription] = useState(promotion?.description ?? '')
   const [image, setImage] = useState(promotion?.image ?? '')
-  const [categoryId, setCategoryId] = useState(promotion?.category?.id ?? '')
+  const [target, setTarget] = useState(destinationValue(promotion))
+  const [discount, setDiscount] = useState(promotion?.discountPercent ? String(promotion.discountPercent) : '')
   const [startDate, setStartDate] = useState(promotion?.startDate ?? '')
   const [endDate, setEndDate] = useState(promotion?.endDate ?? '')
   const [isActive, setIsActive] = useState(promotion?.isActive ?? true)
@@ -77,11 +99,20 @@ function PromotionFormModal({ token, categories, promotion, onClose, onSaved }: 
     if (!title.trim() || !description.trim()) return setError('Completá el título y la descripción.')
     if (startDate && endDate && startDate > endDate) return setError('La fecha de fin tiene que ser igual o posterior a la de inicio.')
 
+    const [targetKind, targetId] = target.split(':')
+    const isCollection = targetKind === 'coleccion'
+    const percent = discount.trim() === '' ? null : Number(discount)
+    if (isCollection && percent !== null && (!Number.isInteger(percent) || percent < 1 || percent > MAX_DISCOUNT)) {
+      return setError(`El descuento tiene que ser un porcentaje entero entre 1 y ${MAX_DISCOUNT}, o quedar vacío.`)
+    }
+
     const input: PromotionInput = {
       title: title.trim(),
       description: description.trim(),
       image: image || null,
-      category: categoryId || null,
+      category: targetKind === 'categoria' ? targetId : null,
+      linkedCollection: isCollection ? targetId : null,
+      discountPercent: isCollection ? percent : null,
       startDate: startDate || null,
       endDate: endDate || null,
       isActive,
@@ -117,9 +148,16 @@ function PromotionFormModal({ token, categories, promotion, onClose, onSaved }: 
         <div className="admin-form-row">
           <div className="admin-field">
             <label htmlFor="pr-category">Lleva a</label>
-            <select id="pr-category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+            <select id="pr-category" value={target} onChange={(event) => setTarget(event.target.value)}>
               <option value="">Productos en oferta</option>
-              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+              {collections.length > 0 && (
+                <optgroup label="Colecciones">
+                  {collections.map((collection) => <option key={collection.id} value={`coleccion:${collection.id}`}>{collection.title}{collection.isActive ? '' : ' (apagada)'}</option>)}
+                </optgroup>
+              )}
+              <optgroup label="Categorías">
+                {categories.map((category) => <option key={category.id} value={`categoria:${category.id}`}>{category.name}</option>)}
+              </optgroup>
             </select>
           </div>
           <div className="admin-field">
@@ -132,6 +170,14 @@ function PromotionFormModal({ token, categories, promotion, onClose, onSaved }: 
           </div>
         </div>
         <span className="admin-hint">Las dos fechas son opcionales: sin fechas, la promoción se ve mientras esté encendida.</span>
+
+        {target.startsWith('coleccion:') && (
+          <div className="admin-field">
+            <label htmlFor="pr-discount">Descuento para los productos de la colección <span className="admin-hint-inline">Opcional, en %</span></label>
+            <input id="pr-discount" type="number" inputMode="numeric" min={1} max={MAX_DISCOUNT} step={1} value={discount} onChange={(event) => setDiscount(event.target.value)} placeholder="Ej.: 10" />
+            <span className="admin-hint">Mientras la promoción esté vigente, el sitio muestra estos productos con el descuento y el nombre de la promoción. Si un producto ya tiene un descuento mayor, se mantiene el suyo.</span>
+          </div>
+        )}
 
         <div className="admin-field">
           <label htmlFor="pr-file">Imagen <span className="admin-hint-inline">Opcional</span></label>
@@ -178,6 +224,7 @@ export default function AdminPromotionsPage() {
 
   const [promotions, setPromotions] = useState<Promotion[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [collections, setCollections] = useState<Collection[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [reload, setReload] = useState(0)
@@ -192,10 +239,11 @@ export default function AdminPromotionsPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    Promise.all([fetchAdminPromotions(token, controller.signal), fetchCategories(controller.signal)])
-      .then(([promotionList, categoryList]) => {
+    Promise.all([fetchAdminPromotions(token, controller.signal), fetchCategories(controller.signal), fetchAdminCollections(token, controller.signal)])
+      .then(([promotionList, categoryList, collectionList]) => {
         setPromotions(promotionList)
         setCategories(categoryList)
+        setCollections(collectionList)
       })
       .catch((error: unknown) => { if (!controller.signal.aborted) setLoadError(errorMessage(error)) })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
@@ -250,7 +298,7 @@ export default function AdminPromotionsPage() {
       <div className="admin-heading">
         <div>
           <h1>Promociones</h1>
-          <p>Avisos que se muestran en el inicio. Los descuentos de cada producto se cargan en Productos.</p>
+          <p>Avisos que se muestran en el inicio. Una promoción que lleva a una colección puede bajarles el precio a todos sus productos.</p>
         </div>
         {newButton}
       </div>
@@ -298,7 +346,7 @@ export default function AdminPromotionsPage() {
                           </div>
                         </div>
                       </td>
-                      <td data-label="Lleva a">{promotion.category?.name ?? 'Ofertas'}</td>
+                      <td data-label="Lleva a">{destination(promotion)}</td>
                       <td data-label="Vigencia">{validity(promotion)}</td>
                       <td data-label="Estado">
                         <span className={`admin-status ${status.isOn ? 'is-on' : 'is-off'}`}>{status.label}</span>
@@ -337,6 +385,7 @@ export default function AdminPromotionsPage() {
         <PromotionFormModal
           token={token}
           categories={categories}
+          collections={collections}
           promotion={editing}
           onClose={() => { setCreating(false); setEditing(null) }}
           onSaved={handleSaved}
