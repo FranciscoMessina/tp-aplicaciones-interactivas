@@ -18,11 +18,26 @@ export function ProductImage({ src, alt }: { src?: string; alt: string }) {
   )
 }
 
+// Con pocas unidades se avisa cuántas quedan.
+const LOW_STOCK = 3
+
 export function StockStatus({ quantity }: { quantity: number }) {
+  if (quantity <= 0) return <span className="product-unavailable">Sin stock</span>
+  if (quantity === 1) return <span className="product-low">Última unidad</span>
+  if (quantity <= LOW_STOCK) return <span className="product-low">Quedan {quantity}</span>
+  return <span className="product-available">En stock</span>
+}
+
+// Precio final y, si tiene descuento, el de lista tachado y el porcentaje.
+export function ProductPrice({ product }: { product: Product }) {
+  if (product.discountPercent <= 0) return <p className="product-price">{formatPrice(product.finalPrice)}</p>
   return (
-    <span className={quantity > 0 ? 'product-available' : 'product-unavailable'}>
-      {quantity > 0 ? 'En stock' : 'Sin stock'}
-    </span>
+    <p className="product-price has-discount">
+      <span className="visually-hidden">Precio con descuento: </span>
+      {formatPrice(product.finalPrice)}
+      <del><span className="visually-hidden">Precio anterior: </span>{formatPrice(product.price)}</del>
+      <span className="product-discount">-{product.discountPercent}%</span>
+    </p>
   )
 }
 
@@ -41,7 +56,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <h3><Link to={`/productos/${product.id}`}>{product.name}</Link></h3>
         <p className="product-description">{product.description}</p>
         <div className="product-card-footer">
-          <p className="product-price">{formatPrice(product.price)}</p>
+          <ProductPrice product={product} />
           <StockStatus quantity={product.availableQuantity} />
         </div>
       </div>

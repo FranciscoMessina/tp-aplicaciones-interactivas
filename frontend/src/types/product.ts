@@ -8,7 +8,10 @@ export type Product = {
   }
   description: string
   images: string[]
+  // Precio de lista; el que se paga es `finalPrice`, con el descuento aplicado.
   price: number
+  discountPercent: number
+  finalPrice: number
   availableQuantity: number
   isActive: boolean
   isFeatured: boolean
@@ -34,6 +37,7 @@ export type ProductInput = {
   description: string
   images: string[]
   price: number
+  discountPercent: number
   availableQuantity: number
   isActive: boolean
   isFeatured: boolean

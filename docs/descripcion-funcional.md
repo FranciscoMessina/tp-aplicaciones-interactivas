@@ -19,23 +19,32 @@ objetivo es promocionar los productos y recibir consultas.
 ## Sitio público
 
 - **Inicio**: presentación del comercio, las categorías principales (con
-  cantidad de productos y precio desde) que llevan al catálogo ya filtrado, y
-  los productos destacados (o los más nuevos, si no hay destacados).
+  cantidad de productos y precio desde) que llevan al catálogo ya filtrado, las
+  promociones vigentes y los productos destacados (o los más nuevos, si no hay
+  destacados).
 - **Catálogo** (`/catalogo`): solo los productos publicados, paginados de a 12.
   El backend filtra, ordena y pagina, así que solo viaja la página visible. Cada tarjeta
-  muestra nombre, categoría, imagen, descripción, precio y disponibilidad
-  ("Disponible" o "Sin stock").
-- **Búsqueda, filtros y orden**: búsqueda por texto en nombre y descripción,
-  filtro por categoría y por disponibilidad, y orden por más recientes, precio
-  o nombre.
+  muestra nombre, categoría, imagen, descripción, precio (con el de lista
+  tachado y el porcentaje si tiene descuento) y disponibilidad ("En stock",
+  "Quedan 2", "Última unidad" o "Sin stock").
+- **Búsqueda, filtros y orden**: búsqueda por texto en nombre y descripción y
+  orden por más recientes, precio o nombre. Los filtros están en un panel
+  lateral: categoría, rango de precio (desde/hasta), solo con stock y solo
+  ofertas. Los filtros aplicados se muestran como chips que se quitan de a uno,
+  y quedan en la URL para compartir la búsqueda. Si no hay resultados, el
+  catálogo ofrece pedir el producto por el formulario de contacto.
 - **Detalle de producto**: galería con todas las imágenes del producto, precio,
   disponibilidad, descripción y un botón para consultar por ese producto, que
-  abre el formulario de contacto con el asunto completo.
+  abre el formulario de contacto con el producto y el asunto completos. Sin
+  stock, el botón pasa a "Avisame cuando entre". Abajo se muestran otros
+  productos de la misma categoría.
 - **Nosotros**: nombre, descripción, dirección, teléfono, horarios y redes
   sociales del comercio.
 - **Contacto**: datos del comercio y formulario con nombre, email, teléfono
   opcional, asunto y mensaje. La consulta se guarda como pendiente, se avisa por
   mail a los administradores y el visitante recibe un mail de confirmación.
+- **Página no encontrada**: cualquier dirección que no existe muestra una
+  página propia con accesos al catálogo, al contacto y al inicio.
 
 ## Cuenta del administrador
 
@@ -61,8 +70,13 @@ objetivo es promocionar los productos y recibir consultas.
 - **Productos**: listado con búsqueda y filtro por categoría (incluye los
   ocultos), alta, edición, eliminación con confirmación, y publicar u ocultar
   con un clic. Cada producto tiene varias imágenes (subidas desde la
-  computadora o por URL, la primera es la principal) y puede marcarse como
-  destacado para aparecer en el inicio.
+  computadora o por URL, la primera es la principal), puede marcarse como
+  destacado para aparecer en el inicio y puede tener un descuento en porcentaje
+  (hasta 90 %); el sitio muestra el precio final y el anterior tachado.
+- **Promociones**: avisos para el inicio con título, descripción, imagen
+  opcional, fechas de vigencia opcionales y una categoría a la que llevan (o,
+  sin categoría, a los productos con descuento). Se encienden y apagan con un
+  clic, y el listado muestra si cada una se ve hoy, empieza más adelante o venció.
 - **Categorías**: alta, edición y eliminación. Los nombres no se repiten (sin
   distinguir mayúsculas) y no se puede eliminar una categoría con productos.
 - **Consultas**: bandeja paginada (de a 20) de la más nueva a la más vieja con

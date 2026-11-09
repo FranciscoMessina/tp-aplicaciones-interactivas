@@ -1,0 +1,46 @@
+info:
+  name: Crear promocion
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/promotions"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Semana del audio",
+        "description": "Auriculares y parlantes con precios especiales.",
+        "startDate": "2026-11-10",
+        "endDate": "2026-11-17"
+      }
+  auth: inherit
+
+docs: |-
+  Crea una promoción.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Body:
+  - `title`: hasta 80 caracteres.
+  - `description`: hasta 300 caracteres.
+  - `image` (opcional): URL de la imagen, por ejemplo la que devuelve "Subir imagen".
+  - `category` (opcional): id de la categoría a la que lleva el aviso. Sin ella, lleva a los productos con descuento.
+  - `startDate` / `endDate` (opcionales): fechas `AAAA-MM-DD`, en horario de Argentina.
+  - `isActive` (opcional, por defecto `true`).
+
+  **Devuelve**
+
+  - `201` con la promoción creada.
+  - `400` si algún campo es inválido o la fecha de fin es anterior a la de inicio; `error.fields` trae los mensajes por campo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+
+settings:
+  encodeUrl: true

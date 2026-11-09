@@ -12,7 +12,7 @@ TechStore's public site is styled as a **hardware datasheet**: the shop is a com
 | `--muted` | `#565c66` | Secondary text, field labels (≥5.5:1 on paper) |
 | `--rule` | `#c7cac9` | Inner hairlines between rows/cells |
 | `--marker` | `#d9f24a` | The only colour: highlighter behind active nav, price, primary action, hover sweeps |
-| `--ok` / `--bad` | `#0f7a49` / `#b8342a` | Stock status |
+| `--ok` / `--bad` / `--warn` | `#0f7a49` / `#b8342a` / `#8a5300` | Stock status: in stock / out of stock / last units |
 | `--display` | Archivo Variable (self-hosted, `wdth` axis) | All text |
 | `--mono` | Martian Mono Variable (self-hosted) | Data only: part numbers, prices, counts, rulers, coordinates |
 
@@ -26,10 +26,14 @@ TechStore's public site is styled as a **hardware datasheet**: the shop is a com
 
 - Square corners everywhere. Elevation comes from rules, never from shadows.
 - Sections open with a 3px `--ink` bar above the heading (`.information-heading`, `.information-bottom-cta`). The home's product section is the exception: `.section-heading` is a solid ink band attached to the top of the grid, like a table header, so the title doesn't fight the circuit background. The band uses paper text, `#a9aeb5` for the subtitle, and a marker link.
-- Grids share hairlines: the container draws the top/left rule and each cell draws its right/bottom rule (`.products-grid`, `.catalog-filters`, `.business-detail-grid`, `.product-detail`).
+- Grids share hairlines: the container draws the top/left rule and each cell draws its right/bottom rule (`.products-grid`, `.catalog-bar`, `.promotions`, `.business-detail-grid`, `.product-detail`).
 - Figures carry crop marks on two opposite corners (`.product-image::before/::after`).
 - Home: the hero is a DIP-24 package seen from above, in black epoxy (`--ink` ground, paper text), with tin-coloured pin legs (`#b9bec4`) along the top (24–13) and bottom (1–12) edges, numbered inside the outline, plus the notch on the left edge and the pin-1 dimple. The last words of the h1 ("se enchufa.") are set in `--marker`. A 72px gap (48px on mobile) separates it from the ordering table (`.order-table`), whose last row, "Todo el catálogo", is the primary action and is filled with the highlighter.
 - Ink grounds are used for the home chip, the home's product-section header (`.section-heading`) and one closing band per page (`.contact-section` on the home page, `.contact-aside` on contact). On ink, the marker becomes the focus and link colour.
+
+- Catalog: search, sort and a "Filtros" button share one ruled row (`.catalog-bar`). The filters open in a right-hand panel (`.filter-panel`, a native `<dialog>` on `--sheet` with a 3px ink rule under its title) that applies each change at once and shows the result count in its footer button. Applied filters appear as square ink-bordered chips (`.filter-chips`) that fill with the marker on hover.
+- Discounts: the final price keeps the price style; the list price is struck through in `--muted` and the percentage is a small ink tag with marker text (`.product-discount`).
+- Home promotions (`.promotions`) sit between the ordering table and the featured products as ruled notices with a mono code (`P-01 · Hasta el …`) and a marker-underlined link.
 
 ## Background
 

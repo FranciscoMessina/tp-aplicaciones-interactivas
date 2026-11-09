@@ -7,7 +7,9 @@ Referencia de la API del backend (`backend/`). Todas las rutas empiezan con
 ## Productos
 
 La colección de productos está disponible en `/api/products`. Cada publicación
-tiene `name`, `category`, `description`, `images` (array de URLs), `price`,
+tiene `name`, `category`, `description`, `images` (array de URLs), `price`
+(precio de lista), `discountPercent` (entero de 0 a 90; `0` es sin descuento),
+`finalPrice` (el precio con el descuento aplicado, lo calcula el backend),
 `availableQuantity` (estado de disponibilidad: con `0` se muestra sin stock),
 `isActive` (si está publicada) e `isFeatured` (si se destaca en el inicio). La consigna deja
 el precio como opcional según el rubro; en el nuestro es obligatorio. Crear,
@@ -19,12 +21,13 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 - `GET /api/products`: obtiene la lista de productos activos. No requiere
   autenticación. Acepta `search` (full-text sobre `name` y `description`),
   `category`, `minPrice`, `maxPrice`, `isFeatured`, `inStock` (`true`: con
-  unidades; `false`: sin stock), `sortBy` (`publicationDate`, `price`, `name` o
+  unidades; `false`: sin stock), `onSale` (`true`: solo con descuento), `sortBy` (`publicationDate`, `price`, `name` o
   `relevance`), `sortOrder` (`asc` o `desc`), `page` (desde 1), `pageSize` (1 a
   100, por defecto 20) e `includeInactive`. El catálogo público y el panel piden
   solo la página que muestran. El
   orden por defecto es fecha de publicación descendente y `relevance` requiere
-  `search`. Responde una página:
+  `search`. El rango de precio y el orden por precio usan `finalPrice`, lo que
+  se paga. Responde una página:
   `{ "items": [...], "page": 1, "pageSize": 20, "total": 97 }`.
   Un administrador autenticado que envie `includeInactive=true` recibe tambien
   las publicaciones desactivadas; para cualquier otro visitante el parametro
@@ -33,7 +36,8 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 - `GET /api/products/:id`: obtiene un producto con su categoría. Un producto
   inactivo responde 404, salvo para un administrador autenticado.
 - `POST /api/products`: crea un producto con `name`, `category`, `description`,
-  `images`, `price` y, opcionales, `availableQuantity` (por defecto `0`),
+  `images`, `price` y, opcionales, `discountPercent` (por defecto `0`),
+  `availableQuantity` (por defecto `0`),
   `isActive` (por defecto `true`) e `isFeatured` (por defecto `false`).
   Solo administradores.
 - `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores,
@@ -54,10 +58,30 @@ debe ser el ID de una categoría existente.
   Solo administradores.
   Los archivos quedan en `backend/public/uploads`.
 
+## Promociones
+
+Avisos que se muestran en el inicio, como "Semana del audio". No cambian
+precios: los descuentos son de cada producto. Cada una tiene `title` (hasta 80
+caracteres), `description` (hasta 300), `image` (URL, opcional), `category`
+(opcional: el aviso lleva al catálogo de esa categoría; sin ella, a los
+productos con descuento), `startDate` y `endDate` (fechas `AAAA-MM-DD`
+opcionales, en horario de Argentina) e `isActive`.
+
+- `GET /api/promotions`: las promociones vigentes hoy (activas y dentro de sus
+  fechas), con su categoría. No requiere autenticación. Como en los productos,
+  un administrador que envíe `includeInactive=true` recibe todas.
+- `POST /api/promotions`: crea una promoción. Solo administradores.
+- `PATCH /api/promotions/:id`: modifica cualquiera de los campos; `null` borra
+  uno opcional. Solo administradores.
+- `DELETE /api/promotions/:id`: elimina una promoción. Solo administradores.
+
+La fecha de fin no puede ser anterior a la de inicio (`400` con el error en
+`fields.endDate`). En un `PATCH` se compara con la fecha que ya estaba guardada.
+
 ## Categorías e información institucional
 
 - `GET /api/categories/summary`: las categorías con productos publicados, de la
-  más grande a la más chica, con `productCount`, `minPrice` y hasta cinco
+  más grande a la más chica, con `productCount`, `minPrice` (el precio final más bajo) y hasta cinco
   nombres de ejemplo en `examples`. Es lo que muestra la tabla del inicio.
 - `GET /api/categories`: lista categorías ordenadas por nombre. Los nombres son
   únicos sin distinguir mayúsculas: "Consolas" y "consolas" chocan con un 409.

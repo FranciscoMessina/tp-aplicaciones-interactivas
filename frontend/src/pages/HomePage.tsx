@@ -5,7 +5,8 @@ import ProductCard from '../components/ProductCard'
 import { useRequest } from '../hooks/useRequest'
 import { fetchCategorySummaries } from '../services/categories'
 import { fetchProducts } from '../services/products'
-import { formatPrice } from '../utils/format'
+import { fetchPromotions } from '../services/promotions'
+import { formatDay, formatPrice } from '../utils/format'
 
 const FEATURED_LIMIT = 8
 
@@ -30,6 +31,7 @@ async function fetchShowcase(signal: AbortSignal) {
 function HomePage() {
   const showcase = useRequest(fetchShowcase, 'showcase')
   const categories = useRequest(fetchCategorySummaries, 'categories')
+  const promotions = useRequest(fetchPromotions, 'promotions')
   const probed = useRef(-1)
 
   const mainCategories = categories.data?.slice(0, MAIN_CATEGORIES) ?? []
@@ -101,6 +103,28 @@ function HomePage() {
                 </>
               )}
         </nav>
+      )}
+
+      {/* Las promociones son un extra: si fallan o no hay, la sección no aparece. */}
+      {promotions.data && promotions.data.length > 0 && (
+        <section className="promotions" aria-label="Promociones vigentes">
+          {promotions.data.map((promotion, index) => (
+            <article key={promotion.id} className={`promotion${promotion.image ? ' has-image' : ''}`}>
+              {promotion.image && <img className="promotion-image" src={promotion.image} alt="" loading="lazy" />}
+              <div className="promotion-content">
+                <span className="promotion-code">
+                  P-{String(index + 1).padStart(2, '0')}
+                  {promotion.endDate && ` · Hasta el ${formatDay(promotion.endDate)}`}
+                </span>
+                <h2>{promotion.title}</h2>
+                <p>{promotion.description}</p>
+                <Link className="promotion-link" to={promotion.category ? `/catalogo?categoria=${promotion.category.id}` : '/catalogo?ofertas=1'}>
+                  {promotion.category ? `Ver ${promotion.category.name}` : 'Ver las ofertas'}
+                </Link>
+              </div>
+            </article>
+          ))}
+        </section>
       )}
 
       <section className="products-section" aria-labelledby="featured-title">

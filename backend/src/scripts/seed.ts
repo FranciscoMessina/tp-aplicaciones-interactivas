@@ -8,6 +8,7 @@ import { BusinessInfoModel } from "../models/business-info.model.ts";
 import { CategoryModel } from "../models/category.model.ts";
 import { EnquiryModel } from "../models/enquiry.model.ts";
 import { ProductModel, productSearchIndex } from "../models/product.model.ts";
+import { PromotionModel } from "../models/promotion.model.ts";
 import { UserModel, UserRole } from "../models/user.model.ts";
 import { hashPassword } from "../services/auth.service.ts";
 import { catalogSeed } from "./seed-catalog.ts";
@@ -31,8 +32,9 @@ async function syncProductSearchIndex(): Promise<void> {
 }
 
 async function clearSeededCollections(): Promise<void> {
-  // Products must be removed before their referenced categories.
+  // Products and promotions must be removed before their referenced categories.
   await ProductModel.deleteMany({});
+  await PromotionModel.deleteMany({});
   await CategoryModel.deleteMany({});
   await UserModel.deleteMany({});
   await EnquiryModel.deleteMany({});
@@ -74,15 +76,21 @@ function seedPhotosByName(): Map<string, string[]> {
     filename: string;
   }>;
   const available = readdirSync(mediaDir);
-  const base = process.env.CATALOG_IMAGE_BASE_URL ??
+  const base =
+    process.env.CATALOG_IMAGE_BASE_URL ??
     "https://raw.githubusercontent.com/FranciscoMessina/tp-aplicaciones-interactivas/main/backend/public/catalog/";
   for (const item of items) {
     const filename = available.find((file) => {
       const extension = extname(file).toLowerCase();
-      return [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(extension) &&
-        file.slice(0, -extname(file).length) === item.filename;
+      return (
+        [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(extension) &&
+        file.slice(0, -extname(file).length) === item.filename
+      );
     });
-    if (filename) result.set(item.name, [new URL(encodeURIComponent(filename), base).toString()]);
+    if (filename)
+      result.set(item.name, [
+        new URL(encodeURIComponent(filename), base).toString(),
+      ]);
   }
   return result;
 }
@@ -115,6 +123,8 @@ async function seedCatalog(): Promise<{
         isActive: sequence % 10 !== 0,
         // Algunos se destacan en la pagina de inicio.
         isFeatured: sequence % 18 === 4,
+        // Algunos tienen descuento, para la seccion de ofertas.
+        discountPercent: sequence % 7 === 3 ? [10, 15, 20][sequence % 3] : 0,
       });
     }
   }
@@ -122,6 +132,33 @@ async function seedCatalog(): Promise<{
   await ProductModel.create(products);
 
   return { categoryCount: catalogSeed.length, productCount: products.length };
+}
+
+async function seedPromotions(): Promise<number> {
+  const audio = await CategoryModel.findOne({ name: "Audio" });
+  const promotions = await PromotionModel.create([
+    {
+      title: "Semana del audio",
+      description:
+        "Auriculares y parlantes con precios especiales. Consultanos por cuotas sin interés.",
+      category: audio?.id,
+    },
+    {
+      title: "Ofertas de la semana",
+      description:
+        "Una selección de productos con descuento, mientras dure el stock.",
+    },
+    {
+      // Queda apagada, para ver en el panel una que no sale en el sitio.
+      title: "Vuelta a clases",
+      description: "Notebooks y tablets para arrancar el año.",
+      startDate: "2027-02-15",
+      endDate: "2027-03-15",
+      isActive: false,
+    },
+  ]);
+
+  return promotions.length;
 }
 
 async function seedBusinessInfo(): Promise<void> {
@@ -184,12 +221,13 @@ async function runSeed(): Promise<void> {
     await clearSeededCollections();
     await seedAdmin();
     const { categoryCount, productCount } = await seedCatalog();
+    const promotionCount = await seedPromotions();
     await seedBusinessInfo();
     const enquiryCount = await seedEnquiries();
     await syncProductSearchIndex();
 
     console.log(
-      `Seed completed: 1 admin, ${categoryCount} categories, ${productCount} products, ${enquiryCount} enquiries and the business info created`,
+      `Seed completed: 1 admin, ${categoryCount} categories, ${productCount} products, ${promotionCount} promotions, ${enquiryCount} enquiries and the business info created`,
     );
   } finally {
     await disconnectDatabase();

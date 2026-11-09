@@ -1,6 +1,7 @@
 import {
   getModelForClass,
   modelOptions,
+  pre,
   prop,
   searchIndex,
   type Ref,
@@ -31,7 +32,8 @@ export const productSearchIndex = {
         ],
         description: { type: "string", analyzer: "lucene.spanish" },
         category: { type: "objectId" },
-        price: { type: "number" },
+        finalPrice: { type: "number" },
+        discountPercent: { type: "number" },
         isActive: { type: "boolean" },
         isFeatured: { type: "boolean" },
         availableQuantity: { type: "number" },
@@ -40,6 +42,17 @@ export const productSearchIndex = {
   },
 };
 
+/** Precio con el descuento aplicado, redondeado a pesos enteros. */
+export function priceWithDiscount(price: number, discountPercent: number) {
+  return Math.round((price * (100 - discountPercent)) / 100);
+}
+
+// El precio final se guarda para poder filtrar y ordenar por lo que se paga.
+// Se recalcula antes de cada validacion, asi que vale para `create` y `save`;
+// por eso los cambios de un producto se guardan con `save` y no con un update.
+@pre<Product>("validate", function () {
+  this.finalPrice = priceWithDiscount(this.price, this.discountPercent);
+})
 @searchIndex(productSearchIndex)
 @modelOptions({
   ...baseModelOptions,
@@ -61,8 +74,16 @@ export class Product {
   @prop({ type: () => [String], default: [] })
   public images!: string[];
 
+  // Precio de lista, sin descuento.
   @prop({ min: 0, required: true })
   public price!: number;
+
+  // 0 = sin descuento.
+  @prop({ min: 0, max: 90, required: true, default: 0 })
+  public discountPercent!: number;
+
+  @prop({ min: 0 })
+  public finalPrice!: number;
 
   @prop({ min: 0, required: true, default: 0 })
   public availableQuantity!: number;

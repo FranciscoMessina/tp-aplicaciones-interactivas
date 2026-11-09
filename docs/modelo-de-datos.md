@@ -7,6 +7,7 @@ La base es MongoDB. Cada entidad es una colección; todas tienen `createdAt` y
 ```mermaid
 erDiagram
     CATEGORY ||--o{ PRODUCT : "agrupa"
+    CATEGORY |o--o{ PROMOTION : "destino del aviso"
     CATEGORY {
         ObjectId _id
         string name "unico, sin distinguir mayusculas"
@@ -17,10 +18,22 @@ erDiagram
         ObjectId category FK
         string description
         string[] images "URLs"
-        number price
+        number price "precio de lista"
+        number discountPercent "0 a 90"
+        number finalPrice "calculado: price con el descuento"
         number availableQuantity "0 = sin stock"
         boolean isActive "publicado o no"
         boolean isFeatured "destacado en el inicio"
+    }
+    PROMOTION {
+        ObjectId _id
+        string title
+        string description
+        string image "URL, opcional"
+        ObjectId category FK "opcional"
+        string startDate "AAAA-MM-DD, opcional"
+        string endDate "AAAA-MM-DD, opcional"
+        boolean isActive
     }
     USER {
         ObjectId _id
@@ -63,7 +76,15 @@ como el mismo nombre.
 **products**: las publicaciones. `category` referencia a una categoría que
 tiene que existir, y una categoría no se puede borrar mientras tenga productos.
 Tienen un índice de Atlas Search (`productSearch`) para la búsqueda por texto,
-con los filtros por categoría, precio y estado.
+con los filtros por categoría, precio, descuento y estado.
+`finalPrice` se recalcula en un hook del modelo antes de cada validación, así
+que vale para `create` y `save`; por eso los cambios de un producto se guardan
+con `save` y no con un update directo. Se guarda para poder filtrar y ordenar
+por el precio que se paga, también desde Atlas Search.
+
+**promotions**: los avisos del inicio. `category` es opcional y, si está, tiene
+que existir. Las fechas se guardan como texto `AAAA-MM-DD` para compararlas
+con el día de hoy en Argentina sin problemas de zona horaria.
 
 **users**: las cuentas de los administradores (no hay cuentas de clientes). `email` se guarda en minúsculas y tiene índice único.
 Las crea otro administrador: la cuenta nace sin `passwordHash` y con un token de

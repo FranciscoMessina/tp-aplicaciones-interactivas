@@ -1,16 +1,32 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import Icon from '../components/Icon'
+import { ProductImage, ProductPrice, StockStatus } from '../components/ProductCard'
 import { ApiRequestError, getErrorMessage } from '../services/api'
 import { fetchBusinessInfo } from '../services/businessInfo'
 import { sendEnquiry } from '../services/enquiries'
+import { fetchProduct } from '../services/products'
 import type { BusinessInfo } from '../types/business'
+import type { Product } from '../types/product'
+
+const MAX_SUBJECT = 150
+
+// Asunto y mensaje con los que se completa la consulta por un producto.
+function productDraft(product: Product, wantsNotice: boolean) {
+  return wantsNotice
+    ? { subject: `Aviso de ingreso: ${product.name}`.slice(0, MAX_SUBJECT), message: 'Hola, quiero que me avisen cuando vuelva a haber stock.' }
+    : { subject: `Consulta por ${product.name}`.slice(0, MAX_SUBJECT), message: '' }
+}
 
 export default function ContactPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const productId = searchParams.get('producto') ?? ''
+  const wantsNotice = searchParams.get('aviso') === '1'
+  const [product, setProduct] = useState<Product | null>(null)
   const [subject, setSubject] = useState(searchParams.get('asunto') ?? '')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -33,6 +49,31 @@ export default function ContactPage() {
       })
     return () => controller.abort()
   }, [])
+
+  // La consulta llega desde la ficha de un producto: se lo muestra y se completa el asunto.
+  useEffect(() => {
+    if (!productId) return
+    const controller = new AbortController()
+    void fetchProduct(productId, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) return
+        const draft = productDraft(result, wantsNotice)
+        setProduct(result)
+        setSubject((current) => current || draft.subject)
+        setMessage((current) => current || draft.message)
+      })
+      .catch(() => { /* si el producto no existe, la consulta sigue siendo general */ })
+    return () => controller.abort()
+  }, [productId, wantsNotice])
+
+  function removeProduct() {
+    if (!product) return
+    const draft = productDraft(product, wantsNotice)
+    if (subject === draft.subject) setSubject('')
+    if (message === draft.message) setMessage('')
+    setProduct(null)
+    setSearchParams({}, { replace: true })
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -59,6 +100,7 @@ export default function ContactPage() {
       setSuccess(true)
       setSubject('')
       setMessage('')
+      setProduct(null)
     } catch (cause) {
       setError(getErrorMessage(cause))
     } finally {
@@ -81,10 +123,30 @@ export default function ContactPage() {
 
             {success && (
               <div className="contact-alert contact-success" role="status">
-                <strong>Consulta enviada.</strong> Te vamos a responder a {email.trim()}.
+                <strong>Consulta enviada.</strong> Te vamos a responder a {email.trim()}.{' '}
+                <Link to="/catalogo">Seguir mirando el catálogo</Link>
               </div>
             )}
             {error && <div className="contact-alert contact-error" role="alert">{error}</div>}
+
+            {product && (
+              <div className="contact-product">
+                <Link to={`/productos/${product.id}`} className="contact-product-image" tabIndex={-1} aria-hidden="true">
+                  <ProductImage src={product.images[0]} alt="" />
+                </Link>
+                <div className="contact-product-info">
+                  <span className="product-category">{wantsNotice ? 'Te avisamos cuando entre' : 'Consultás por'}</span>
+                  <Link to={`/productos/${product.id}`} className="contact-product-name">{product.name}</Link>
+                  <div className="contact-product-meta">
+                    <ProductPrice product={product} />
+                    <StockStatus quantity={product.availableQuantity} />
+                  </div>
+                </div>
+                <button type="button" className="filter-panel-close" aria-label="Quitar el producto de la consulta" onClick={removeProduct}>
+                  <Icon name="close" />
+                </button>
+              </div>
+            )}
 
             <form className="contact-form" onSubmit={(event) => void submit(event)}>
               <div className="contact-form-row">
@@ -99,7 +161,7 @@ export default function ContactPage() {
                 <input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Ej.: +54 11 4444-4444" />
               </label>
               <label className="auth-field">Asunto *
-                <input required maxLength={150} value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="¿Sobre qué querés consultar?" />
+                <input required maxLength={MAX_SUBJECT} value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="¿Sobre qué querés consultar?" />
               </label>
               <label className="auth-field">Mensaje *
                 <textarea required minLength={1} maxLength={3000} rows={6} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Escribí tu consulta..." />

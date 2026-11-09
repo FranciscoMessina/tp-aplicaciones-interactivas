@@ -19,6 +19,8 @@ const productFields = {
   images: z.array(z.url()).min(1),
   // La consigna lo deja opcional segun el rubro; en el nuestro es obligatorio.
   price: z.number().nonnegative(),
+  // Porcentaje entero; el precio final lo calcula el modelo.
+  discountPercent: z.number().int().min(0).max(90).optional(),
   // El estado de disponibilidad: con 0 el producto se publica como sin stock.
   availableQuantity: z.number().int().nonnegative().optional(),
   isActive: z.boolean().optional(),
@@ -43,6 +45,8 @@ export const searchProductsSchema = z
     isFeatured: z.stringbool().optional(),
     // true: con unidades disponibles; false: sin stock.
     inStock: z.stringbool().optional(),
+    // true: solo los que tienen descuento.
+    onSale: z.stringbool().optional(),
   })
   // Validaciones que dependen de mas de un campo a la vez.
   .superRefine(({ minPrice, maxPrice, search, sortBy }, context) => {

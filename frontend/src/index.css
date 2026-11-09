@@ -12,6 +12,7 @@
   --marker: #d9f24a;
   --ok: #0f7a49;
   --bad: #b8342a;
+  --warn: #8a5300;
   --display: 'Archivo Variable', 'Segoe UI', sans-serif;
   --mono: 'Martian Mono Variable', ui-monospace, Consolas, monospace;
 
@@ -66,6 +67,8 @@ a {
 #root {
   min-height: 100vh;
 }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 :focus-visible {
   outline: 2px solid var(--ink);

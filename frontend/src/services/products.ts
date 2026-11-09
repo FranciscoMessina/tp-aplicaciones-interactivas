@@ -9,6 +9,9 @@ export interface ProductFilters {
   category?: string
   isFeatured?: boolean
   inStock?: boolean
+  onSale?: boolean
+  minPrice?: number
+  maxPrice?: number
   sortBy?: 'publicationDate' | 'price' | 'name'
   sortOrder?: 'asc' | 'desc'
   page: number
@@ -25,7 +28,7 @@ function toQuery(filters: ProductFilters & { isActive?: boolean }) {
   })
   if (filters.search) params.set('search', filters.search)
   if (filters.category) params.set('category', filters.category)
-  for (const key of ['isActive', 'isFeatured', 'inStock'] as const) {
+  for (const key of ['isActive', 'isFeatured', 'inStock', 'onSale', 'minPrice', 'maxPrice'] as const) {
     if (filters[key] !== undefined) params.set(key, String(filters[key]))
   }
   return params

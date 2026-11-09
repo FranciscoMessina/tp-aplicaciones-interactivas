@@ -124,6 +124,17 @@ El sitio queda en `http://localhost:5173`. En desarrollo, Vite reenvía `/api`
 y `/uploads` al backend en el puerto 8080, así que no hace falta configurar
 nada más.
 
+#### Atajo: backend y frontend juntos
+
+Desde la raíz del repositorio, una vez creado el `.env` del backend:
+
+```bash
+npm run install:all   # solo la primera vez: instala la raíz, backend y frontend
+npm run dev           # levanta la API y el sitio en la misma terminal
+```
+
+`Ctrl+C` detiene ambos. La raíz solo tiene `concurrently`; no es un monorepo.
+
 ### 3. Ingresar al panel
 
 El panel de administración está en `http://localhost:5173/admin` (también se
@@ -167,6 +178,8 @@ resultados.
 
 | Carpeta | Script | Qué hace |
 | --- | --- | --- |
+| raíz | `npm run dev` | Levanta backend y frontend juntos |
+| raíz | `npm run install:all` | Instala las dependencias de la raíz, el backend y el frontend |
 | `backend` | `npm run dev` | Compila ante cada cambio y reinicia la API |
 | `backend` | `npm run seed` | Recrea la base con los datos de demostración |
 | `backend` | `npm run build` / `npm start` | Compila a `dist` / ejecuta lo compilado |

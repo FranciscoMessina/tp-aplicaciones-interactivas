@@ -19,6 +19,7 @@ http:
     data: |-
       {
         "price": 899999,
+        "discountPercent": 15,
         "availableQuantity": 5
       }
   auth: inherit

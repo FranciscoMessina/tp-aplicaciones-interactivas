@@ -21,6 +21,7 @@ export interface CreateProductInput {
   description: string;
   images: string[];
   price: number;
+  discountPercent?: number;
   availableQuantity?: number;
   isActive?: boolean;
   isFeatured?: boolean;
@@ -32,6 +33,7 @@ export interface UpdateProductInput {
   description?: string;
   images?: string[];
   price?: number;
+  discountPercent?: number;
   availableQuantity?: number;
   isActive?: boolean;
   isFeatured?: boolean;
@@ -52,6 +54,7 @@ export interface ProductSearchFilters {
   isActive?: boolean;
   isFeatured?: boolean;
   inStock?: boolean;
+  onSale?: boolean;
   page: number;
   pageSize: number;
 }
@@ -114,6 +117,15 @@ export async function searchProducts(
       });
     }
 
+    if (filters.onSale !== undefined) {
+      searchFilter.push({
+        range: {
+          path: "discountPercent",
+          ...(filters.onSale ? { gt: 0 } : { lte: 0 }),
+        },
+      });
+    }
+
     if (filters.category) {
       searchFilter.push({
         equals: {
@@ -126,7 +138,7 @@ export async function searchProducts(
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       searchFilter.push({
         range: {
-          path: "price",
+          path: "finalPrice",
           ...(filters.minPrice !== undefined && { gte: filters.minPrice }),
           ...(filters.maxPrice !== undefined && { lte: filters.maxPrice }),
         },
@@ -182,6 +194,10 @@ export async function searchProducts(
       match.availableQuantity = filters.inStock ? { $gt: 0 } : 0;
     }
 
+    if (filters.onSale !== undefined) {
+      match.discountPercent = filters.onSale ? { $gt: 0 } : 0;
+    }
+
     if (filters.category) {
       match.category = new Types.ObjectId(filters.category);
     }
@@ -197,7 +213,7 @@ export async function searchProducts(
         price.$lte = filters.maxPrice;
       }
 
-      match.price = price;
+      match.finalPrice = price;
     }
 
     if (Object.keys(match).length > 0) {
@@ -206,6 +222,8 @@ export async function searchProducts(
   }
 
   const sortDirection = filters.sortOrder === "asc" ? 1 : -1;
+
+  // Los filtros y el orden por precio usan el precio final, el que se paga.
 
   switch (filters.sortBy) {
     case "relevance":
@@ -216,7 +234,7 @@ export async function searchProducts(
       );
       break;
     case "price":
-      pipeline.push({ $sort: { price: sortDirection, createdAt: -1 } });
+      pipeline.push({ $sort: { finalPrice: sortDirection, createdAt: -1 } });
       break;
     case "name":
       pipeline.push({ $sort: { name: sortDirection, createdAt: -1 } });
@@ -304,11 +322,7 @@ export async function updateProduct(
     await ensureCategoryExists(updates.category);
   }
 
-  const product = await ProductModel.findByIdAndUpdate(
-    productId,
-    { $set: updates },
-    { returnDocument: "after", runValidators: true },
-  );
+  const product = await ProductModel.findById(productId);
 
   if (!product) {
     throw new ApplicationError(
@@ -317,7 +331,9 @@ export async function updateProduct(
     );
   }
 
-  return product;
+  // Con `save` corre el hook del modelo que recalcula el precio final.
+  product.set(updates);
+  return product.save();
 }
 
 export async function deleteProduct(productId: string): Promise<void> {
@@ -343,7 +359,7 @@ export function listCategorySummaries(): Promise<CategorySummary[]> {
       $group: {
         _id: "$category",
         productCount: { $sum: 1 },
-        minPrice: { $min: "$price" },
+        minPrice: { $min: "$finalPrice" },
         examples: { $push: "$name" },
       },
     },

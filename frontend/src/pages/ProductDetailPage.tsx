@@ -1,11 +1,38 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ProductImage, StockStatus } from '../components/ProductCard'
+import ProductCard, { ProductImage, ProductPrice, StockStatus } from '../components/ProductCard'
 import { useBusiness } from '../context/business-context'
+import { useRequest } from '../hooks/useRequest'
 import { ApiRequestError, getErrorMessage } from '../services/api'
-import { fetchProduct } from '../services/products'
+import { fetchProduct, fetchProducts } from '../services/products'
 import type { Product } from '../types/product'
-import { formatPartNumber, formatPrice } from '../utils/format'
+import { formatPartNumber } from '../utils/format'
+
+const RELATED_LIMIT = 4
+
+// Otros productos de la misma categoría. Se pide uno de más por si viene el actual.
+function RelatedProducts({ product }: { product: Product }) {
+  const related = useRequest(
+    (signal) => fetchProducts({ category: product.category.id, page: 1, pageSize: RELATED_LIMIT + 1 }, signal),
+    product.id,
+  )
+  const items = related.data?.items.filter((item) => item.id !== product.id).slice(0, RELATED_LIMIT) ?? []
+  if (items.length === 0) return null
+
+  return (
+    <section className="related-section" aria-labelledby="related-title">
+      <div className="section-heading">
+        <div>
+          <h2 id="related-title">También en {product.category.name}</h2>
+        </div>
+        <Link className="section-link" to={`/catalogo?categoria=${product.category.id}`}>Ver todos</Link>
+      </div>
+      <div className="products-grid">
+        {items.map((item) => <ProductCard key={item.id} product={item} />)}
+      </div>
+    </section>
+  )
+}
 
 export default function ProductDetailPage() {
   const { businessName } = useBusiness()
@@ -56,9 +83,12 @@ export default function ProductDetailPage() {
           <div className="information-message" role="status">Cargando producto...</div>
         ) : notFound ? (
           <div className="information-message" role="alert">
-            <h2>Producto no disponible</h2>
-            <p>Este producto no existe o ya no está publicado.</p>
-            <Link className="auth-back" to="/catalogo">← Volver al catálogo</Link>
+            <h2>Este producto ya no está en el catálogo</h2>
+            <p>Puede que se haya agotado o que ya no esté publicado. Escribinos y te avisamos si vuelve a entrar.</p>
+            <div className="information-actions">
+              <Link className="primary-button" to={`/contacto?asunto=${encodeURIComponent('Busco un producto')}`}>Escribinos</Link>
+              <Link className="section-link" to="/catalogo">Volver al catálogo</Link>
+            </div>
           </div>
         ) : error ? (
           <div className="information-message" role="alert">
@@ -94,15 +124,25 @@ export default function ProductDetailPage() {
                 <h1>{product.name}</h1>
                 {product.isFeatured && <span className="product-featured-badge is-inline">Destacado</span>}
                 <div className="product-buy">
-                  <p className="product-price">{formatPrice(product.price)}</p>
+                  <ProductPrice product={product} />
                   <StockStatus quantity={product.availableQuantity} />
-                  <Link className="primary-button" to={`/contacto?asunto=${encodeURIComponent(`Consulta por ${product.name}`)}`}>
-                    Consultar por este producto
-                  </Link>
+                  {product.availableQuantity > 0 ? (
+                    <Link className="primary-button" to={`/contacto?producto=${product.id}`}>
+                      Consultar por este producto
+                    </Link>
+                  ) : (
+                    <>
+                      <Link className="primary-button" to={`/contacto?producto=${product.id}&aviso=1`}>
+                        Avisame cuando entre
+                      </Link>
+                      <p className="product-buy-note">Dejanos tu email y te escribimos cuando vuelva a haber stock.</p>
+                    </>
+                  )}
                 </div>
                 <p className="product-detail-description">{product.description}</p>
               </div>
             </div>
+            <RelatedProducts product={product} />
           </>
         ) : null}
       </div>

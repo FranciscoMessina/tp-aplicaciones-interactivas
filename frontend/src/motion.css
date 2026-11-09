@@ -202,8 +202,14 @@ html { scroll-padding-top: 88px; }
 /* ===== Campos y avisos ===== */
 .field input, .field select, .contact-form .auth-field input, .contact-form textarea { transition: border-color 0.2s, box-shadow 0.25s var(--ease-out); }
 .contact-alert { animation: pop 0.35s var(--ease-spring) both; }
-.stock-filter input { transition: scale 0.2s var(--ease-spring); }
-.stock-filter input:active { scale: 0.85; }
+.filter-option input { transition: scale 0.2s var(--ease-spring); }
+.filter-option input:active { scale: 0.85; }
+
+/* Panel de filtros: entra desde la derecha */
+.filter-panel[open] { animation: panel-in 0.35s var(--ease-out) both; }
+.filter-panel[open]::backdrop { animation: fade 0.3s ease both; }
+@keyframes panel-in { from { translate: 100% 0; } }
+.filter-chips li { animation: pop 0.25s var(--ease-out) both; }
 
 /* ===== Carga: una barra de resaltador recorre el aviso ===== */
 .empty-state[role="status"], .information-message[role="status"] { position: relative; overflow: hidden; }

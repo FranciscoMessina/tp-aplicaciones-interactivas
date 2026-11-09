@@ -18,7 +18,6 @@
 }
 
 .icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
-.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ===== Barra lateral ===== */
 .admin-sidebar {
@@ -170,7 +169,8 @@
 .admin-form-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .admin-form-row-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .admin-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.admin-field label { font-size: 13px; font-weight: 600; }
+.admin-field label, .admin-field-label { font-size: 13px; font-weight: 600; }
+.admin-final-price { display: flex; align-items: center; min-height: 38px; margin: 0; font-family: var(--mono); font-size: 15px; }
 .admin-field.has-error input, .admin-field.has-error select, .admin-field.has-error textarea { border-color: var(--bad); }
 .admin-error { color: var(--bad); font-size: 13px; font-weight: 500; }
 .admin-hint { margin: 0; color: var(--muted); font-size: 13px; }
