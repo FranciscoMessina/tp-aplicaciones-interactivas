@@ -62,5 +62,8 @@
     "tsc-watch": "^7.2.1",
     "typescript": "^6.0.0",
     "typescript-eslint": "^8.0.0"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
   }
 }

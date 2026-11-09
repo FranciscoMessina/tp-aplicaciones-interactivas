@@ -20,9 +20,10 @@ function percentOf(value: number, max: number) {
 // Cuenta desde 0 hasta el valor; con "menos movimiento" muestra el número final directamente.
 function CountUp({ value }: { value: number }) {
   const [shown, setShown] = useState(0)
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setShown(value); return }
+    if (reduceMotion) return
     const duration = 900
     const start = performance.now()
     let frame = requestAnimationFrame(function tick(now) {
@@ -31,9 +32,9 @@ function CountUp({ value }: { value: number }) {
       if (progress < 1) frame = requestAnimationFrame(tick)
     })
     return () => cancelAnimationFrame(frame)
-  }, [value])
+  }, [value, reduceMotion])
 
-  return <>{shown}</>
+  return <>{reduceMotion ? value : shown}</>
 }
 
 function BarList({ bars }: { bars: Bar[] }) {
