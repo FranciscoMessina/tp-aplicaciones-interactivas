@@ -1,6 +1,6 @@
 # Descripción funcional
 
-TechStore es el sitio web de un comercio de tecnología. Tiene un sitio público
+KernelStore es el sitio web de un comercio de tecnología. Tiene un sitio público
 donde cualquiera mira el catálogo y deja consultas, y un área privada donde los
 administradores mantienen el contenido. No hay carrito ni ventas online: el
 objetivo es promocionar los productos y recibir consultas.

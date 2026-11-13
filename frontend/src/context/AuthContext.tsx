@@ -5,7 +5,7 @@ import { fetchProfile, logout as logoutRequest } from '../services/auth'
 import type { AuthSession, AuthUser } from '../types/auth'
 import { AuthContext } from './auth-context'
 
-const STORAGE_KEY = 'techstore_session'
+const STORAGE_KEY = 'KernelStore_session'
 
 function readSession(): AuthSession | null {
   try {

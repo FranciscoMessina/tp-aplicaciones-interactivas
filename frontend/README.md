@@ -1,4 +1,4 @@
-# Frontend de TechStore
+# Frontend de KernelStore
 
 Aplicación React (Vite + TypeScript) con el sitio público y el panel de
 administración. La instalación, las variables y los scripts están en el

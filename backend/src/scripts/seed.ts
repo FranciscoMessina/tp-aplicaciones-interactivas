@@ -91,14 +91,14 @@ async function seedCatalog(): Promise<{
 
 async function seedBusinessInfo(): Promise<void> {
   await BusinessInfoModel.create({
-    name: "TechStore",
+    name: "KernelStore",
     description:
       "Tienda de tecnología con consolas, computadoras, celulares, videojuegos y accesorios. Asesoramiento personalizado y garantía oficial en todos los productos.",
     address: "Av. Corrientes 1234, CABA, Buenos Aires",
     phone: "+54 11 5555 0100",
     socialNetworks: [
-      "https://www.instagram.com/techstore",
-      "https://www.facebook.com/techstore",
+      "https://www.instagram.com/KernelStore",
+      "https://www.facebook.com/KernelStore",
       "https://wa.me/5491155550100",
     ],
     openingHours: ["Lunes a viernes de 10 a 20 hs", "Sábados de 10 a 14 hs"],

@@ -1,4 +1,4 @@
-# Revisión de TechStore contra la consigna
+# Revisión de KernelStore contra la consigna
 
 Fecha: 20/10/2026. Base: commit `81217e3`, incluyendo los cambios locales presentes al comenzar la revisión. No se modificó código fuente ni la base de datos. Este es un informe de auditoría, no un plan de implementación.
 

@@ -1,9 +1,9 @@
-# TechStore: plataforma web para pequeños comercios
+# KernelStore: plataforma web para pequeños comercios
 
 Trabajo Práctico Obligatorio de Aplicaciones Interactivas (2.º cuatrimestre 2026).
 La consigna está en [TPO Segundo Cuatrimestre 2026.pdf](TPO%20Segundo%20Cuatrimestre%202026.pdf).
 
-TechStore es una tienda de tecnología ficticia. La aplicación tiene:
+KernelStore es una tienda de tecnología ficticia. La aplicación tiene:
 
 - un **sitio público** donde cualquier visitante, sin registrarse, conoce el
   comercio, recorre el catálogo, busca y filtra productos y envía consultas;
@@ -92,7 +92,7 @@ Completar `.env`:
 
 | Variable | Obligatoria | Descripción |
 | --- | --- | --- |
-| `MONGODB_URI` | Sí | Cadena de conexión de Atlas, por ejemplo `mongodb+srv://usuario:clave@cluster.mongodb.net/techstore` |
+| `MONGODB_URI` | Sí | Cadena de conexión de Atlas, por ejemplo `mongodb+srv://usuario:clave@cluster.mongodb.net/KernelStore` |
 | `JWT_SECRET` | Sí | Texto aleatorio de al menos 32 caracteres para firmar los tokens |
 | `PORT` | No | Puerto de la API (por defecto `8080`) |
 | `JWT_EXPIRATION_SECONDS` | No | Duración de la sesión (por defecto `3600`) |

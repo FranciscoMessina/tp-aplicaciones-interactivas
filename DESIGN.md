@@ -1,6 +1,6 @@
 # Design
 
-TechStore's public site is styled as a **hardware datasheet**: the shop is a component catalog, each product is a part with a part number, each category is a row in an ordering table, and the home hero is the top view of a 24-pin DIP chip. The admin panel and its auth pages are described at the end.
+KernelStore's public site is styled as a **hardware datasheet**: the shop is a component catalog, each product is a part with a part number, each category is a row in an ordering table, and the home hero is the top view of a 24-pin DIP chip. The admin panel and its auth pages are described at the end.
 
 ## Tokens (`frontend/src/index.css`)
 

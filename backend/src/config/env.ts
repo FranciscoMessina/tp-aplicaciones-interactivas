@@ -62,7 +62,7 @@ function getSmtpConfig() {
     port: parsePositiveInteger(process.env.SMTP_PORT, 587, "SMTP_PORT"),
     user: process.env.SMTP_USER,
     password: process.env.SMTP_PASSWORD,
-    from: process.env.MAIL_FROM ?? "TechStore <no-reply@techstore.com>",
+    from: process.env.MAIL_FROM ?? "KernelStore <no-reply@KernelStore.com>",
   };
 }
 
