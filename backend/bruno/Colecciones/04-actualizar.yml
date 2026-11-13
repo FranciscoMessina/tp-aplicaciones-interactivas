@@ -1,0 +1,37 @@
+info:
+  name: Actualizar colección
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/collections/:id"
+  params:
+    - name: id
+      value: 6ab6f7514bd9c966c17cf5c2
+      type: path
+      description: Id de la colección
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "isActive": false
+      }
+  auth: inherit
+
+docs: |-
+  Modifica cualquiera de los campos de "Crear colección"; `"description": null` la borra. Apagar o encender es enviar `isActive`.
+
+  **Auth:** administrador.
+
+  **Devuelve**
+
+  - `200` con la colección actualizada.
+  - `400` si algún campo es inválido o no se envió ninguno.
+  - `404` si no existe.
+
+settings:
+  encodeUrl: true

@@ -8,11 +8,24 @@ export type Product = {
   }
   description: string
   images: string[]
+  // Precio de lista; el que se paga es `finalPrice`, con el descuento aplicado.
   price: number
+  discountPercent: number
+  finalPrice: number
   availableQuantity: number
   isActive: boolean
   isFeatured: boolean
   createdAt: string
+  // La promoción que le baja el precio hoy (por estar en su colección), o null. Cuando hay una,
+  // `finalPrice` ya tiene aplicado su descuento.
+  promotion?: AppliedPromotion | null
+}
+
+export type AppliedPromotion = {
+  id: string
+  title: string
+  discountPercent: number
+  collection: string
 }
 
 export type Category = {
@@ -34,6 +47,7 @@ export type ProductInput = {
   description: string
   images: string[]
   price: number
+  discountPercent: number
   availableQuantity: number
   isActive: boolean
   isFeatured: boolean
@@ -47,4 +61,8 @@ export type Page<T> = {
   total: number
 }
 
-export type ProductPage = Page<Product>
+// GET /api/products agrega el precio final más bajo y más alto con los filtros
+// actuales salvo el de precio (`null` si no hay productos).
+export type ProductPage = Page<Product> & {
+  priceRange: { min: number; max: number } | null
+}

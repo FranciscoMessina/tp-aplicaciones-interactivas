@@ -5,13 +5,16 @@ import { ApiRequestError, getErrorMessage } from '../services/api'
 import { uploadImage } from '../services/images'
 import { createProduct, updateProduct } from '../services/products'
 import type { Category, Product, ProductInput } from '../types/product'
+import { formatPrice } from '../utils/format'
 import Icon from './Icon'
 import Modal from './Modal'
 
 const MAX_IMAGE_MB = 5
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
-type Errors = Partial<Record<'name' | 'category' | 'description' | 'price' | 'availableQuantity' | 'images', string>>
+const MAX_DISCOUNT = 90
+
+type Errors = Partial<Record<'name' | 'category' | 'description' | 'price' | 'availableQuantity' | 'discountPercent' | 'images', string>>
 
 export type CategoriesState = 'loading' | 'ready' | 'error'
 
@@ -22,6 +25,7 @@ const fieldIds = {
   category: 'pf-category',
   price: 'pf-price',
   availableQuantity: 'pf-stock',
+  discountPercent: 'pf-discount',
   description: 'pf-description',
   images: 'pf-upload',
 } as const
@@ -53,6 +57,7 @@ export default function ProductFormModal({ token, categories, categoriesState, o
   const [description, setDescription] = useState(product?.description ?? '')
   const [price, setPrice] = useState(product ? String(product.price) : '')
   const [stock, setStock] = useState(product ? String(product.availableQuantity) : '0')
+  const [discount, setDiscount] = useState(product ? String(product.discountPercent) : '0')
   const [isActive, setIsActive] = useState(product?.isActive ?? true)
   const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false)
   const [images, setImages] = useState<string[]>(product?.images ?? [])
@@ -77,6 +82,10 @@ export default function ProductFormModal({ token, categories, categoriesState, o
     else if (Number(price) < 0) found.price = 'El precio no puede ser negativo.'
     if (stock.trim() === '' || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
       found.availableQuantity = 'Ingresá una cantidad entera (0 o más).'
+    }
+    const discountValue = Number(discount)
+    if (discount.trim() === '' || !Number.isInteger(discountValue) || discountValue < 0 || discountValue > MAX_DISCOUNT) {
+      found.discountPercent = `Ingresá un porcentaje entero entre 0 y ${MAX_DISCOUNT}.`
     }
     if (images.length === 0) found.images = 'Agregá al menos una imagen.'
     return found
@@ -163,6 +172,7 @@ export default function ProductFormModal({ token, categories, categoriesState, o
       images,
       price: Number(price),
       availableQuantity: Number(stock),
+      discountPercent: Number(discount),
       isActive,
       isFeatured,
     }
@@ -176,7 +186,7 @@ export default function ProductFormModal({ token, categories, categoriesState, o
         // Errores por campo que devuelve el backend (validación de Zod).
         const fields = error.fields ?? {}
         const fromServer: Errors = {}
-        for (const key of ['name', 'category', 'description', 'price', 'availableQuantity'] as const) {
+        for (const key of ['name', 'category', 'description', 'price', 'availableQuantity', 'discountPercent'] as const) {
           if (fields[key]?.[0]) fromServer[key] = fields[key][0]
         }
         const imagesKey = Object.keys(fields).find((key) => key.startsWith('images'))
@@ -244,6 +254,24 @@ export default function ProductFormModal({ token, categories, categoriesState, o
             {errors.availableQuantity
               ? <span id={`${fieldIds.availableQuantity}-error`} className="admin-error">{errors.availableQuantity}</span>
               : <span className="admin-hint">Con 0 se muestra como “Sin stock”.</span>}
+          </div>
+        </div>
+
+        <div className="admin-form-row admin-form-row-2">
+          <div className={fieldClass('discountPercent')}>
+            <label htmlFor="pf-discount">Descuento (%)</label>
+            <input id="pf-discount" type="number" inputMode="numeric" min={0} max={MAX_DISCOUNT} step={1} value={discount} onChange={(event) => setDiscount(event.target.value)} {...errorProps('discountPercent')} />
+            {errors.discountPercent
+              ? <span id={`${fieldIds.discountPercent}-error`} className="admin-error">{errors.discountPercent}</span>
+              : <span className="admin-hint">Con 0 no tiene descuento. El sitio muestra el precio anterior tachado.</span>}
+          </div>
+          <div className="admin-field">
+            <span className="admin-field-label">Precio final</span>
+            <p className="admin-final-price" aria-live="polite">
+              {Number(price) >= 0 && price.trim() !== '' && Number(discount) > 0 && Number(discount) <= MAX_DISCOUNT
+                ? formatPrice(Math.round((Number(price) * (100 - Number(discount))) / 100))
+                : '—'}
+            </p>
           </div>
         </div>
 

@@ -1,0 +1,26 @@
+info:
+  name: Listar promociones
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/promotions?includeInactive=true"
+  params:
+    - name: includeInactive
+      value: "true"
+      type: query
+      description: Todas, incluidas las apagadas y las fuera de fecha (solo admin)
+  auth: inherit
+
+docs: |-
+  Lista las promociones vigentes hoy: activas y dentro de sus fechas, de la más nueva a la más vieja, con su categoría.
+
+  **Auth:** opcional. Con un token de administrador y `includeInactive=true` devuelve todas; para cualquier otro el parámetro se ignora.
+
+  **Devuelve**
+
+  - `200` con el array de promociones.
+
+settings:
+  encodeUrl: true

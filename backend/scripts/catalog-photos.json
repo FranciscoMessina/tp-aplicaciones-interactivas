@@ -1,0 +1,434 @@
+[
+  {
+    "name": "PlayStation 5 Slim 1TB",
+    "filename": "001-playstation-5-slim-1tb"
+  },
+  {
+    "name": "PlayStation 5 Pro 2TB",
+    "filename": "002-playstation-5-pro-2tb"
+  },
+  {
+    "name": "Xbox Series X 1TB",
+    "filename": "003-xbox-series-x-1tb"
+  },
+  {
+    "name": "Xbox Series S 512GB",
+    "filename": "004-xbox-series-s-512gb"
+  },
+  {
+    "name": "Nintendo Switch 2",
+    "filename": "005-nintendo-switch-2"
+  },
+  {
+    "name": "Nintendo Switch OLED",
+    "filename": "006-nintendo-switch-oled"
+  },
+  {
+    "name": "Nintendo Switch Lite",
+    "filename": "007-nintendo-switch-lite"
+  },
+  {
+    "name": "Steam Deck OLED 512GB",
+    "filename": "008-steam-deck-oled-512gb"
+  },
+  {
+    "name": "ASUS ROG Ally X",
+    "filename": "009-asus-rog-ally-x"
+  },
+  {
+    "name": "PlayStation Portal",
+    "filename": "010-playstation-portal"
+  },
+  {
+    "name": "MacBook Air 13\" M4",
+    "filename": "011-macbook-air-13-m4"
+  },
+  {
+    "name": "MacBook Pro 14\" M4 Pro",
+    "filename": "012-macbook-pro-14-m4-pro"
+  },
+  {
+    "name": "Lenovo IdeaPad Slim 3 Ryzen 5",
+    "filename": "013-lenovo-ideapad-slim-3-ryzen-5"
+  },
+  {
+    "name": "Lenovo Legion 5 RTX 4060",
+    "filename": "014-lenovo-legion-5-rtx-4060"
+  },
+  {
+    "name": "ASUS ROG Strix G16 RTX 4070",
+    "filename": "015-asus-rog-strix-g16-rtx-4070"
+  },
+  {
+    "name": "HP Pavilion 15 Core i5",
+    "filename": "016-hp-pavilion-15-core-i5"
+  },
+  {
+    "name": "Dell XPS 13",
+    "filename": "017-dell-xps-13"
+  },
+  {
+    "name": "Acer Aspire 5 Core i3",
+    "filename": "018-acer-aspire-5-core-i3"
+  },
+  {
+    "name": "iMac 24\" M4",
+    "filename": "019-imac-24-m4"
+  },
+  {
+    "name": "Mac mini M4",
+    "filename": "020-mac-mini-m4"
+  },
+  {
+    "name": "PC Gamer Ryzen 7 RTX 4070 Super",
+    "filename": "021-pc-gamer-ryzen-7-rtx-4070-super"
+  },
+  {
+    "name": "PC de oficina Core i5",
+    "filename": "022-pc-de-oficina-core-i5"
+  },
+  {
+    "name": "iPhone 16 128GB",
+    "filename": "023-iphone-16-128gb"
+  },
+  {
+    "name": "iPhone 16 Pro Max 256GB",
+    "filename": "024-iphone-16-pro-max-256gb"
+  },
+  {
+    "name": "iPhone 15 128GB",
+    "filename": "025-iphone-15-128gb"
+  },
+  {
+    "name": "Samsung Galaxy S25 Ultra 256GB",
+    "filename": "026-samsung-galaxy-s25-ultra-256gb"
+  },
+  {
+    "name": "Samsung Galaxy S25 128GB",
+    "filename": "027-samsung-galaxy-s25-128gb"
+  },
+  {
+    "name": "Samsung Galaxy Z Flip6",
+    "filename": "028-samsung-galaxy-z-flip6"
+  },
+  {
+    "name": "Samsung Galaxy A56 5G",
+    "filename": "029-samsung-galaxy-a56-5g"
+  },
+  {
+    "name": "Samsung Galaxy A16",
+    "filename": "030-samsung-galaxy-a16"
+  },
+  {
+    "name": "Motorola Edge 50 Pro",
+    "filename": "031-motorola-edge-50-pro"
+  },
+  {
+    "name": "Motorola Moto G85 5G",
+    "filename": "032-motorola-moto-g85-5g"
+  },
+  {
+    "name": "Xiaomi Redmi Note 14 Pro",
+    "filename": "033-xiaomi-redmi-note-14-pro"
+  },
+  {
+    "name": "Google Pixel 9",
+    "filename": "034-google-pixel-9"
+  },
+  {
+    "name": "iPad 11\" 128GB",
+    "filename": "035-ipad-11-128gb"
+  },
+  {
+    "name": "iPad Air 11\" M3",
+    "filename": "036-ipad-air-11-m3"
+  },
+  {
+    "name": "iPad Pro 13\" M4",
+    "filename": "037-ipad-pro-13-m4"
+  },
+  {
+    "name": "iPad mini",
+    "filename": "038-ipad-mini"
+  },
+  {
+    "name": "Samsung Galaxy Tab S10 FE",
+    "filename": "039-samsung-galaxy-tab-s10-fe"
+  },
+  {
+    "name": "Samsung Galaxy Tab A9+",
+    "filename": "040-samsung-galaxy-tab-a9"
+  },
+  {
+    "name": "Lenovo Tab M11",
+    "filename": "041-lenovo-tab-m11"
+  },
+  {
+    "name": "Kindle Paperwhite",
+    "filename": "042-kindle-paperwhite"
+  },
+  {
+    "name": "EA Sports FC 26 - PS5",
+    "filename": "043-ea-sports-fc-26-ps5"
+  },
+  {
+    "name": "Marvel's Spider-Man 2 - PS5",
+    "filename": "044-marvel-s-spider-man-2-ps5"
+  },
+  {
+    "name": "God of War Ragnarök - PS5",
+    "filename": "045-god-of-war-ragnarok-ps5"
+  },
+  {
+    "name": "Gran Turismo 7 - PS5",
+    "filename": "046-gran-turismo-7-ps5"
+  },
+  {
+    "name": "The Last of Us Part II Remastered - PS5",
+    "filename": "047-the-last-of-us-part-ii-remastered-ps5"
+  },
+  {
+    "name": "Elden Ring - PS5",
+    "filename": "048-elden-ring-ps5"
+  },
+  {
+    "name": "Hogwarts Legacy - PS5",
+    "filename": "049-hogwarts-legacy-ps5"
+  },
+  {
+    "name": "Call of Duty: Black Ops 6 - PS5",
+    "filename": "050-call-of-duty-black-ops-6-ps5"
+  },
+  {
+    "name": "Mario Kart World - Nintendo Switch 2",
+    "filename": "051-mario-kart-world-nintendo-switch-2"
+  },
+  {
+    "name": "The Legend of Zelda: Tears of the Kingdom - Switch",
+    "filename": "052-the-legend-of-zelda-tears-of-the-kingdom-switch"
+  },
+  {
+    "name": "Super Mario Bros. Wonder - Switch",
+    "filename": "053-super-mario-bros-wonder-switch"
+  },
+  {
+    "name": "Pokémon Legends: Z-A - Switch",
+    "filename": "054-pokemon-legends-z-a-switch"
+  },
+  {
+    "name": "Forza Horizon 5 - Xbox",
+    "filename": "055-forza-horizon-5-xbox"
+  },
+  {
+    "name": "Minecraft - Switch",
+    "filename": "056-minecraft-switch"
+  },
+  {
+    "name": "Joystick DualSense PS5",
+    "filename": "057-joystick-dualsense-ps5"
+  },
+  {
+    "name": "Joystick DualSense Edge",
+    "filename": "058-joystick-dualsense-edge"
+  },
+  {
+    "name": "Control inalámbrico Xbox",
+    "filename": "059-control-inalambrico-xbox"
+  },
+  {
+    "name": "Nintendo Switch Pro Controller",
+    "filename": "060-nintendo-switch-pro-controller"
+  },
+  {
+    "name": "Auriculares HyperX Cloud III",
+    "filename": "061-auriculares-hyperx-cloud-iii"
+  },
+  {
+    "name": "Auriculares Logitech G Pro X 2 Lightspeed",
+    "filename": "062-auriculares-logitech-g-pro-x-2-lightspeed"
+  },
+  {
+    "name": "Teclado mecánico Redragon Kumara",
+    "filename": "063-teclado-mecanico-redragon-kumara"
+  },
+  {
+    "name": "Teclado Logitech G915 TKL",
+    "filename": "064-teclado-logitech-g915-tkl"
+  },
+  {
+    "name": "Mouse Logitech G502 X",
+    "filename": "065-mouse-logitech-g502-x"
+  },
+  {
+    "name": "Mouse Razer DeathAdder V3",
+    "filename": "066-mouse-razer-deathadder-v3"
+  },
+  {
+    "name": "Silla gamer ergonómica",
+    "filename": "067-silla-gamer-ergonomica"
+  },
+  {
+    "name": "Volante Logitech G29",
+    "filename": "068-volante-logitech-g29"
+  },
+  {
+    "name": "AirPods Pro 2",
+    "filename": "069-airpods-pro-2"
+  },
+  {
+    "name": "AirPods 4",
+    "filename": "070-airpods-4"
+  },
+  {
+    "name": "Samsung Galaxy Buds3 Pro",
+    "filename": "071-samsung-galaxy-buds3-pro"
+  },
+  {
+    "name": "Sony WH-1000XM5",
+    "filename": "072-sony-wh-1000xm5"
+  },
+  {
+    "name": "JBL Tune 520BT",
+    "filename": "073-jbl-tune-520bt"
+  },
+  {
+    "name": "Parlante JBL Flip 6",
+    "filename": "074-parlante-jbl-flip-6"
+  },
+  {
+    "name": "Parlante JBL Charge 5",
+    "filename": "075-parlante-jbl-charge-5"
+  },
+  {
+    "name": "Barra de sonido Samsung HW-B550",
+    "filename": "076-barra-de-sonido-samsung-hw-b550"
+  },
+  {
+    "name": "Monitor Samsung Odyssey G5 27\"",
+    "filename": "077-monitor-samsung-odyssey-g5-27"
+  },
+  {
+    "name": "Monitor LG UltraGear 24\"",
+    "filename": "078-monitor-lg-ultragear-24"
+  },
+  {
+    "name": "Monitor Dell 27\" 4K",
+    "filename": "079-monitor-dell-27-4k"
+  },
+  {
+    "name": "Monitor LG UltraWide 34\"",
+    "filename": "080-monitor-lg-ultrawide-34"
+  },
+  {
+    "name": "Smart TV Samsung 55\" Crystal UHD 4K",
+    "filename": "081-smart-tv-samsung-55-crystal-uhd-4k"
+  },
+  {
+    "name": "Smart TV LG OLED 55\" C4",
+    "filename": "082-smart-tv-lg-oled-55-c4"
+  },
+  {
+    "name": "Smart TV TCL 43\" Google TV",
+    "filename": "083-smart-tv-tcl-43-google-tv"
+  },
+  {
+    "name": "Chromecast con Google TV",
+    "filename": "084-chromecast-con-google-tv"
+  },
+  {
+    "name": "Placa de video NVIDIA GeForce RTX 5070 12GB",
+    "filename": "085-placa-de-video-nvidia-geforce-rtx-5070-12gb"
+  },
+  {
+    "name": "Placa de video NVIDIA GeForce RTX 4060 8GB",
+    "filename": "086-placa-de-video-nvidia-geforce-rtx-4060-8gb"
+  },
+  {
+    "name": "Placa de video AMD Radeon RX 7800 XT 16GB",
+    "filename": "087-placa-de-video-amd-radeon-rx-7800-xt-16gb"
+  },
+  {
+    "name": "Procesador AMD Ryzen 7 9800X3D",
+    "filename": "088-procesador-amd-ryzen-7-9800x3d"
+  },
+  {
+    "name": "Procesador Intel Core i5-14400F",
+    "filename": "089-procesador-intel-core-i5-14400f"
+  },
+  {
+    "name": "Memoria RAM Kingston Fury Beast 32GB DDR5",
+    "filename": "090-memoria-ram-kingston-fury-beast-32gb-ddr5"
+  },
+  {
+    "name": "SSD Samsung 990 Pro 2TB NVMe",
+    "filename": "091-ssd-samsung-990-pro-2tb-nvme"
+  },
+  {
+    "name": "SSD Kingston A400 480GB",
+    "filename": "092-ssd-kingston-a400-480gb"
+  },
+  {
+    "name": "Fuente Corsair RM850e 850W",
+    "filename": "093-fuente-corsair-rm850e-850w"
+  },
+  {
+    "name": "Motherboard ASUS TUF Gaming B650-Plus",
+    "filename": "094-motherboard-asus-tuf-gaming-b650-plus"
+  },
+  {
+    "name": "Apple Watch Series 10",
+    "filename": "095-apple-watch-series-10"
+  },
+  {
+    "name": "Apple Watch SE",
+    "filename": "096-apple-watch-se"
+  },
+  {
+    "name": "Samsung Galaxy Watch7",
+    "filename": "097-samsung-galaxy-watch7"
+  },
+  {
+    "name": "Xiaomi Smart Band 9",
+    "filename": "098-xiaomi-smart-band-9"
+  },
+  {
+    "name": "Garmin Forerunner 265",
+    "filename": "099-garmin-forerunner-265"
+  },
+  {
+    "name": "Amazfit GTR 4",
+    "filename": "100-amazfit-gtr-4"
+  },
+  {
+    "name": "Cargador Apple USB-C 20W",
+    "filename": "101-cargador-apple-usb-c-20w"
+  },
+  {
+    "name": "Power bank Xiaomi 20000mAh",
+    "filename": "102-power-bank-xiaomi-20000mah"
+  },
+  {
+    "name": "Cable USB-C a USB-C 2m",
+    "filename": "103-cable-usb-c-a-usb-c-2m"
+  },
+  {
+    "name": "Funda MagSafe iPhone 16",
+    "filename": "104-funda-magsafe-iphone-16"
+  },
+  {
+    "name": "Hub USB-C 7 en 1",
+    "filename": "105-hub-usb-c-7-en-1"
+  },
+  {
+    "name": "Webcam Logitech C920",
+    "filename": "106-webcam-logitech-c920"
+  },
+  {
+    "name": "Router TP-Link Archer AX55 Wi-Fi 6",
+    "filename": "107-router-tp-link-archer-ax55-wi-fi-6"
+  },
+  {
+    "name": "Disco externo WD Elements 2TB",
+    "filename": "108-disco-externo-wd-elements-2tb"
+  }
+]

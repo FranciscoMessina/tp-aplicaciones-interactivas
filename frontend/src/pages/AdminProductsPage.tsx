@@ -29,8 +29,6 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesState, setCategoriesState] = useState<CategoriesState>('loading')
   const [categoriesReload, setCategoriesReload] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
   const [reload, setReload] = useState(0)
 
   // Los filtros viven en la URL: se pueden compartir, el resumen enlaza a una vista filtrada
@@ -100,11 +98,16 @@ export default function AdminProductsPage() {
     setCategoriesReload((value) => value + 1)
   }
 
+  // Cada combinación de filtros es un pedido distinto: mientras el último pedido que
+  // terminó no sea el actual, el listado está cargando.
+  const requestKey = JSON.stringify([search, category, status, stock, featuredOnly, page, reload])
+  const [finished, setFinished] = useState<{ key: string, error: string }>({ key: '', error: '' })
+  const loading = finished.key !== requestKey
+  const loadError = loading ? '' : finished.error
+
   useEffect(() => {
     if (!token) return
     const controller = new AbortController()
-    setLoading(true)
-    setLoadError('')
     const filters = {
       search,
       category,
@@ -118,14 +121,13 @@ export default function AdminProductsPage() {
       .then((result) => {
         setProducts(result.items)
         setTotal(result.total)
+        setFinished({ key: requestKey, error: '' })
       })
       .catch((error: unknown) => {
-        if (controller.signal.aborted) return
-        setLoadError(errorMessage(error))
+        if (!controller.signal.aborted) setFinished({ key: requestKey, error: errorMessage(error) })
       })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
-  }, [token, search, category, status, stock, featuredOnly, page, reload])
+  }, [token, search, category, status, stock, featuredOnly, page, requestKey])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const hasFilters = Boolean(search || category || status || stock || featuredOnly)
@@ -281,7 +283,12 @@ export default function AdminProductsPage() {
                       </div>
                     </td>
                     <td data-label="Categoría">{product.category?.name ?? 'Sin categoría'}</td>
-                    <td data-label="Precio" className="is-numeric">{formatPrice(product.price)}</td>
+                    <td data-label="Precio" className="is-numeric">
+                      {formatPrice(product.finalPrice)}
+                      {product.promotion
+                        ? <> <span className="admin-tag" title={`Por la promoción ${product.promotion.title}`}>-{product.promotion.discountPercent}% promo</span></>
+                        : product.discountPercent > 0 && <> <span className="admin-tag">-{product.discountPercent}%</span></>}
+                    </td>
                     <td data-label="Stock" className="is-numeric">
                       {product.availableQuantity > 0
                         ? product.availableQuantity

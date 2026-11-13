@@ -50,6 +50,15 @@ export async function updateProduct(
   sendSuccess(res, await catalog.updateProduct(id, body));
 }
 
+export async function recordProductView(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { id } = validate(idParamsSchema, req.params);
+  await catalog.recordProductView(id);
+  res.status(204).send();
+}
+
 export async function deleteProduct(
   req: Request,
   res: Response,

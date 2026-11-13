@@ -13,7 +13,7 @@ export type AdminOutletContext = { refreshPending: () => void }
 
 const groups: { label?: string; links: { to: string; label: string; icon: IconName }[] }[] = [
   { links: [{ to: 'resumen', label: 'Resumen', icon: 'summary' }] },
-  { label: 'Catálogo', links: [{ to: 'productos', label: 'Productos', icon: 'products' }, { to: 'categorias', label: 'Categorías', icon: 'categories' }] },
+  { label: 'Catálogo', links: [{ to: 'productos', label: 'Productos', icon: 'products' }, { to: 'categorias', label: 'Categorías', icon: 'categories' }, { to: 'colecciones', label: 'Colecciones', icon: 'collections' }, { to: 'promociones', label: 'Promociones', icon: 'promotions' }] },
   { label: 'Atención', links: [{ to: 'consultas', label: 'Consultas', icon: 'enquiries' }] },
   { label: 'Comercio', links: [{ to: 'comercio', label: 'Información del comercio', icon: 'business' }, { to: 'usuarios', label: 'Administradores', icon: 'users' }] },
 ]

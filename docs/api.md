@@ -7,9 +7,14 @@ Referencia de la API del backend (`backend/`). Todas las rutas empiezan con
 ## Productos
 
 La colección de productos está disponible en `/api/products`. Cada publicación
-tiene `name`, `category`, `description`, `images` (array de URLs), `price`,
+tiene `name`, `category`, `description`, `images` (array de URLs), `price`
+(precio de lista), `discountPercent` (entero de 0 a 90; `0` es sin descuento),
+`finalPrice` (el precio con el descuento aplicado, lo calcula el backend),
 `availableQuantity` (estado de disponibilidad: con `0` se muestra sin stock),
-`isActive` (si está publicada) e `isFeatured` (si se destaca en el inicio). La consigna deja
+`isActive` (si está publicada) e `isFeatured` (si se destaca en el inicio). Las respuestas
+agregan `promotion`: la promoción vigente que le baja el precio por estar en su
+colección (`id`, `title`, `discountPercent` y `collection`) o `null`; cuando hay
+una, `finalPrice` ya tiene aplicado su descuento (ver "Promociones"). La consigna deja
 el precio como opcional según el rubro; en el nuestro es obligatorio. Crear,
 modificar y eliminar publicaciones requiere estar autenticado con un usuario de
 rol `admin`.
@@ -17,15 +22,22 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 `isActive` a `PATCH /api/products/:id`, no hay un endpoint aparte.
 
 - `GET /api/products`: obtiene la lista de productos activos. No requiere
-  autenticación. Acepta `search` (full-text sobre `name` y `description`),
-  `category`, `minPrice`, `maxPrice`, `isFeatured`, `inStock` (`true`: con
-  unidades; `false`: sin stock), `sortBy` (`publicationDate`, `price`, `name` o
+  autenticación. Acepta `search` (búsqueda por texto sobre `name` y
+  `description`; ver "Búsqueda por texto"),
+  `category` (uno o varios ids separados por coma: alcanza con que el producto
+  sea de alguna), `minPrice`, `maxPrice`, `isFeatured`, `inStock` (`true`: con
+  unidades; `false`: sin stock), `onSale` (`true`: solo con descuento, propio o
+  por una promoción), `sortBy` (`publicationDate`, `price`, `name` o
   `relevance`), `sortOrder` (`asc` o `desc`), `page` (desde 1), `pageSize` (1 a
   100, por defecto 20) e `includeInactive`. El catálogo público y el panel piden
   solo la página que muestran. El
   orden por defecto es fecha de publicación descendente y `relevance` requiere
-  `search`. Responde una página:
-  `{ "items": [...], "page": 1, "pageSize": 20, "total": 97 }`.
+  `search`. El rango de precio y el orden por precio usan `finalPrice`, lo que
+  se paga. Responde una página:
+  `{ "items": [...], "page": 1, "pageSize": 20, "total": 97, "priceRange": { "min": 14999, "max": 3899999 } }`.
+  `priceRange` es el precio final más bajo y más alto con todos los filtros
+  salvo `minPrice`/`maxPrice` (`null` si no hay productos): el catálogo lo usa
+  para sugerir el rango en los campos de precio.
   Un administrador autenticado que envie `includeInactive=true` recibe tambien
   las publicaciones desactivadas; para cualquier otro visitante el parametro
   se ignora en silencio, porque el endpoint es publico y un 403 delataria que
@@ -33,16 +45,34 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 - `GET /api/products/:id`: obtiene un producto con su categoría. Un producto
   inactivo responde 404, salvo para un administrador autenticado.
 - `POST /api/products`: crea un producto con `name`, `category`, `description`,
-  `images`, `price` y, opcionales, `availableQuantity` (por defecto `0`),
+  `images`, `price` y, opcionales, `discountPercent` (por defecto `0`),
+  `availableQuantity` (por defecto `0`),
   `isActive` (por defecto `true`) e `isFeatured` (por defecto `false`).
   Solo administradores.
 - `PATCH /api/products/:id`: modifica cualquiera de los campos anteriores,
   `isActive` e `isFeatured` incluidos. Solo administradores.
-- `DELETE /api/products/:id`: elimina una publicación. Solo administradores.
+- `DELETE /api/products/:id`: elimina una publicación, sus visitas y su lugar
+  en las colecciones. Solo administradores.
+- `POST /api/products/:id/views`: suma una visita a la ficha del producto, en
+  el contador del día. No requiere autenticación y responde `204`; un producto
+  inexistente u oculto responde `404`. Tiene un límite de 120 por IP cada 15
+  minutos. El frontend lo llama una vez por producto y por sesión del
+  navegador, y no lo llama si hay un administrador con la sesión iniciada.
 
 Las publicaciones inactivas no se devuelven desde el listado público. Cada
 publicación debe incluir al menos una imagen con una URL válida y su categoría
 debe ser el ID de una categoría existente.
+
+### Búsqueda por texto
+
+Con MongoDB Atlas, `search` usa Atlas Search (índice `productSearch`): tolera
+errores de tipeo y `relevance` ordena por el puntaje de Atlas. Con un MongoDB
+que no es Atlas, la primera búsqueda recibe el error `SearchNotEnabled` y desde
+ahí el backend usa un respaldo con expresiones regulares: cada palabra tiene
+que aparecer en el nombre o en la descripción, sin distinguir mayúsculas ni
+tildes ("inalambrico" encuentra "inalámbrico"), y `relevance` pone primero los
+productos que tienen todas las palabras en el nombre. Los demás filtros, el
+orden y la paginación funcionan igual en los dos casos.
 
 ### Imágenes
 
@@ -54,10 +84,69 @@ debe ser el ID de una categoría existente.
   Solo administradores.
   Los archivos quedan en `backend/public/uploads`.
 
+## Promociones
+
+Avisos que se muestran en el inicio, como "Semana del audio". Cada una tiene
+`title` (hasta 80 caracteres), `description` (hasta 300), `image` (URL,
+opcional), a dónde lleva (`linkedCollection` o `category`, opcionales y nunca
+las dos:
+sin ninguna, el aviso lleva a los productos con descuento), `discountPercent`
+(entero de 1 a 90, solo con `linkedCollection`), `startDate` y `endDate` (fechas
+`AAAA-MM-DD` opcionales, en horario de Argentina) e `isActive`. Las respuestas
+traen la categoría completa y, de la colección, `id`, `title` e `isActive`.
+
+Una promoción con `linkedCollection` y `discountPercent` les baja el precio a todos los
+productos de la colección mientras está vigente: activa, dentro de sus fechas y
+con la colección encendida. El descuento no se guarda en el producto: se aplica
+al consultar (listado, detalle, colecciones y "precio desde" de las
+categorías), así que vale para filtrar y ordenar por precio y se termina solo
+al vencer la promoción. Los descuentos no se suman: si el producto ya tiene
+uno propio igual o mayor se mantiene el suyo y `promotion` queda en `null`. Si
+un producto está en varias colecciones con promoción, gana la de mayor
+descuento.
+
+- `GET /api/promotions`: las promociones vigentes hoy (activas, dentro de sus
+  fechas y, si llevan a una colección, con la colección encendida). No requiere autenticación. Como en los productos,
+  un administrador que envíe `includeInactive=true` recibe todas.
+- `POST /api/promotions`: crea una promoción. Solo administradores.
+- `PATCH /api/promotions/:id`: modifica cualquiera de los campos; `null` borra
+  uno opcional. Solo administradores.
+- `DELETE /api/promotions/:id`: elimina una promoción. Solo administradores.
+
+La fecha de fin no puede ser anterior a la de inicio (`400` con el error en
+`fields.endDate`). Una promoción con categoría y colección a la vez, o con
+descuento sin colección, responde `400` (`fields.linkedCollection` o
+`fields.discountPercent`). En un `PATCH` se valida contra lo que ya estaba
+guardado.
+
+## Colecciones
+
+Selecciones de productos armadas a mano, como "Armá tu setup gamer". Cada una
+tiene `title` (hasta 80 caracteres), `description` (hasta 300, opcional),
+`products` (de 1 a 48 ids de productos, sin repetir, en el orden en que se
+muestran) e `isActive`. Las respuestas traen los productos completos, con su
+categoría y su `promotion`.
+
+- `GET /api/collections`: las colecciones encendidas que tienen al menos un
+  producto publicado, de la más nueva a la más vieja, solo con sus productos
+  publicados. No requiere autenticación. Un administrador que envíe
+  `includeInactive=true` recibe todas, con todos sus productos.
+- `GET /api/collections/:id`: una colección encendida con sus productos
+  publicados. Una apagada responde `404`, salvo para un administrador.
+- `POST /api/collections`: crea una colección. Solo administradores.
+- `PATCH /api/collections/:id`: modifica cualquiera de los campos; `null`
+  borra la descripción. Solo administradores.
+- `DELETE /api/collections/:id`: elimina la colección; los productos no se
+  tocan. Si una promoción lleva a ella responde `409`: primero hay que cambiar
+  o eliminar la promoción. Solo administradores.
+
+Si alguno de los `products` no existe responde `400` con el error en
+`fields.products`.
+
 ## Categorías e información institucional
 
 - `GET /api/categories/summary`: las categorías con productos publicados, de la
-  más grande a la más chica, con `productCount`, `minPrice` y hasta cinco
+  más grande a la más chica, con `productCount`, `minPrice` (el precio final más bajo) y hasta cinco
   nombres de ejemplo en `examples`. Es lo que muestra la tabla del inicio.
 - `GET /api/categories`: lista categorías ordenadas por nombre. Los nombres son
   únicos sin distinguir mayúsculas: "Consolas" y "consolas" chocan con un 409.
@@ -95,9 +184,17 @@ recibe `409` en lugar de pisar al primero.
 ## Métricas
 
 - `GET /api/stats`: datos del dashboard del panel. Solo administradores.
-  Devuelve `products` (`total`, `active`, `outOfStock`, `featured`),
-  `enquiries` (cantidad por estado y `total`) y `productsByCategory`
-  (`name` y `count` de cada categoría, de mayor a menor).
+  Los períodos son los últimos 30 días, hoy incluido, en horario de Argentina.
+  Devuelve:
+  - `products`: `total`, `active` (publicados) y `outOfStock` (publicados sin
+    stock).
+  - `enquiries`: cantidad por estado, `total` y `lastPeriod` (recibidas en los
+    últimos 30 días).
+  - `views`: `lastPeriod` (visitas a fichas de productos en los últimos 30
+    días), `previousPeriod` (en los 30 anteriores, para comparar), `byDay` (30
+    elementos `{ day, count }` del más viejo a hoy, con `0` los días sin
+    visitas) y `topProducts` (los 5 productos más vistos del período, con `id`,
+    `name`, `image` y `count`).
 
 ## Usuarios y autenticación
 

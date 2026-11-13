@@ -4,10 +4,16 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import { useRequest } from '../hooks/useRequest'
 import { fetchCategorySummaries } from '../services/categories'
+import { fetchCollections } from '../services/collections'
 import { fetchProducts } from '../services/products'
-import { formatPrice } from '../utils/format'
+import { fetchPromotions } from '../services/promotions'
+import type { Promotion } from '../types/promotion'
+import { formatDay, formatPrice } from '../utils/format'
 
 const FEATURED_LIMIT = 8
+
+// Productos de cada colección que se muestran en el inicio; el resto, en su página.
+const COLLECTION_PREVIEW = 4
 
 // Categorías con más productos que se listan en la tabla del inicio.
 const MAIN_CATEGORIES = 6
@@ -27,9 +33,21 @@ async function fetchShowcase(signal: AbortSignal) {
   return { products: recent.items, hasFeatured: false }
 }
 
+// El aviso lleva a su colección, a su categoría o, sin ninguna, a los productos con descuento.
+function PromotionLink({ promotion }: { promotion: Promotion }) {
+  const [to, label] = promotion.linkedCollection
+    ? [`/colecciones/${promotion.linkedCollection.id}`, `Ver ${promotion.linkedCollection.title}`]
+    : promotion.category
+      ? [`/catalogo?categoria=${promotion.category.id}`, `Ver ${promotion.category.name}`]
+      : ['/catalogo?ofertas=1', 'Ver las ofertas']
+  return <Link className="promotion-link" to={to}>{label}</Link>
+}
+
 function HomePage() {
   const showcase = useRequest(fetchShowcase, 'showcase')
   const categories = useRequest(fetchCategorySummaries, 'categories')
+  const promotions = useRequest(fetchPromotions, 'promotions')
+  const collections = useRequest(fetchCollections, 'collections')
   const probed = useRef(-1)
 
   const mainCategories = categories.data?.slice(0, MAIN_CATEGORIES) ?? []
@@ -103,6 +121,27 @@ function HomePage() {
         </nav>
       )}
 
+      {/* Las promociones son un extra: si fallan o no hay, la sección no aparece. */}
+      {promotions.data && promotions.data.length > 0 && (
+        <section className="promotions" aria-label="Promociones vigentes">
+          {promotions.data.map((promotion, index) => (
+            <article key={promotion.id} className={`promotion${promotion.image ? ' has-image' : ''}`}>
+              {promotion.image && <img className="promotion-image" src={promotion.image} alt="" loading="lazy" />}
+              <div className="promotion-content">
+                <span className="promotion-code">
+                  P-{String(index + 1).padStart(2, '0')}
+                  {promotion.discountPercent && ` · -${promotion.discountPercent}% en la colección`}
+                  {promotion.endDate && ` · Hasta el ${formatDay(promotion.endDate)}`}
+                </span>
+                <h2>{promotion.title}</h2>
+                <p>{promotion.description}</p>
+                <PromotionLink promotion={promotion} />
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
+
       <section className="products-section" aria-labelledby="featured-title">
         <div className="section-heading">
           <div>
@@ -126,6 +165,24 @@ function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Como las promociones: si fallan o no hay, no aparecen. */}
+      {collections.data?.map((collection) => (
+        <section key={collection.id} className="products-section is-collection" aria-labelledby={`coleccion-${collection.id}`}>
+          <div className="section-heading">
+            <div>
+              <h2 id={`coleccion-${collection.id}`}>{collection.title}</h2>
+              {collection.description && <p>{collection.description}</p>}
+            </div>
+            <Link className="section-link" to={`/colecciones/${collection.id}`}>
+              {collection.products.length > COLLECTION_PREVIEW ? `Ver los ${collection.products.length}` : 'Ver la colección'}
+            </Link>
+          </div>
+          <div className="products-grid">
+            {collection.products.slice(0, COLLECTION_PREVIEW).map((product) => <ProductCard key={product.id} product={product} />)}
+          </div>
+        </section>
+      ))}
 
       <section className="contact-section" aria-labelledby="contact-title">
         <div>

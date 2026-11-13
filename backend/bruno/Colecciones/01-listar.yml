@@ -1,0 +1,26 @@
+info:
+  name: Listar colecciones
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/collections?includeInactive=true"
+  params:
+    - name: includeInactive
+      value: "true"
+      type: query
+      description: Todas, incluidas las apagadas y con todos sus productos (solo admin)
+  auth: inherit
+
+docs: |-
+  Lista las colecciones encendidas que tienen productos publicados, de la más nueva a la más vieja, con sus productos publicados en orden.
+
+  **Auth:** opcional. Con un token de administrador y `includeInactive=true` devuelve todas, con todos sus productos; para cualquier otro el parámetro se ignora.
+
+  **Devuelve**
+
+  - `200` con el array de colecciones (`id`, `title`, `description`, `products`, `isActive`).
+
+settings:
+  encodeUrl: true

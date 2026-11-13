@@ -1,0 +1,40 @@
+info:
+  name: Actualizar promocion
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: "{{baseUrl}}/api/promotions/:id"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: Id de la promocion, copiarlo de "Listar promociones"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "isActive": false,
+        "endDate": null
+      }
+  auth: inherit
+
+docs: |-
+  Modifica una promoción. Solo cambian los campos que se mandan; `null` borra un campo opcional (`image`, `category`, `startDate`, `endDate`).
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Devuelve**
+
+  - `200` con la promoción actualizada.
+  - `400` si algún campo es inválido o si la fecha de fin queda anterior a la de inicio (se compara con la que ya estaba guardada).
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si la promoción no existe.
+
+settings:
+  encodeUrl: true

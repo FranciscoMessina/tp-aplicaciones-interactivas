@@ -19,6 +19,8 @@ const productFields = {
   images: z.array(z.url()).min(1),
   // La consigna lo deja opcional segun el rubro; en el nuestro es obligatorio.
   price: z.number().nonnegative(),
+  // Porcentaje entero; el precio final lo calcula el modelo.
+  discountPercent: z.number().int().min(0).max(90).optional(),
   // El estado de disponibilidad: con 0 el producto se publica como sin stock.
   availableQuantity: z.number().int().nonnegative().optional(),
   isActive: z.boolean().optional(),
@@ -28,7 +30,14 @@ const productFields = {
 export const searchProductsSchema = z
   .object({
     search: z.preprocess(emptyStringAsUndefined, z.string().trim().optional()),
-    category: z.preprocess(emptyStringAsUndefined, objectIdSchema.optional()),
+    // Uno o varios ids separados por coma (`?category=id1,id2`).
+    category: z.preprocess(
+      (value) =>
+        typeof value === "string" && value.trim() !== ""
+          ? value.split(",").map((id) => id.trim())
+          : undefined,
+      z.array(objectIdSchema).optional(),
+    ),
     minPrice: optionalNonnegativeNumber,
     maxPrice: optionalNonnegativeNumber,
     sortBy: z
@@ -43,6 +52,8 @@ export const searchProductsSchema = z
     isFeatured: z.stringbool().optional(),
     // true: con unidades disponibles; false: sin stock.
     inStock: z.stringbool().optional(),
+    // true: solo los que tienen descuento.
+    onSale: z.stringbool().optional(),
   })
   // Validaciones que dependen de mas de un campo a la vez.
   .superRefine(({ minPrice, maxPrice, search, sortBy }, context) => {

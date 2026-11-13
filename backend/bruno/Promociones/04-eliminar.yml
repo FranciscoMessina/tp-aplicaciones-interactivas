@@ -1,0 +1,29 @@
+info:
+  name: Eliminar promocion
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/promotions/:id"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: Id de la promocion, copiarlo de "Listar promociones"
+  auth: inherit
+
+docs: |-
+  Elimina una promoción. Para sacarla del sitio sin borrarla, alcanza con apagarla (`isActive: false`).
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Devuelve**
+
+  - `204` sin cuerpo.
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+  - `404` si la promoción no existe.
+
+settings:
+  encodeUrl: true

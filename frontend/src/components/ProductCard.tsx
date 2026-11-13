@@ -10,7 +10,7 @@ export function ProductImage({ src, alt }: { src?: string; alt: string }) {
   return (
     <div className="product-image">
       {src && failedSrc !== src ? (
-        <img src={src} alt={alt} loading="lazy" onError={() => setFailedSrc(src)} />
+        <img key={src} src={src} alt={alt} loading="lazy" onError={() => setFailedSrc(src)} />
       ) : (
         <span className="image-placeholder">Sin imagen</span>
       )}
@@ -18,11 +18,33 @@ export function ProductImage({ src, alt }: { src?: string; alt: string }) {
   )
 }
 
+// Con pocas unidades se avisa cuántas quedan.
+const LOW_STOCK = 3
+
 export function StockStatus({ quantity }: { quantity: number }) {
+  if (quantity <= 0) return <span className="product-unavailable">Sin stock</span>
+  if (quantity === 1) return <span className="product-low">Última unidad</span>
+  if (quantity <= LOW_STOCK) return <span className="product-low">Quedan {quantity}</span>
+  return <span className="product-available">En stock</span>
+}
+
+// Precio final y, si tiene descuento, el de lista tachado y el porcentaje. Si el descuento
+// viene de una promoción, se la nombra y lleva a su colección.
+export function ProductPrice({ product }: { product: Product }) {
+  const { promotion } = product
+  const percent = promotion?.discountPercent ?? product.discountPercent
+  if (percent <= 0) return <p className="product-price">{formatPrice(product.finalPrice)}</p>
   return (
-    <span className={quantity > 0 ? 'product-available' : 'product-unavailable'}>
-      {quantity > 0 ? 'En stock' : 'Sin stock'}
-    </span>
+    <p className="product-price has-discount">
+      <span className="product-price-final"><span className="visually-hidden">Precio con descuento: </span>{formatPrice(product.finalPrice)}</span>
+      <del><span className="visually-hidden">Precio anterior: </span>{formatPrice(product.price)}</del>
+      <span className="product-discount">-{percent}%</span>
+      {promotion && (
+        <Link className="product-promotion" to={`/colecciones/${promotion.collection}`} aria-label={`Descuento por la promoción ${promotion.title}: ver la colección`}>
+          Promoción {promotion.title}
+        </Link>
+      )}
+    </p>
   )
 }
 
@@ -41,7 +63,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <h3><Link to={`/productos/${product.id}`}>{product.name}</Link></h3>
         <p className="product-description">{product.description}</p>
         <div className="product-card-footer">
-          <p className="product-price">{formatPrice(product.price)}</p>
+          <ProductPrice product={product} />
           <StockStatus quantity={product.availableQuantity} />
         </div>
       </div>

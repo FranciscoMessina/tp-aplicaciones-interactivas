@@ -41,8 +41,10 @@ docs: |-
 
   Query, todos opcionales:
   - `search`: texto a buscar en nombre y descripción. Tolera errores de tipeo.
-  - `category`: id de una categoría, sale de "Listar categorias".
-  - `minPrice` / `maxPrice`: rango de precio.
+  - `category`: uno o varios ids de categoría separados por coma (salen de "Listar categorias"); alcanza con que el producto sea de alguna.
+  - `minPrice` / `maxPrice`: rango de precio final (con el descuento aplicado).
+  - `inStock`: `true` solo con unidades; `false` solo sin stock.
+  - `onSale`: `true` solo los que tienen descuento.
   - `sortBy`: `publicationDate` (por defecto), `price` o `relevance`. `relevance` requiere `search`.
   - `sortOrder`: `desc` (por defecto) o `asc`.
   - `page`: desde 1 (por defecto 1).
@@ -51,5 +53,5 @@ docs: |-
 
   **Devuelve**
 
-  - `200` con `data.items` (array de productos, cada uno con su `category` completa), `data.page`, `data.pageSize` y `data.total` (cantidad total de resultados, para calcular las páginas).
+  - `200` con `data.items` (array de productos, cada uno con su `category` completa), `data.page`, `data.pageSize` y `data.total` (cantidad total de resultados, para calcular las páginas) y `data.priceRange` (`{ min, max }` del precio final con todos los filtros salvo el de precio, o `null`).
   - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.

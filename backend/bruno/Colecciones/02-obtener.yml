@@ -1,0 +1,27 @@
+info:
+  name: Obtener colección
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/collections/:id"
+  params:
+    - name: id
+      value: 6ab6f7514bd9c966c17cf5c2
+      type: path
+      description: Id de la colección, copiarlo de "Listar colecciones"
+  auth: inherit
+
+docs: |-
+  Devuelve una colección con sus productos, para su página pública.
+
+  **Auth:** opcional. Un administrador también ve las apagadas y los productos ocultos.
+
+  **Devuelve**
+
+  - `200` con la colección.
+  - `404` si no existe, o si está apagada y no hay un token de administrador.
+
+settings:
+  encodeUrl: true

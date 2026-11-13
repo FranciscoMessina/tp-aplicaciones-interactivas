@@ -1,0 +1,14 @@
+info:
+  name: Promociones
+  type: folder
+  seq: 7
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Avisos que se muestran en el inicio del sitio.
+
+    El listado es público; crear, modificar y eliminar requieren haber iniciado sesión como admin.
+  type: text/markdown
