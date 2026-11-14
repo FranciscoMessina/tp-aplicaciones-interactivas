@@ -92,23 +92,27 @@ function VisitsChart({ days }: { days: DashboardStats['views']['byDay'] }) {
         <span>{formatShortDay(days[0].day)}</span>
         <span>Hoy</span>
       </div>
-      <table className="visually-hidden">
-        <caption>Visitas a las fichas de productos por día</caption>
-        <thead>
-          <tr>
-            <th scope="col">Día</th>
-            <th scope="col">Visitas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {days.map((day) => (
-            <tr key={day.day}>
-              <td>{formatShortDay(day.day)}</td>
-              <td>{day.count}</td>
+      {/* Los mismos datos para lectores de pantalla. El contenedor es el que se oculta: una
+          tabla ignora el alto de 1px y, oculta directamente, estiraba la página hacia abajo. */}
+      <div className="visually-hidden">
+        <table>
+          <caption>Visitas a las fichas de productos por día</caption>
+          <thead>
+            <tr>
+              <th scope="col">Día</th>
+              <th scope="col">Visitas</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {days.map((day) => (
+              <tr key={day.day}>
+                <td>{formatShortDay(day.day)}</td>
+                <td>{day.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </>
   )
 }

@@ -1873,3 +1873,13 @@
   font-family: var(--mono);
   font-size: 13px;
 }
+
+/* Chips de filtros aplicados en un listado del panel (mismos que el catálogo público). */
+.admin-filter-chips {
+  justify-content: flex-start;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.admin-secondary .filters-count {
+  margin-left: 2px;
+}

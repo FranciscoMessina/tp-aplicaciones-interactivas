@@ -81,8 +81,10 @@ objetivo es promocionar los productos y recibir consultas.
   día y los cinco productos más vistos), productos publicados y sin stock,
   consultas pendientes y consultas por estado, con las recibidas en el período.
   Cada número lleva al listado filtrado con lo que cuenta.
-- **Productos**: listado con búsqueda y filtro por categoría (incluye los
-  ocultos), alta, edición, eliminación con confirmación, y publicar u ocultar
+- **Productos**: listado (incluye los ocultos) con búsqueda, orden y el mismo
+  panel de filtros del catálogo público (categorías y rango de precio), más
+  los propios del panel: estado, stock, destacados y ofertas. Los filtros
+  aplicados se ven como chips y quedan en la URL. Además: alta, edición, eliminación con confirmación, y publicar u ocultar
   con un clic. Cada producto tiene varias imágenes (subidas desde la
   computadora o por URL, la primera es la principal), puede marcarse como
   destacado para aparecer en el inicio y puede tener un descuento en porcentaje

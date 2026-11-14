@@ -37,8 +37,8 @@ export type CategoriesState = 'loading' | 'ready' | 'error'
 const fieldIds = {
   name: 'pf-name',
   category: 'pf-category',
-  price: 'pf-price',
   availableQuantity: 'pf-stock',
+  price: 'pf-price',
   discountPercent: 'pf-discount',
   description: 'pf-description',
   images: 'pf-upload',
@@ -263,6 +263,19 @@ export default function ProductFormModal({
     if (first) document.getElementById(fieldIds[first])?.focus()
   }
 
+  // Lo que paga el cliente, con el mismo redondeo que el backend. Sin descuento es el precio
+  // base; null mientras el precio o el descuento no sean válidos.
+  const discountValue = Number(discount)
+  const finalPrice =
+    price.trim() !== '' &&
+    Number(price) >= 0 &&
+    discount.trim() !== '' &&
+    Number.isInteger(discountValue) &&
+    discountValue >= 0 &&
+    discountValue <= MAX_DISCOUNT
+      ? Math.round((Number(price) * (100 - discountValue)) / 100)
+      : null
+
   const errorProps = (key: keyof Errors) => ({
     'aria-invalid': Boolean(errors[key]),
     'aria-describedby': errors[key] ? `${fieldIds[key]}-error` : undefined,
@@ -299,7 +312,7 @@ export default function ProductFormModal({
           )}
         </div>
 
-        <div className="admin-form-row">
+        <div className="admin-form-row admin-form-row-2">
           <div className={fieldClass('category')}>
             <label htmlFor="pf-category">Categoría *</label>
             <select
@@ -338,24 +351,6 @@ export default function ProductFormModal({
               </span>
             )}
           </div>
-          <div className={fieldClass('price')}>
-            <label htmlFor="pf-price">Precio (ARS) *</label>
-            <input
-              id="pf-price"
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step="0.01"
-              value={price}
-              onChange={(event) => setPrice(event.target.value)}
-              {...errorProps('price')}
-            />
-            {errors.price && (
-              <span id={`${fieldIds.price}-error`} className="admin-error">
-                {errors.price}
-              </span>
-            )}
-          </div>
           <div className={fieldClass('availableQuantity')}>
             <label htmlFor="pf-stock">Stock *</label>
             <input
@@ -378,7 +373,26 @@ export default function ProductFormModal({
           </div>
         </div>
 
-        <div className="admin-form-row admin-form-row-2">
+        {/* Todo lo que define el precio va junto: base, descuento y lo que termina pagando el cliente. */}
+        <div className="admin-form-row">
+          <div className={fieldClass('price')}>
+            <label htmlFor="pf-price">Precio base (ARS) *</label>
+            <input
+              id="pf-price"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="0.01"
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
+              {...errorProps('price')}
+            />
+            {errors.price && (
+              <span id={`${fieldIds.price}-error`} className="admin-error">
+                {errors.price}
+              </span>
+            )}
+          </div>
           <div className={fieldClass('discountPercent')}>
             <label htmlFor="pf-discount">Descuento (%)</label>
             <input
@@ -397,20 +411,13 @@ export default function ProductFormModal({
                 {errors.discountPercent}
               </span>
             ) : (
-              <span className="admin-hint">
-                Con 0 no tiene descuento. El sitio muestra el precio anterior tachado.
-              </span>
+              <span className="admin-hint">Con 0 no tiene descuento.</span>
             )}
           </div>
           <div className="admin-field">
             <span className="admin-field-label">Precio final</span>
             <p className="admin-final-price" aria-live="polite">
-              {Number(price) >= 0 &&
-              price.trim() !== '' &&
-              Number(discount) > 0 &&
-              Number(discount) <= MAX_DISCOUNT
-                ? formatPrice(Math.round((Number(price) * (100 - Number(discount))) / 100))
-                : '—'}
+              {finalPrice === null ? '—' : formatPrice(finalPrice)}
             </p>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import AdminEmpty from '../components/AdminEmpty'
 import AdminNotice from '../components/AdminNotice'
 import type { Notice } from '../components/AdminNotice'
+import FilterPanel from '../components/FilterPanel'
 import Icon from '../components/Icon'
 import Modal from '../components/Modal'
 import ProductFormModal from '../components/ProductFormModal'
@@ -12,13 +13,21 @@ import { getErrorMessage as errorMessage } from '../services/api'
 import { fetchCategories } from '../services/categories'
 import { deleteProduct, fetchAdminProducts, updateProduct } from '../services/products'
 import type { Category, Product } from '../types/product'
-import { formatPrice } from '../utils/format'
+import { formatPrice, parsePrice } from '../utils/format'
+import { resolveSort, sortOptions } from '../utils/productSort'
 
 const PAGE_SIZE = 10
 
-// Valores de los filtros en la URL (?estado=publicado&stock=sin-stock&destacados=si...).
-const statusValues: Record<string, boolean> = { publicado: true, oculto: false }
-const stockValues: Record<string, boolean> = { 'con-stock': true, 'sin-stock': false }
+// Valores de los filtros en la URL (?estado=publicado&stock=sin-stock&destacados=si...), lo que
+// se le pide al backend por cada uno y cómo se los nombra en el panel y en los chips.
+const statusOptions: Record<string, { label: string; isActive: boolean }> = {
+  publicado: { label: 'Publicados', isActive: true },
+  oculto: { label: 'Ocultos', isActive: false },
+}
+const stockOptions: Record<string, { label: string; inStock: boolean }> = {
+  'con-stock': { label: 'Con stock', inStock: true },
+  'sin-stock': { label: 'Sin stock', inStock: false },
+}
 
 export default function AdminProductsPage() {
   const { accessToken } = useAuth()
@@ -35,10 +44,15 @@ export default function AdminProductsPage() {
   // y el botón Atrás vuelve al listado anterior.
   const [params, setParams] = useSearchParams()
   const search = params.get('q') ?? ''
-  const category = params.get('categoria') ?? ''
+  // Una o varias categorías, separadas por coma, igual que en el catálogo público.
+  const selectedCategories = (params.get('categoria') ?? '').split(',').filter(Boolean)
+  const minPrice = parsePrice(params.get('desde'))
+  const maxPrice = parsePrice(params.get('hasta'))
   const status = params.get('estado') ?? ''
   const stock = params.get('stock') ?? ''
   const featuredOnly = params.get('destacados') === 'si'
+  const onSaleOnly = params.get('ofertas') === '1'
+  const { sort, defaultSort, options: sortChoices } = resolveSort(params.get('orden'), search)
   const page = Math.max(1, Number(params.get('pagina')) || 1)
 
   // Cambia filtros en la URL; cualquier filtro nuevo vuelve a la primera página.
@@ -63,6 +77,8 @@ export default function AdminProductsPage() {
   const setPage = (next: number) => updateFilters({ pagina: next > 1 ? String(next) : '' })
 
   const [searchInput, setSearchInput] = useState(search)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null)
   // Si la URL cambia desde afuera (Atrás, un enlace del menú), el buscador la acompaña.
   const [urlSearch, setUrlSearch] = useState(search)
   if (search !== urlSearch) {
@@ -108,7 +124,19 @@ export default function AdminProductsPage() {
 
   // Cada combinación de filtros es un pedido distinto: mientras el último pedido que
   // terminó no sea el actual, el listado está cargando.
-  const requestKey = JSON.stringify([search, category, status, stock, featuredOnly, page, reload])
+  const requestKey = JSON.stringify([
+    search,
+    selectedCategories,
+    minPrice,
+    maxPrice,
+    status,
+    stock,
+    featuredOnly,
+    onSaleOnly,
+    sort,
+    page,
+    reload,
+  ])
   const [finished, setFinished] = useState<{ key: string; error: string }>({ key: '', error: '' })
   const loading = finished.key !== requestKey
   const loadError = loading ? '' : finished.error
@@ -118,12 +146,14 @@ export default function AdminProductsPage() {
     const controller = new AbortController()
     const filters = {
       search,
-      // Con texto se ordena por relevancia (el backend la rechaza sin búsqueda).
-      sortBy: search ? ('relevance' as const) : undefined,
-      category,
-      isActive: statusValues[status],
-      inStock: stockValues[stock],
+      category: selectedCategories.join(','),
+      minPrice,
+      maxPrice,
+      isActive: statusOptions[status]?.isActive,
+      inStock: stockOptions[stock]?.inStock,
       isFeatured: featuredOnly || undefined,
+      onSale: onSaleOnly || undefined,
+      ...sortOptions[sort],
       page,
       pageSize: PAGE_SIZE,
     }
@@ -131,16 +161,44 @@ export default function AdminProductsPage() {
       .then((result) => {
         setProducts(result.items)
         setTotal(result.total)
+        setPriceRange(result.priceRange)
         setFinished({ key: requestKey, error: '' })
       })
       .catch((error: unknown) => {
         if (!controller.signal.aborted) setFinished({ key: requestKey, error: errorMessage(error) })
       })
     return () => controller.abort()
-  }, [token, search, category, status, stock, featuredOnly, page, requestKey])
+    // `requestKey` resume todos los filtros del pedido.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, requestKey])
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const hasFilters = Boolean(search || category || status || stock || featuredOnly)
+  const categoryName = (id: string) =>
+    categories.find((item) => item.id === id)?.name ?? 'Categoría'
+
+  // Un chip por filtro aplicado, cada uno con lo que hay que borrar para quitarlo.
+  const chips: { label: string; clear: Record<string, string> }[] = [
+    ...(search ? [{ label: `“${search}”`, clear: { q: '' } }] : []),
+    ...selectedCategories.map((id) => ({
+      label: categoryName(id),
+      clear: { categoria: selectedCategories.filter((item) => item !== id).join(',') },
+    })),
+    ...(minPrice !== undefined
+      ? [{ label: `Desde ${formatPrice(minPrice)}`, clear: { desde: '' } }]
+      : []),
+    ...(maxPrice !== undefined
+      ? [{ label: `Hasta ${formatPrice(maxPrice)}`, clear: { hasta: '' } }]
+      : []),
+    ...(statusOptions[status]
+      ? [{ label: statusOptions[status].label, clear: { estado: '' } }]
+      : []),
+    ...(stockOptions[stock] ? [{ label: stockOptions[stock].label, clear: { stock: '' } }] : []),
+    ...(featuredOnly ? [{ label: 'Destacados', clear: { destacados: '' } }] : []),
+    ...(onSaleOnly ? [{ label: 'En oferta', clear: { ofertas: '' } }] : []),
+  ]
+  const hasFilters = chips.length > 0
+  // El botón cuenta solo lo que se elige en el panel.
+  const panelCount = chips.length - (search ? 1 : 0)
 
   function refresh() {
     setReload((value) => value + 1)
@@ -243,67 +301,65 @@ export default function AdminProductsPage() {
               onChange={(event) => setSearchInput(event.target.value)}
             />
           </div>
-          <label htmlFor="admin-category" className="visually-hidden">
-            Categoría
+          <label htmlFor="admin-sort" className="visually-hidden">
+            Ordenar por
           </label>
           <select
-            id="admin-category"
+            id="admin-sort"
             className="admin-select"
-            value={category}
-            onChange={(event) => updateFilters({ categoria: event.target.value })}
+            value={sort}
+            onChange={(event) =>
+              updateFilters({ orden: event.target.value === defaultSort ? '' : event.target.value })
+            }
           >
-            <option value="">Todas las categorías</option>
-            {categories.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
+            {sortChoices.map(([value, option]) => (
+              <option key={value} value={value}>
+                {option.label}
               </option>
             ))}
           </select>
-          <label htmlFor="admin-status" className="visually-hidden">
-            Estado
-          </label>
-          <select
-            id="admin-status"
-            className="admin-select"
-            value={status}
-            onChange={(event) => updateFilters({ estado: event.target.value })}
+          <button
+            type="button"
+            className="admin-secondary"
+            aria-haspopup="dialog"
+            onClick={() => setPanelOpen(true)}
           >
-            <option value="">Todos los estados</option>
-            <option value="publicado">Publicados</option>
-            <option value="oculto">Ocultos</option>
-          </select>
-          <label htmlFor="admin-stock" className="visually-hidden">
-            Stock
-          </label>
-          <select
-            id="admin-stock"
-            className="admin-select"
-            value={stock}
-            onChange={(event) => updateFilters({ stock: event.target.value })}
-          >
-            <option value="">Con y sin stock</option>
-            <option value="con-stock">Con stock</option>
-            <option value="sin-stock">Sin stock</option>
-          </select>
-          <label className="admin-check admin-toolbar-check">
-            <input
-              type="checkbox"
-              checked={featuredOnly}
-              onChange={(event) => updateFilters({ destacados: event.target.checked ? 'si' : '' })}
-            />
-            Solo destacados
-          </label>
-          {hasFilters && (
-            <button type="button" className="admin-text-link" onClick={clearFilters}>
-              Limpiar filtros
-            </button>
-          )}
+            <Icon name="filters" /> Filtros
+            {panelCount > 0 && (
+              <span className="filters-count" aria-label={`${panelCount} activos`}>
+                {panelCount}
+              </span>
+            )}
+          </button>
           <p className="admin-count" aria-live="polite">
             {loading
               ? 'Cargando…'
               : `${total} ${total === 1 ? 'producto' : 'productos'}${hasFilters ? (total === 1 ? ' encontrado' : ' encontrados') : ''}`}
           </p>
         </div>
+
+        {chips.length > 0 && (
+          <ul className="filter-chips admin-filter-chips" aria-label="Filtros aplicados">
+            {chips.map((chip) => (
+              <li key={chip.label}>
+                <button
+                  type="button"
+                  onClick={() => updateFilters(chip.clear)}
+                  aria-label={`Quitar filtro ${chip.label}`}
+                >
+                  {chip.label} <Icon name="close" />
+                </button>
+              </li>
+            ))}
+            {chips.length > 1 && (
+              <li>
+                <button type="button" className="admin-text-link" onClick={clearFilters}>
+                  Limpiar filtros
+                </button>
+              </li>
+            )}
+          </ul>
+        )}
 
         {loadError ? (
           <AdminEmpty
@@ -498,6 +554,98 @@ export default function AdminProductsPage() {
           }}
           onSaved={handleSaved}
         />
+      )}
+
+      {panelOpen && (
+        <FilterPanel
+          categories={categories}
+          selectedCategories={selectedCategories}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          total={loading ? null : total}
+          priceRange={priceRange}
+          onChange={updateFilters}
+          onClear={() =>
+            updateFilters({
+              categoria: '',
+              desde: '',
+              hasta: '',
+              estado: '',
+              stock: '',
+              destacados: '',
+              ofertas: '',
+            })
+          }
+          onClose={() => setPanelOpen(false)}
+        >
+          <fieldset className="filter-group">
+            <legend>Estado</legend>
+            <label className="filter-option">
+              <input
+                type="radio"
+                name="filter-estado"
+                checked={!statusOptions[status]}
+                onChange={() => updateFilters({ estado: '' })}
+              />
+              <span>Todos</span>
+            </label>
+            {Object.entries(statusOptions).map(([value, option]) => (
+              <label key={value} className="filter-option">
+                <input
+                  type="radio"
+                  name="filter-estado"
+                  checked={status === value}
+                  onChange={() => updateFilters({ estado: value })}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </fieldset>
+          <fieldset className="filter-group">
+            <legend>Stock</legend>
+            <label className="filter-option">
+              <input
+                type="radio"
+                name="filter-stock"
+                checked={!stockOptions[stock]}
+                onChange={() => updateFilters({ stock: '' })}
+              />
+              <span>Todos</span>
+            </label>
+            {Object.entries(stockOptions).map(([value, option]) => (
+              <label key={value} className="filter-option">
+                <input
+                  type="radio"
+                  name="filter-stock"
+                  checked={stock === value}
+                  onChange={() => updateFilters({ stock: value })}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </fieldset>
+          <fieldset className="filter-group">
+            <legend>Mostrar solo</legend>
+            <label className="filter-option">
+              <input
+                type="checkbox"
+                checked={featuredOnly}
+                onChange={(event) =>
+                  updateFilters({ destacados: event.target.checked ? 'si' : '' })
+                }
+              />
+              <span>Productos destacados</span>
+            </label>
+            <label className="filter-option">
+              <input
+                type="checkbox"
+                checked={onSaleOnly}
+                onChange={(event) => updateFilters({ ofertas: event.target.checked ? '1' : '' })}
+              />
+              <span>Productos en oferta</span>
+            </label>
+          </fieldset>
+        </FilterPanel>
       )}
 
       {deleting && (
