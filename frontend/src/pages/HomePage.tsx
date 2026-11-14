@@ -107,11 +107,11 @@ function HomePage() {
 
         <div className="welcome-content">
           <h1 id="welcome-title">
-            Consolas, PCs y todo lo que <span className="welcome-accent">se enchufa.</span>
+            Todo en <span className="welcome-accent">tecnología.</span>
           </h1>
           <p>
-            Consolas, computadoras, celulares, juegos y accesorios, con precio en pesos y stock al
-            día.
+            Consolas, computadoras, celulares y accesorios.
+            Conocé nuestros productos y consultanos por disponibilidad.
           </p>
         </div>
       </section>
@@ -183,8 +183,8 @@ function HomePage() {
             <h2 id="featured-title">{hasFeatured ? 'Destacados' : 'Recién llegados'}</h2>
             <p>
               {hasFeatured
-                ? 'Lo que recomendamos esta temporada.'
-                : 'Lo último que sumamos al catálogo.'}
+                ? 'Mirá nuestros productos destacados.'
+                : 'Últimos productos publicados.'}
             </p>
           </div>
           <Link className="section-link" to="/catalogo">
@@ -217,8 +217,8 @@ function HomePage() {
         <div>
           <h2 id="contact-title">¿No encontrás lo que buscás?</h2>
           <p>
-            Contanos qué equipo necesitás y te respondemos con disponibilidad y precio. No hace
-            falta crear una cuenta.
+            ¿Tenés alguna consulta sobre nuestros productos? Escribinos y te ayudamos.
+            No hace falta crear una cuenta.
           </p>
         </div>
         <Link className="primary-button" to="/contacto">
