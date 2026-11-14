@@ -120,10 +120,7 @@ export default function ContactPage() {
       <div className="information-container">
         <div className="information-heading">
           <h1>Contacto</h1>
-          <p>
-            Preguntanos por stock, precios o un equipo que no encontrás en el catálogo. Te
-            respondemos por email.
-          </p>
+          <p>¿Tenés alguna duda sobre un producto? Dejanos tu consulta.</p>
         </div>
 
         <div className="contact-layout">

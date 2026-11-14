@@ -49,7 +49,7 @@ export default function BusinessInfoPage() {
       <div className="information-container">
         <div className="information-heading">
           <h1>Sobre nosotros</h1>
-          <p>Quiénes somos, dónde estamos y cómo hablar con nosotros.</p>
+          <p>Conocé nuestra tienda, ubicación y horarios.</p>
         </div>
 
         {loading ? (
