@@ -342,7 +342,7 @@ function CollectionFormModal({ token, collection, onClose, onSaved }: Collection
             onChange={(event) => setIsActive(event.target.checked)}
           />
           <span>
-            <strong>Encendida</strong>: se muestra en el inicio del sitio y tiene su propia página.
+            <strong>Encendida</strong>: tiene su propia página en el sitio.
           </span>
         </label>
 
@@ -455,8 +455,7 @@ export default function AdminCollectionsPage() {
         <div>
           <h1>Colecciones</h1>
           <p>
-            Selecciones de productos armadas a mano, como “Setup gamer” o “Para regalar”. Se
-            muestran en el inicio.
+            Selecciones de productos armadas a mano.
           </p>
         </div>
         {newButton}

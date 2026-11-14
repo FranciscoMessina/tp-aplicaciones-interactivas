@@ -336,10 +336,6 @@
   font-stretch: 75%;
   letter-spacing: -0.01em;
 }
-/* Las colecciones van una debajo de otra: sin el aire de arriba quedan como un bloque. */
-.products-section + .products-section.is-collection {
-  padding-top: 0;
-}
 .collection-heading {
   margin-top: 20px;
 }

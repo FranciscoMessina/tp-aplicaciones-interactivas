@@ -20,12 +20,12 @@ objetivo es promocionar los productos y recibir consultas.
 
 - **Inicio**: presentación del comercio, las categorías principales (con
   cantidad de productos y precio desde) que llevan al catálogo ya filtrado, las
-  promociones vigentes, los productos destacados (o los más nuevos, si no hay
-  destacados) y las colecciones del comercio, cada una con sus primeros cuatro
-  productos.
+  promociones vigentes y los productos destacados (o los más nuevos, si no hay
+  destacados).
 - **Colecciones** (`/colecciones/:id`): selecciones de productos armadas por el
   comercio, como "Armá tu setup gamer", con sus productos publicados en el
-  orden elegido.
+  orden elegido. No se listan en el inicio: se llega desde la promoción que
+  lleva a la colección o desde la ficha de un producto que pertenece a ella.
 - **Catálogo** (`/catalogo`): solo los productos publicados, paginados de a 12.
   El backend filtra, ordena y pagina, así que solo viaja la página visible. Cada tarjeta
   muestra nombre, categoría, imagen, descripción, precio (con el de lista
@@ -155,7 +155,7 @@ objetivo es promocionar los productos y recibir consultas.
 
 Además, por iniciativa propia:
 
-- **Colecciones**: selecciones de productos armadas a mano, en el inicio y con
-  página propia.
+- **Colecciones**: selecciones de productos armadas a mano, con
+  página propia, a la que se llega desde una promoción o desde sus productos.
 - **Visitas por producto**: se registran al abrir cada ficha y alimentan las
   métricas del dashboard.

@@ -4,16 +4,12 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import { useRequest } from '../hooks/useRequest'
 import { fetchCategorySummaries } from '../services/categories'
-import { fetchCollections } from '../services/collections'
 import { fetchProducts } from '../services/products'
 import { fetchPromotions } from '../services/promotions'
 import type { Promotion } from '../types/promotion'
 import { formatDay, formatPrice } from '../utils/format'
 
 const FEATURED_LIMIT = 8
-
-// Productos de cada colección que se muestran en el inicio; el resto, en su página.
-const COLLECTION_PREVIEW = 4
 
 // Categorías con más productos que se listan en la tabla del inicio.
 const MAIN_CATEGORIES = 6
@@ -51,7 +47,6 @@ function HomePage() {
   const showcase = useRequest(fetchShowcase, 'showcase')
   const categories = useRequest(fetchCategorySummaries, 'categories')
   const promotions = useRequest(fetchPromotions, 'promotions')
-  const collections = useRequest(fetchCollections, 'collections')
   const probed = useRef(-1)
 
   const mainCategories = categories.data?.slice(0, MAIN_CATEGORIES) ?? []
@@ -217,32 +212,6 @@ function HomePage() {
           </div>
         )}
       </section>
-
-      {/* Como las promociones: si fallan o no hay, no aparecen. */}
-      {collections.data?.map((collection) => (
-        <section
-          key={collection.id}
-          className="products-section is-collection"
-          aria-labelledby={`coleccion-${collection.id}`}
-        >
-          <div className="section-heading">
-            <div>
-              <h2 id={`coleccion-${collection.id}`}>{collection.title}</h2>
-              {collection.description && <p>{collection.description}</p>}
-            </div>
-            <Link className="section-link" to={`/colecciones/${collection.id}`}>
-              {collection.products.length > COLLECTION_PREVIEW
-                ? `Ver los ${collection.products.length}`
-                : 'Ver la colección'}
-            </Link>
-          </div>
-          <div className="products-grid">
-            {collection.products.slice(0, COLLECTION_PREVIEW).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </section>
-      ))}
 
       <section className="contact-section" aria-labelledby="contact-title">
         <div>

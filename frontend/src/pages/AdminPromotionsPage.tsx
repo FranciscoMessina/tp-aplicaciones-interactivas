@@ -495,7 +495,7 @@ export default function AdminPromotionsPage() {
                   const status = promotionStatus(promotion)
                   return (
                     <tr key={promotion.id} className={status.isOn ? undefined : 'is-inactive'}>
-                      <td data-label="Producto">
+                      <td data-label="Promoción">
                         <div className="admin-product-cell">
                           {promotion.image ? (
                             <img src={promotion.image} alt="" loading="lazy" />

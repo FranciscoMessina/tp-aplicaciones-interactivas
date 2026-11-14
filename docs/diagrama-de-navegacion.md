@@ -8,7 +8,7 @@ iniciada, al panel.
 ```mermaid
 flowchart TD
     subgraph Publico["Sitio público (visitantes)"]
-        Inicio["/ Inicio<br/>categorías, promociones, destacados y colecciones"]
+        Inicio["/ Inicio<br/>categorías, promociones y destacados"]
         Catalogo["/catalogo<br/>búsqueda, panel de filtros, chips, orden y páginas"]
         Detalle["/productos/:id<br/>Detalle con galería y relacionados"]
         Coleccion["/colecciones/:id<br/>Productos de una colección"]
@@ -41,13 +41,13 @@ flowchart TD
     Inicio -->|promoción| Catalogo
     Inicio -->|promoción con colección| Coleccion
     Detalle -->|etiqueta de la promoción| Coleccion
-    Inicio -->|Ver la colección| Coleccion
     Coleccion -->|tarjeta de producto| Detalle
     Coleccion -->|Volver al inicio| Inicio
     Catalogo -->|tarjeta de producto| Detalle
     Catalogo -->|sin resultados: Pedir un producto| Contacto
     Detalle -->|Volver al catálogo| Catalogo
     Detalle -->|relacionado: de su colección o su categoría| Detalle
+    Detalle -->|Más de la colección| Coleccion
     Detalle -->|Consultar / Avisame cuando entre| Contacto
     NoExiste --> Catalogo
     Nosotros -->|Enviar una consulta| Contacto
@@ -75,10 +75,10 @@ flowchart TD
 
 | Ruta | Acceso | Qué se hace |
 | --- | --- | --- |
-| `/` | Público | Categorías principales con cantidad y precio desde, promociones vigentes, productos destacados (o los más nuevos) y las colecciones encendidas con sus primeros cuatro productos |
+| `/` | Público | Categorías principales con cantidad y precio desde, promociones vigentes y productos destacados (o los más nuevos) |
 | `/catalogo` | Público | Catálogo paginado con búsqueda, orden y un panel lateral de filtros (una o varias categorías, rango de precio, con stock, ofertas). Los filtros aplicados se ven como chips y viven en la URL: `?q=`, `categoria=<id>,<id>`, `desde=`, `hasta=`, `stock=1`, `ofertas=1`, `orden=` (`recent` por defecto, `price-asc`, `price-desc`, `name` y `relevance`, que solo aplica con `q`: es el orden por defecto al buscar y sin `q` se ignora), `pagina=` |
 | `/productos/:id` | Público | Detalle del producto con todas sus imágenes, descuento (si viene de una promoción, la nombra y lleva a su colección), aviso de pocas unidades, acceso a consultar (o a pedir aviso si no hay stock) y otros productos de su colección o, si no está en ninguna, de su categoría |
-| `/colecciones/:id` | Público | Título, descripción y productos publicados de una colección, en el orden elegido en el panel |
+| `/colecciones/:id` | Público | Título, descripción y productos publicados de una colección, en el orden elegido en el panel. Se llega desde una promoción vinculada o desde la ficha de uno de sus productos |
 | `/nosotros` | Público | Descripción, dirección, teléfono, horarios y redes del comercio |
 | `/contacto` | Público | Formulario de consulta y datos de contacto. Con `?producto=<id>` muestra el producto y completa el asunto; con `&aviso=1`, pide que avisen cuando vuelva a haber stock. `?asunto=` completa el asunto |
 | `/login` | Sin sesión | Ingreso de administradores (con sesión redirige al panel). No hay registro público |
