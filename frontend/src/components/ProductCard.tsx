@@ -36,11 +36,21 @@ export function ProductPrice({ product }: { product: Product }) {
   if (percent <= 0) return <p className="product-price">{formatPrice(product.finalPrice)}</p>
   return (
     <p className="product-price has-discount">
-      <span className="product-price-final"><span className="visually-hidden">Precio con descuento: </span>{formatPrice(product.finalPrice)}</span>
-      <del><span className="visually-hidden">Precio anterior: </span>{formatPrice(product.price)}</del>
+      <span className="product-price-final">
+        <span className="visually-hidden">Precio con descuento: </span>
+        {formatPrice(product.finalPrice)}
+      </span>
+      <del>
+        <span className="visually-hidden">Precio anterior: </span>
+        {formatPrice(product.price)}
+      </del>
       <span className="product-discount">-{percent}%</span>
       {promotion && (
-        <Link className="product-promotion" to={`/colecciones/${promotion.collection}`} aria-label={`Descuento por la promoción ${promotion.title}: ver la colección`}>
+        <Link
+          className="product-promotion"
+          to={`/colecciones/${promotion.collection}`}
+          aria-label={`Descuento por la promoción ${promotion.title}: ver la colección`}
+        >
           Promoción {promotion.title}
         </Link>
       )}
@@ -55,12 +65,19 @@ export default function ProductCard({ product }: { product: Product }) {
         <span className="part-number">{formatPartNumber(product.id)}</span>
         {product.isFeatured && <span className="product-featured-badge">Destacado</span>}
       </div>
-      <Link className="product-card-link" to={`/productos/${product.id}`} tabIndex={-1} aria-hidden="true">
+      <Link
+        className="product-card-link"
+        to={`/productos/${product.id}`}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
         <ProductImage src={product.images[0]} alt="" />
       </Link>
       <div className="product-info">
         <span className="product-category">{product.category?.name ?? 'Sin categoría'}</span>
-        <h3><Link to={`/productos/${product.id}`}>{product.name}</Link></h3>
+        <h3>
+          <Link to={`/productos/${product.id}`}>{product.name}</Link>
+        </h3>
         <p className="product-description">{product.description}</p>
         <div className="product-card-footer">
           <ProductPrice product={product} />

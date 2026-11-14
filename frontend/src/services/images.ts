@@ -4,6 +4,10 @@ import { apiRequest } from './api'
 export async function uploadImage(token: string, file: File): Promise<string> {
   const form = new FormData()
   form.append('image', file)
-  const { url } = await apiRequest<{ url: string }>('/api/images', { method: 'POST', token, body: form })
+  const { url } = await apiRequest<{ url: string }>('/api/images', {
+    method: 'POST',
+    token,
+    body: form,
+  })
   return url
 }

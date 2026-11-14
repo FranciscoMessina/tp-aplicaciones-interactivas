@@ -15,7 +15,10 @@ const MAX_SUBJECT = 150
 // Asunto y mensaje con los que se completa la consulta por un producto.
 function productDraft(product: Product, wantsNotice: boolean) {
   return wantsNotice
-    ? { subject: `Aviso de ingreso: ${product.name}`.slice(0, MAX_SUBJECT), message: 'Hola, quiero que me avisen cuando vuelva a haber stock.' }
+    ? {
+        subject: `Aviso de ingreso: ${product.name}`.slice(0, MAX_SUBJECT),
+        message: 'Hola, quiero que me avisen cuando vuelva a haber stock.',
+      }
     : { subject: `Consulta por ${product.name}`.slice(0, MAX_SUBJECT), message: '' }
 }
 
@@ -38,7 +41,9 @@ export default function ContactPage() {
   useEffect(() => {
     const controller = new AbortController()
     void fetchBusinessInfo(controller.signal)
-      .then((result) => { if (!controller.signal.aborted) setInfo(result) })
+      .then((result) => {
+        if (!controller.signal.aborted) setInfo(result)
+      })
       .catch((cause: unknown) => {
         if (controller.signal.aborted) return
         if (cause instanceof ApiRequestError && cause.status === 404) {
@@ -62,7 +67,9 @@ export default function ContactPage() {
         setSubject((current) => current || draft.subject)
         setMessage((current) => current || draft.message)
       })
-      .catch(() => { /* si el producto no existe, la consulta sigue siendo general */ })
+      .catch(() => {
+        /* si el producto no existe, la consulta sigue siendo general */
+      })
     return () => controller.abort()
   }, [productId, wantsNotice])
 
@@ -113,7 +120,10 @@ export default function ContactPage() {
       <div className="information-container">
         <div className="information-heading">
           <h1>Contacto</h1>
-          <p>Preguntanos por stock, precios o un equipo que no encontrás en el catálogo. Te respondemos por email.</p>
+          <p>
+            Preguntanos por stock, precios o un equipo que no encontrás en el catálogo. Te
+            respondemos por email.
+          </p>
         </div>
 
         <div className="contact-layout">
@@ -127,22 +137,40 @@ export default function ContactPage() {
                 <Link to="/catalogo">Seguir mirando el catálogo</Link>
               </div>
             )}
-            {error && <div className="contact-alert contact-error" role="alert">{error}</div>}
+            {error && (
+              <div className="contact-alert contact-error" role="alert">
+                {error}
+              </div>
+            )}
 
             {product && (
               <div className="contact-product">
-                <Link to={`/productos/${product.id}`} className="contact-product-image" tabIndex={-1} aria-hidden="true">
+                <Link
+                  to={`/productos/${product.id}`}
+                  className="contact-product-image"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                >
                   <ProductImage src={product.images[0]} alt="" />
                 </Link>
                 <div className="contact-product-info">
-                  <span className="product-category">{wantsNotice ? 'Te avisamos cuando entre' : 'Consultás por'}</span>
-                  <Link to={`/productos/${product.id}`} className="contact-product-name">{product.name}</Link>
+                  <span className="product-category">
+                    {wantsNotice ? 'Te avisamos cuando entre' : 'Consultás por'}
+                  </span>
+                  <Link to={`/productos/${product.id}`} className="contact-product-name">
+                    {product.name}
+                  </Link>
                   <div className="contact-product-meta">
                     <ProductPrice product={product} />
                     <StockStatus quantity={product.availableQuantity} />
                   </div>
                 </div>
-                <button type="button" className="filter-panel-close" aria-label="Quitar el producto de la consulta" onClick={removeProduct}>
+                <button
+                  type="button"
+                  className="filter-panel-close"
+                  aria-label="Quitar el producto de la consulta"
+                  onClick={removeProduct}
+                >
                   <Icon name="close" />
                 </button>
               </div>
@@ -150,21 +178,62 @@ export default function ContactPage() {
 
             <form className="contact-form" onSubmit={(event) => void submit(event)}>
               <div className="contact-form-row">
-                <label className="auth-field">Nombre y apellido *
-                  <input required maxLength={120} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Tu nombre" />
+                <label className="auth-field">
+                  Nombre y apellido *
+                  <input
+                    required
+                    maxLength={120}
+                    autoComplete="name"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder="Tu nombre"
+                  />
                 </label>
-                <label className="auth-field">Email *
-                  <input required type="email" maxLength={254} autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="nombre@ejemplo.com" />
+                <label className="auth-field">
+                  Email *
+                  <input
+                    required
+                    type="email"
+                    maxLength={254}
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="nombre@ejemplo.com"
+                  />
                 </label>
               </div>
-              <label className="auth-field">Teléfono (opcional)
-                <input type="tel" maxLength={40} autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Ej.: +54 11 4444-4444" />
+              <label className="auth-field">
+                Teléfono (opcional)
+                <input
+                  type="tel"
+                  maxLength={40}
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="Ej.: +54 11 4444-4444"
+                />
               </label>
-              <label className="auth-field">Asunto *
-                <input required maxLength={MAX_SUBJECT} value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="¿Sobre qué querés consultar?" />
+              <label className="auth-field">
+                Asunto *
+                <input
+                  required
+                  maxLength={MAX_SUBJECT}
+                  value={subject}
+                  onChange={(event) => setSubject(event.target.value)}
+                  placeholder="¿Sobre qué querés consultar?"
+                />
               </label>
-              <label className="auth-field">Mensaje *
-                <textarea required minLength={1} maxLength={3000} rows={6} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Escribí tu consulta..." />
+              <label className="auth-field">
+                Mensaje *
+                <textarea
+                  required
+                  minLength={1}
+                  maxLength={3000}
+                  rows={6}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  placeholder="Escribí tu consulta..."
+                />
               </label>
               <button className="primary-button" type="submit" disabled={sending}>
                 {sending ? 'Enviando...' : 'Enviar consulta'}
@@ -178,14 +247,29 @@ export default function ContactPage() {
               <>
                 <h3>{info.name}</h3>
                 <p>{info.description}</p>
-                <div className="contact-aside-detail"><strong>Dirección</strong><span>{info.address}</span></div>
-                <div className="contact-aside-detail"><strong>Teléfono</strong><a href={`tel:${info.phone.replace(/[^\d+]/g, '')}`}>{info.phone}</a></div>
+                <div className="contact-aside-detail">
+                  <strong>Dirección</strong>
+                  <span>{info.address}</span>
+                </div>
+                <div className="contact-aside-detail">
+                  <strong>Teléfono</strong>
+                  <a href={`tel:${info.phone.replace(/[^\d+]/g, '')}`}>{info.phone}</a>
+                </div>
                 {info.openingHours.length > 0 && (
-                  <div className="contact-aside-detail"><strong>Horarios</strong>{info.openingHours.map((hour, index) => <span key={`${index}-${hour}`}>{hour}</span>)}</div>
+                  <div className="contact-aside-detail">
+                    <strong>Horarios</strong>
+                    {info.openingHours.map((hour, index) => (
+                      <span key={`${index}-${hour}`}>{hour}</span>
+                    ))}
+                  </div>
                 )}
               </>
-            ) : <p className="contact-aside-note">{infoNote || 'Cargando información...'}</p>}
-            <Link to="/nosotros" className="contact-aside-link">Más sobre nosotros</Link>
+            ) : (
+              <p className="contact-aside-note">{infoNote || 'Cargando información...'}</p>
+            )}
+            <Link to="/nosotros" className="contact-aside-link">
+              Más sobre nosotros
+            </Link>
           </aside>
         </div>
       </div>

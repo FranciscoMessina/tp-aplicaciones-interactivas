@@ -1,0 +1,14 @@
+info:
+  name: Estadisticas
+  type: folder
+  seq: 9
+
+request:
+  auth: inherit
+
+docs:
+  content: |-
+    Métricas del panel de administración: productos, consultas y visitas.
+
+    Requiere haber iniciado sesión como admin.
+  type: text/markdown

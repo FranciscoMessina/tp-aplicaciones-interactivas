@@ -1,6 +1,6 @@
 import "dotenv/config";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { resolve, extname } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { parse, resolve } from "node:path";
 import {
   connectDatabase,
   disconnectDatabase,
@@ -77,41 +77,32 @@ async function seedAdmin(): Promise<void> {
   });
 }
 
-/**
- * Usa las fotos reales del repositorio cuando ya fueron incorporadas en
- * backend/public/catalog. Los productos sin foto conservan el placeholder
- * de demostración; no se inventa una foto incorrecta del producto.
- *
- * El URL base apunta a archivos versionados de GitHub para que las imágenes
- * no dependan de localhost ni del directorio local de uploads.
- */
+// Las fotos del catalogo estan versionadas en backend/public/catalog y Express
+// las sirve como estaticos, asi que las URLs apuntan a la propia API y el
+// proyecto funciona sin internet. El manifiesto asocia cada producto con el
+// nombre de su archivo (sin extension); un producto sin foto usa el placeholder.
 function seedPhotosByName(): Map<string, string[]> {
+  const manifest = JSON.parse(
+    readFileSync(resolve(process.cwd(), "scripts/catalog-photos.json"), "utf8"),
+  ) as Array<{ name: string; filename: string }>;
+  const filesByStem = new Map(
+    readdirSync(resolve(process.cwd(), "public/catalog")).map((file) => [
+      parse(file).name,
+      file,
+    ]),
+  );
   const result = new Map<string, string[]>();
-  const manifestPath = resolve(process.cwd(), "scripts/catalog-photos.json");
-  const mediaDir = resolve(process.cwd(), "public/catalog");
-  if (!existsSync(manifestPath) || !existsSync(mediaDir)) return result;
 
-  const items = JSON.parse(readFileSync(manifestPath, "utf8")) as Array<{
-    name: string;
-    filename: string;
-  }>;
-  const available = readdirSync(mediaDir);
-  const base =
-    process.env.CATALOG_IMAGE_BASE_URL ??
-    "https://raw.githubusercontent.com/FranciscoMessina/tp-aplicaciones-interactivas/main/backend/public/catalog/";
-  for (const item of items) {
-    const filename = available.find((file) => {
-      const extension = extname(file).toLowerCase();
-      return (
-        [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(extension) &&
-        file.slice(0, -extname(file).length) === item.filename
-      );
-    });
-    if (filename)
-      result.set(item.name, [
-        new URL(encodeURIComponent(filename), base).toString(),
+  for (const { name, filename } of manifest) {
+    const file = filesByStem.get(filename);
+
+    if (file) {
+      result.set(name, [
+        `${env.backendUrl}/catalog/${encodeURIComponent(file)}`,
       ]);
+    }
   }
+
   return result;
 }
 

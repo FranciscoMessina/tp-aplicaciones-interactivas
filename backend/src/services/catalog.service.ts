@@ -620,7 +620,8 @@ async function ensureCategoryExists(categoryId: string): Promise<void> {
   if (!category) {
     throw new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      "No se encontró la categoría",
+      "Hay campos con errores",
+      { category: ["La categoría elegida no existe"] },
     );
   }
 }

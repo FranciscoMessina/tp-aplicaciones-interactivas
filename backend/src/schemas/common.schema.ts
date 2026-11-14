@@ -4,7 +4,13 @@ export const objectIdSchema = z
   .string()
   .regex(/^[0-9a-fA-F]{24}$/, "Debe ser un identificador válido");
 
-export const emailSchema = z.string().trim().toLowerCase().pipe(z.email());
+// 254 caracteres es el largo maximo de una direccion de email valida.
+export const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(254)
+  .pipe(z.email());
 
 /**
  * Pagina pedida en el query string (`?page=2&pageSize=20`). Todo listado de algo

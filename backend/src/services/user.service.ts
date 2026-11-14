@@ -282,7 +282,7 @@ export async function resetPassword(
   if (!user) {
     throw new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      "El token de recuperación es inválido o está vencido",
+      "El enlace para elegir la contraseña no es válido o ya venció. Pedí uno nuevo",
     );
   }
 }

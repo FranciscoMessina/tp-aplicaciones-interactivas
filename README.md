@@ -43,6 +43,7 @@ controllers → services → modelos.
 .
 ├── backend/
 │   ├── bruno/            colección de requests de la API (Bruno)
+│   ├── public/catalog/   fotos del catálogo de demostración
 │   ├── public/uploads/   imágenes subidas desde el panel (se crea sola)
 │   └── src/
 │       ├── config/       variables de entorno
@@ -100,8 +101,9 @@ Completar `.env`:
 | `PORT` | No | Puerto de la API (por defecto `8080`) |
 | `JWT_EXPIRATION_SECONDS` | No | Duración de la sesión (por defecto `3600`) |
 | `SEED_ADMIN_PASSWORD` | No | Contraseña del administrador de demostración (por defecto `Admin123!`) |
+| `BACKEND_URL` | No | URL pública de la API; se usa para armar las URLs de las imágenes (por defecto `http://localhost:<PORT>`) |
 | `TRUST_PROXY` | No | Cantidad de proxies delante de la API (por ejemplo `1`). Hace falta para que los límites de intentos por IP vean la IP real del visitante |
-| `FRONTEND_URL` | No | URL del frontend para los enlaces de los correos (por defecto `http://localhost:5173`) |
+| `FRONTEND_URL` | No | URL del frontend: es el único origen que CORS autoriza y se usa en los enlaces de los correos (por defecto `http://localhost:5173`) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` | En producción | Servidor de correo. En desarrollo, sin `SMTP_HOST` los correos se escriben en la consola |
 
 Crear la base con los datos de demostración e iniciar la API:
@@ -123,9 +125,10 @@ npm install
 npm run dev
 ```
 
-El sitio queda en `http://localhost:5173`. En desarrollo, Vite reenvía `/api`
-y `/uploads` al backend en el puerto 8080, así que no hace falta configurar
-nada más.
+El sitio queda en `http://localhost:5173`. El frontend llama directamente a la
+API (no hay proxy de Vite): lee `VITE_API_URL` de `frontend/.env`, que es
+opcional y por defecto vale `http://localhost:8080`. Hay un ejemplo en
+`frontend/.env.example`.
 
 #### Atajo: backend y frontend juntos
 
@@ -156,9 +159,10 @@ cd backend && npm run build && npm start
 cd frontend && npm run build   # genera frontend/dist para servir como sitio estático
 ```
 
-En producción el frontend tiene que servirse detrás de un proxy que envíe
-`/api` y `/uploads` al backend, igual que hace Vite en desarrollo. En ese caso
-hay que definir `TRUST_PROXY=1` en el backend.
+El frontend se compila con `VITE_API_URL` apuntando a la API (por ejemplo
+`VITE_API_URL=https://api.ejemplo.com npm run build`) y en el backend se definen
+`FRONTEND_URL` (origen que CORS autoriza) y `BACKEND_URL` (URL pública de la
+API). `TRUST_PROXY` solo hace falta si hay un proxy delante de la API.
 
 ## Base de datos
 
@@ -167,7 +171,9 @@ definen en los modelos. El script `backend/src/scripts/seed.ts` cumple el rol de
 script de creación de la base: `npm run seed` **borra** los datos existentes y
 carga:
 
-- 108 productos de tecnología en 11 categorías, con imágenes, algunos sin stock,
+- 108 productos de tecnología en 11 categorías, con imágenes (las fotos están en
+  `backend/public/catalog` y la API las sirve en `/catalog`, sin depender de
+  internet), algunos sin stock,
   algunos desactivados y algunos destacados;
 - cuatro promociones (una apagada y una, "Mes gamer", con 10 % de descuento
   en la colección "Armá tu setup gamer") y tres colecciones (una apagada);

@@ -15,6 +15,8 @@ http:
       {
         "email": "admin@example.com"
       }
+  auth:
+    type: none
 
 docs: |-
   Genera un token de recuperación de contraseña, de un solo uso y válido por 15 minutos. Se manda por mail un enlace al frontend con el token; si el servidor no tiene SMTP configurado, el mail se escribe en la consola, de donde hay que copiar el token para "Restablecer contraseña".
@@ -34,7 +36,3 @@ docs: |-
 
 settings:
   encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-  forwardAuthorizationHeader: true

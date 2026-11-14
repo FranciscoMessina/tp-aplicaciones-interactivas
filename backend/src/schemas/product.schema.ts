@@ -15,8 +15,9 @@ const optionalNonnegativeNumber = z.preprocess(
 const productFields = {
   name: z.string().trim().min(1).max(150),
   category: objectIdSchema,
-  description: z.string().trim().min(1),
-  images: z.array(z.url()).min(1),
+  description: z.string().trim().min(1).max(5000),
+  // 2048 caracteres es el largo de URL que aceptan todos los navegadores.
+  images: z.array(z.url().max(2048)).min(1).max(12),
   // La consigna lo deja opcional segun el rubro; en el nuestro es obligatorio.
   price: z.number().nonnegative(),
   // Porcentaje entero; el precio final lo calcula el modelo.
@@ -29,7 +30,10 @@ const productFields = {
 
 export const searchProductsSchema = z
   .object({
-    search: z.preprocess(emptyStringAsUndefined, z.string().trim().optional()),
+    search: z.preprocess(
+      emptyStringAsUndefined,
+      z.string().trim().max(100).optional(),
+    ),
     // Uno o varios ids separados por coma (`?category=id1,id2`).
     category: z.preprocess(
       (value) =>

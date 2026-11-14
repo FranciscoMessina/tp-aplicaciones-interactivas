@@ -7,7 +7,10 @@ administración. La instalación, las variables y los scripts están en el
 
 ```bash
 npm install
-npm run dev     # http://localhost:5173, reenvía /api y /uploads al backend en :8080
+npm run dev     # http://localhost:5173; llama al backend en VITE_API_URL
 npm run build   # verifica tipos y genera dist/
 npm run lint
 ```
+
+La URL del backend se define con `VITE_API_URL` (ver `.env.example`); si no se
+define, se usa `http://localhost:8080`.

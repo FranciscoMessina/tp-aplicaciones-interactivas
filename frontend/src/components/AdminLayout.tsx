@@ -13,9 +13,23 @@ export type AdminOutletContext = { refreshPending: () => void }
 
 const groups: { label?: string; links: { to: string; label: string; icon: IconName }[] }[] = [
   { links: [{ to: 'resumen', label: 'Resumen', icon: 'summary' }] },
-  { label: 'Catálogo', links: [{ to: 'productos', label: 'Productos', icon: 'products' }, { to: 'categorias', label: 'Categorías', icon: 'categories' }, { to: 'colecciones', label: 'Colecciones', icon: 'collections' }, { to: 'promociones', label: 'Promociones', icon: 'promotions' }] },
+  {
+    label: 'Catálogo',
+    links: [
+      { to: 'productos', label: 'Productos', icon: 'products' },
+      { to: 'categorias', label: 'Categorías', icon: 'categories' },
+      { to: 'colecciones', label: 'Colecciones', icon: 'collections' },
+      { to: 'promociones', label: 'Promociones', icon: 'promotions' },
+    ],
+  },
   { label: 'Atención', links: [{ to: 'consultas', label: 'Consultas', icon: 'enquiries' }] },
-  { label: 'Comercio', links: [{ to: 'comercio', label: 'Información del comercio', icon: 'business' }, { to: 'usuarios', label: 'Administradores', icon: 'users' }] },
+  {
+    label: 'Comercio',
+    links: [
+      { to: 'comercio', label: 'Información del comercio', icon: 'business' },
+      { to: 'usuarios', label: 'Administradores', icon: 'users' },
+    ],
+  },
 ]
 
 // Marco propio del área privada: barra lateral con las secciones y la cuenta, y el contenido a la derecha.
@@ -36,7 +50,9 @@ export default function AdminLayout() {
     // Alcanza con una página de un elemento: el total viene en la respuesta.
     fetchEnquiries(accessToken, { status: 'PENDING', page: 1, pageSize: 1 }, controller.signal)
       .then((result) => setPending(result.total))
-      .catch(() => { /* el contador es informativo; la sección de consultas avisa si falla */ })
+      .catch(() => {
+        /* el contador es informativo; la sección de consultas avisa si falla */
+      })
     return () => controller.abort()
   }, [accessToken, pendingCheck, pathname])
 
@@ -49,7 +65,11 @@ export default function AdminLayout() {
     <div className={`admin-shell${menuOpen ? ' is-menu-open' : ''}`}>
       <aside className="admin-sidebar">
         <div className="admin-sidebar-top">
-          <Link className="admin-brand" to="/admin" aria-label={`${businessName || 'Tienda'}, ir al resumen del panel`}>
+          <Link
+            className="admin-brand"
+            to="/admin"
+            aria-label={`${businessName || 'Tienda'}, ir al resumen del panel`}
+          >
             <LogoMark /> {businessName} <span>Panel</span>
           </Link>
           <button
@@ -65,7 +85,13 @@ export default function AdminLayout() {
         </div>
 
         {/* En pantallas chicas el menú se cierra al elegir una sección. */}
-        <div id="admin-menu" className="admin-menu" onClick={(event) => { if ((event.target as HTMLElement).closest('a')) setMenuOpen(false) }}>
+        <div
+          id="admin-menu"
+          className="admin-menu"
+          onClick={(event) => {
+            if ((event.target as HTMLElement).closest('a')) setMenuOpen(false)
+          }}
+        >
           <nav className="admin-nav" aria-label="Secciones de administración">
             {groups.map((group, index) => (
               <div key={group.label ?? index} className="admin-nav-group">
@@ -75,7 +101,9 @@ export default function AdminLayout() {
                     <Icon name={link.icon} />
                     <span>{link.label}</span>
                     {link.to === 'consultas' && pending > 0 && (
-                      <span className="admin-nav-count" aria-label={`${pending} pendientes`}>{pending}</span>
+                      <span className="admin-nav-count" aria-label={`${pending} pendientes`}>
+                        {pending}
+                      </span>
                     )}
                   </NavLink>
                 ))}
@@ -86,15 +114,21 @@ export default function AdminLayout() {
           <div className="admin-account">
             {user && (
               <NavLink to="perfil" className="admin-account-user">
-                <span className="admin-avatar" aria-hidden="true">{user.fullName.charAt(0).toUpperCase()}</span>
+                <span className="admin-avatar" aria-hidden="true">
+                  {user.fullName.charAt(0).toUpperCase()}
+                </span>
                 <span>
                   <strong>{user.fullName}</strong>
                   <small>Mi perfil</small>
                 </span>
               </NavLink>
             )}
-            <Link className="admin-account-link" to="/"><Icon name="external" /> Ver sitio</Link>
-            <button type="button" className="admin-account-link" onClick={() => void leave()}><Icon name="logout" /> Cerrar sesión</button>
+            <Link className="admin-account-link" to="/">
+              <Icon name="external" /> Ver sitio
+            </Link>
+            <button type="button" className="admin-account-link" onClick={() => void leave()}>
+              <Icon name="logout" /> Cerrar sesión
+            </button>
           </div>
         </div>
       </aside>

@@ -1,0 +1,27 @@
+info:
+  name: Obtener estadisticas
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/stats"
+  auth: inherit
+
+docs: |-
+  Devuelve las métricas del panel: cantidad de productos, consultas por estado y visitas de los últimos 30 días (hoy incluido), con las visitas por día y los productos más vistos.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  Nada.
+
+  **Devuelve**
+
+  - `200` con `data.products` (`total`, `active`, `outOfStock`), `data.enquiries` (cantidad por estado, `total` y `lastPeriod`) y `data.views` (`lastPeriod`, `previousPeriod`, `byDay` y `topProducts`).
+  - `401` si falta el token o está vencido.
+  - `403` si el usuario no es administrador.
+
+settings:
+  encodeUrl: true

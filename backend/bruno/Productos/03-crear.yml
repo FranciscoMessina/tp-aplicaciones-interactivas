@@ -29,10 +29,6 @@ http:
 
 settings:
   encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-  forwardAuthorizationHeader: true
 
 docs: |-
   Crea un producto.
@@ -48,7 +44,9 @@ docs: |-
   - `images`: array de URLs, al menos una.
   - `price`: número mayor o igual a 0.
   - `availableQuantity` (opcional, por defecto 0): stock. Con 0 el producto se muestra sin stock.
+  - `discountPercent` (opcional): entero de 0 a 90, porcentaje de descuento sobre el precio.
   - `isActive` (opcional, por defecto `true`): si se publica en el sitio.
+  - `isFeatured` (opcional): marca el producto como destacado.
 
   **Devuelve**
 

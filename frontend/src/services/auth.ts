@@ -14,11 +14,17 @@ export function logout(token: string) {
 }
 
 export function forgotPassword(email: string) {
-  return apiRequest<{ message: string }>('/api/users/forgot-password', { method: 'POST', body: { email } })
+  return apiRequest<{ message: string }>('/api/users/forgot-password', {
+    method: 'POST',
+    body: { email },
+  })
 }
 
 export function resetPassword(token: string, password: string) {
-  return apiRequest<{ message: string }>('/api/users/reset-password', { method: 'POST', body: { token, password } })
+  return apiRequest<{ message: string }>('/api/users/reset-password', {
+    method: 'POST',
+    body: { token, password },
+  })
 }
 
 export interface ProfileChanges {

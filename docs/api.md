@@ -23,7 +23,7 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
 
 - `GET /api/products`: obtiene la lista de productos activos. No requiere
   autenticación. Acepta `search` (búsqueda por texto sobre `name` y
-  `description`; ver "Búsqueda por texto"),
+  `description`, hasta 100 caracteres; ver "Búsqueda por texto"),
   `category` (uno o varios ids separados por coma: alcanza con que el producto
   sea de alguna), `minPrice`, `maxPrice`, `isFeatured`, `inStock` (`true`: con
   unidades; `false`: sin stock), `onSale` (`true`: solo con descuento, propio o
@@ -60,8 +60,10 @@ Activar o desactivar una publicacion es una modificacion mas: se hace enviando
   navegador, y no lo llama si hay un administrador con la sesión iniciada.
 
 Las publicaciones inactivas no se devuelven desde el listado público. Cada
-publicación debe incluir al menos una imagen con una URL válida y su categoría
-debe ser el ID de una categoría existente.
+publicación debe incluir entre 1 y 12 imágenes con URLs válidas (de hasta 2048
+caracteres cada una) y su categoría debe ser el ID de una categoría existente
+(si no, `400` con el error en `fields.category`). `name` admite hasta 150
+caracteres y `description` hasta 5000.
 
 ### Búsqueda por texto
 
@@ -77,7 +79,8 @@ orden y la paginación funcionan igual en los dos casos.
 ### Imágenes
 
 - `POST /api/images`: sube una imagen (`multipart/form-data`, campo `image`;
-  JPG, PNG, WEBP o GIF de hasta 5 MB) y devuelve su URL pública en `data.url`,
+  JPG, PNG, WEBP o GIF de hasta 5 MB) y devuelve su URL pública en `data.url`
+  (absoluta, armada con `BACKEND_URL`),
   lista para agregar al array `images` de un producto. Además del tipo que
   declara el navegador, se comparan los primeros bytes del archivo con la firma
   del formato: si no coinciden, se borra y responde `400`.
@@ -87,8 +90,8 @@ orden y la paginación funcionan igual en los dos casos.
 ## Promociones
 
 Avisos que se muestran en el inicio, como "Semana del audio". Cada una tiene
-`title` (hasta 80 caracteres), `description` (hasta 300), `image` (URL,
-opcional), a dónde lleva (`linkedCollection` o `category`, opcionales y nunca
+`title` (hasta 80 caracteres), `description` (hasta 300), `image` (URL de
+hasta 2048 caracteres, opcional), a dónde lleva (`linkedCollection` o `category`, opcionales y nunca
 las dos:
 sin ninguna, el aviso lleva a los productos con descuento), `discountPercent`
 (entero de 1 a 90, solo con `linkedCollection`), `startDate` y `endDate` (fechas
@@ -116,7 +119,8 @@ descuento.
 La fecha de fin no puede ser anterior a la de inicio (`400` con el error en
 `fields.endDate`). Una promoción con categoría y colección a la vez, o con
 descuento sin colección, responde `400` (`fields.linkedCollection` o
-`fields.discountPercent`). En un `PATCH` se valida contra lo que ya estaba
+`fields.discountPercent`), igual que una categoría o colección que no existe
+(`fields.category` o `fields.linkedCollection`). En un `PATCH` se valida contra lo que ya estaba
 guardado.
 
 ## Colecciones
@@ -152,7 +156,7 @@ Si alguno de los `products` no existe responde `400` con el error en
   únicos sin distinguir mayúsculas: "Consolas" y "consolas" chocan con un 409.
 - `POST`, `PATCH /:id` y `DELETE /:id` sobre `/api/categories`: solo administradores.
 - `GET /api/business-info`: obtiene la información pública del comercio.
-- `PUT /api/business-info`: crea o actualiza la información institucional. Solo administradores.
+- `PUT /api/business-info`: crea o actualiza la información institucional: `name` (hasta 120 caracteres), `description` (hasta 2000), `address` (hasta 200), `phone` (hasta 40), `socialNetworks` (hasta 10 URLs de hasta 300 caracteres) y `openingHours` (hasta 14 renglones de hasta 120). Solo administradores.
 
 ## Consultas
 
@@ -203,7 +207,7 @@ navegan y envían consultas sin registrarse. No hay registro público: un
 administrador da de alta a los demás desde el panel.
 
 - `GET /api/users`: lista los administradores. Solo administradores.
-- `POST /api/users`: crea un administrador con `fullName`, `email` y `phone`. La cuenta nace sin contraseña y la persona recibe un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...&invitacion=1` para elegirla; vence a las 72 horas. Solo administradores.
+- `POST /api/users`: crea un administrador con `fullName` (hasta 120 caracteres), `email` (hasta 254) y `phone` (hasta 40). La cuenta nace sin contraseña y la persona recibe un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...&invitacion=1` para elegirla; vence a las 72 horas. Solo administradores.
 - `DELETE /api/users/:id`: elimina un administrador; sus sesiones dejan de valer en el acto. Nadie puede eliminar su propia cuenta (`409`), así que siempre queda al menos uno. Solo administradores.
 - `POST /api/users/login`: inicia sesión con `email` y `password` y devuelve un JWT (incluye el rol del usuario).
 - `POST /api/users/logout`: valida el JWT y responde sin contenido; el cliente debe eliminar el token almacenado.
@@ -217,7 +221,9 @@ Los correos se normalizan a minúsculas y tienen un índice único en MongoDB. L
 contraseñas se almacenan con bcrypt y los tokens de recuperación son de un solo
 uso, se guardan hasheados y vencen a los 15 minutos. Las contraseñas nuevas
 tienen entre 8 caracteres y 72 bytes: bcrypt ignora lo que sigue, y una letra
-con tilde ocupa 2 bytes.
+con tilde ocupa 2 bytes. La contraseña del login y la actual (`currentPassword`)
+solo se comparan con la guardada, pero igual se acotan a 200 caracteres, lo
+mismo que el `token` de restablecimiento.
 
 Login, recuperación, restablecimiento y el envío de consultas tienen un límite
 por IP (`src/middleware/rate-limit.ts`): 10 logins fallidos, 5 pedidos de
@@ -267,6 +273,12 @@ nombre del campo (o su ruta, como `images.0`) y el valor la lista de mensajes.
 Así el front puede mostrar cada error debajo de su input. Un email ya
 registrado, por ejemplo, responde `409` con `fields.email`.
 
+Los mensajes están pensados para mostrarse tal cual al usuario: están en
+español y no exponen detalles internos (nombres de campos de la base, valores
+de enums, textos de Mongoose o de Zod). Un error no previsto responde `500`
+con el mensaje genérico "Ocurrió un error inesperado en el servidor", y el
+detalle solo se escribe en la consola del servidor.
+
 Las eliminaciones y el cierre de sesión responden `204` sin cuerpo.
 
 Los documentos se serializan con una transformacion `toJSON` compartida por
@@ -279,6 +291,15 @@ cada producto en el listado.
 El body, los parámetros de la URL y el query string se validan con Zod al
 principio de cada controller, con `validate(schema, req.body)`. Cuando son
 inválidos, la API responde `400` con los errores por campo en `error.fields`.
+
+`src/http/validate.ts` reemplaza los mensajes de Zod por textos propios:
+"Este campo es obligatorio", "Debe ser un texto" (o un número, un número
+entero, verdadero o falso, una lista), "No puede tener más de 120 caracteres",
+"No puede tener más de 12 elementos", "Debe ser menor o igual a 90", "No es una
+opción válida" (enums y booleanos del query string, sin listar los valores
+internos), "Debe ser una fecha con el formato AAAA-MM-DD", "La URL no es
+válida", etc. Un cuerpo que no es JSON válido o que supera los 100 KB responde
+`400` sin `fields`.
 
 ## Autenticación en el código
 
@@ -298,4 +319,4 @@ productRouter.post("/", authenticate, requireAdmin, createProduct);
 - `requireAdmin`: solo deja pasar usuarios con rol `admin`.
 
 La API habilita CORS para que el front, que corre en otro origen, pueda
-consumirla desde el navegador.
+consumirla desde el navegador. Solo se autoriza el origen de `FRONTEND_URL`.

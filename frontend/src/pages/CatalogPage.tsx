@@ -11,7 +11,12 @@ import { formatPrice } from '../utils/format'
 const PRODUCTS_PER_PAGE = 12
 
 // Cada opción del selector y cómo se la pide al backend.
-const sortOptions: Record<string, { label: string; sortBy: ProductFilters['sortBy']; sortOrder: ProductFilters['sortOrder'] }> = {
+// "Relevancia" solo existe cuando hay texto buscado: el backend la rechaza sin `search`.
+const sortOptions: Record<
+  string,
+  { label: string; sortBy: ProductFilters['sortBy']; sortOrder: ProductFilters['sortOrder'] }
+> = {
+  relevance: { label: 'Relevancia', sortBy: 'relevance', sortOrder: 'desc' },
   recent: { label: 'Más recientes', sortBy: 'publicationDate', sortOrder: 'desc' },
   'price-asc': { label: 'Menor precio', sortBy: 'price', sortOrder: 'asc' },
   'price-desc': { label: 'Mayor precio', sortBy: 'price', sortOrder: 'desc' },
@@ -38,7 +43,13 @@ export default function CatalogPage() {
   const maxPrice = parsePrice(searchParams.get('hasta'))
   const onlyAvailable = searchParams.get('stock') === '1'
   const onlyOnSale = searchParams.get('ofertas') === '1'
-  const sortBy = sortOptions[searchParams.get('orden') ?? ''] ? searchParams.get('orden')! : 'recent'
+  // El orden por defecto no se escribe en la URL: relevancia con búsqueda, recientes sin ella.
+  const defaultSort = search ? 'relevance' : 'recent'
+  const requestedSort = searchParams.get('orden') ?? ''
+  const sortBy =
+    sortOptions[requestedSort] && (requestedSort !== 'relevance' || search)
+      ? requestedSort
+      : defaultSort
   const page = Math.max(1, Number(searchParams.get('pagina')) || 1)
 
   const [searchInput, setSearchInput] = useState(search)
@@ -54,15 +65,18 @@ export default function CatalogPage() {
 
   // Cambia parámetros de la URL; cualquier cambio de filtro vuelve a la página 1.
   function updateParams(changes: Partial<Record<Param, string>>) {
-    setSearchParams((current) => {
-      const next = new URLSearchParams(current)
-      for (const [key, value] of Object.entries(changes)) {
-        if (value) next.set(key, value)
-        else next.delete(key)
-      }
-      if (!('pagina' in changes)) next.delete('pagina')
-      return next
-    }, { replace: true })
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        for (const [key, value] of Object.entries(changes)) {
+          if (value) next.set(key, value)
+          else next.delete(key)
+        }
+        if (!('pagina' in changes)) next.delete('pagina')
+        return next
+      },
+      { replace: true },
+    )
   }
 
   // Espera a que se deje de escribir para no consultar al backend en cada tecla.
@@ -89,15 +103,23 @@ export default function CatalogPage() {
 
   const total = products.data?.total ?? 0
   const totalPages = Math.ceil(total / PRODUCTS_PER_PAGE)
-  const categoryName = (id: string) => categories.data?.find((item) => item.id === id)?.name ?? 'Categoría'
+  const categoryName = (id: string) =>
+    categories.data?.find((item) => item.id === id)?.name ?? 'Categoría'
   const withoutCategory = (id: string) => selectedCategories.filter((item) => item !== id).join(',')
 
   // Un chip por filtro aplicado, cada uno con lo que hay que borrar para quitarlo.
   const chips: { label: string; clear: Partial<Record<Param, string>> }[] = [
     ...(search ? [{ label: `“${search}”`, clear: { q: '' } }] : []),
-    ...selectedCategories.map((id) => ({ label: categoryName(id), clear: { categoria: withoutCategory(id) } })),
-    ...(minPrice !== undefined ? [{ label: `Desde ${formatPrice(minPrice)}`, clear: { desde: '' } }] : []),
-    ...(maxPrice !== undefined ? [{ label: `Hasta ${formatPrice(maxPrice)}`, clear: { hasta: '' } }] : []),
+    ...selectedCategories.map((id) => ({
+      label: categoryName(id),
+      clear: { categoria: withoutCategory(id) },
+    })),
+    ...(minPrice !== undefined
+      ? [{ label: `Desde ${formatPrice(minPrice)}`, clear: { desde: '' } }]
+      : []),
+    ...(maxPrice !== undefined
+      ? [{ label: `Hasta ${formatPrice(maxPrice)}`, clear: { hasta: '' } }]
+      : []),
     ...(onlyAvailable ? [{ label: 'Con stock', clear: { stock: '' } }] : []),
     ...(onlyOnSale ? [{ label: 'En oferta', clear: { ofertas: '' } }] : []),
   ]
@@ -120,7 +142,9 @@ export default function CatalogPage() {
           <h1>
             {selectedCategories.length === 1
               ? categoryName(selectedCategories[0])
-              : onlyOnSale && selectedCategories.length === 0 ? 'Ofertas' : 'Catálogo'}
+              : onlyOnSale && selectedCategories.length === 0
+                ? 'Ofertas'
+                : 'Catálogo'}
           </h1>
         </div>
 
@@ -130,6 +154,7 @@ export default function CatalogPage() {
             <input
               id="product-search"
               type="search"
+              maxLength={100}
               placeholder="Ej.: notebook, auriculares..."
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
@@ -138,42 +163,75 @@ export default function CatalogPage() {
 
           <div className="field">
             <label htmlFor="sort-filter">Ordenar por</label>
-            <select id="sort-filter" value={sortBy} onChange={(event) => updateParams({ orden: event.target.value === 'recent' ? '' : event.target.value })}>
-              {Object.entries(sortOptions).map(([value, option]) => (
-                <option key={value} value={value}>{option.label}</option>
-              ))}
+            <select
+              id="sort-filter"
+              value={sortBy}
+              onChange={(event) =>
+                updateParams({
+                  orden: event.target.value === defaultSort ? '' : event.target.value,
+                })
+              }
+            >
+              {Object.entries(sortOptions)
+                .filter(([value]) => value !== 'relevance' || search)
+                .map(([value, option]) => (
+                  <option key={value} value={value}>
+                    {option.label}
+                  </option>
+                ))}
             </select>
           </div>
 
-          <button type="button" className="filters-button" aria-haspopup="dialog" onClick={() => setPanelOpen(true)}>
+          <button
+            type="button"
+            className="filters-button"
+            aria-haspopup="dialog"
+            onClick={() => setPanelOpen(true)}
+          >
             <Icon name="filters" />
             Filtros
-            {panelCount > 0 && <span className="filters-count" aria-label={`${panelCount} activos`}>{panelCount}</span>}
+            {panelCount > 0 && (
+              <span className="filters-count" aria-label={`${panelCount} activos`}>
+                {panelCount}
+              </span>
+            )}
           </button>
         </div>
 
         <div className="catalog-toolbar">
           <p aria-live="polite">
-            {products.isLoading ? 'Cargando productos...' : `${total} ${total === 1 ? 'producto encontrado' : 'productos encontrados'}`}
+            {products.isLoading
+              ? 'Cargando productos...'
+              : `${total} ${total === 1 ? 'producto encontrado' : 'productos encontrados'}`}
           </p>
           {chips.length > 0 && (
             <ul className="filter-chips" aria-label="Filtros aplicados">
               {chips.map((chip) => (
                 <li key={chip.label}>
-                  <button type="button" onClick={() => updateParams(chip.clear)} aria-label={`Quitar filtro ${chip.label}`}>
+                  <button
+                    type="button"
+                    onClick={() => updateParams(chip.clear)}
+                    aria-label={`Quitar filtro ${chip.label}`}
+                  >
                     {chip.label} <Icon name="close" />
                   </button>
                 </li>
               ))}
               {chips.length > 1 && (
-                <li><button type="button" className="clear-button" onClick={clearFilters}>Limpiar filtros</button></li>
+                <li>
+                  <button type="button" className="clear-button" onClick={clearFilters}>
+                    Limpiar filtros
+                  </button>
+                </li>
               )}
             </ul>
           )}
         </div>
 
         {products.isLoading && !products.data ? (
-          <div className="empty-state" role="status">Cargando catálogo...</div>
+          <div className="empty-state" role="status">
+            Cargando catálogo...
+          </div>
         ) : products.error ? (
           <div className="empty-state" role="alert">
             <h3>No pudimos cargar el catálogo</h3>
@@ -185,18 +243,39 @@ export default function CatalogPage() {
         ) : products.data && products.data.items.length > 0 ? (
           <>
             <div className="products-grid" aria-busy={products.isLoading}>
-              {products.data.items.map((product) => <ProductCard key={product.id} product={product} />)}
+              {products.data.items.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
             </div>
             {totalPages > 1 && (
               <div className="pagination" aria-label="Paginación de productos">
-                <button type="button" disabled={page === 1 || products.isLoading} onClick={() => goToPage(page - 1)}>Anterior</button>
-                <span>Página {page} de {totalPages}</span>
-                <button type="button" disabled={page >= totalPages || products.isLoading} onClick={() => goToPage(page + 1)}>Siguiente</button>
+                <button
+                  type="button"
+                  disabled={page === 1 || products.isLoading}
+                  onClick={() => goToPage(page - 1)}
+                >
+                  Anterior
+                </button>
+                <span>
+                  Página {page} de {totalPages}
+                </span>
+                <button
+                  type="button"
+                  disabled={page >= totalPages || products.isLoading}
+                  onClick={() => goToPage(page + 1)}
+                >
+                  Siguiente
+                </button>
               </div>
             )}
           </>
         ) : (
-          <EmptyResults search={search} onlyOnSale={onlyOnSale && chips.length === 1} hasFilters={chips.length > 0} onClear={clearFilters} />
+          <EmptyResults
+            search={search}
+            onlyOnSale={onlyOnSale && chips.length === 1}
+            hasFilters={chips.length > 0}
+            onClear={clearFilters}
+          />
         )}
       </div>
 
@@ -204,7 +283,13 @@ export default function CatalogPage() {
         <FilterPanel
           categories={categories.data ?? []}
           selectedCategories={selectedCategories}
-          onToggleCategory={(id) => updateParams({ categoria: selectedCategories.includes(id) ? withoutCategory(id) : [...selectedCategories, id].join(',') })}
+          onToggleCategory={(id) =>
+            updateParams({
+              categoria: selectedCategories.includes(id)
+                ? withoutCategory(id)
+                : [...selectedCategories, id].join(','),
+            })
+          }
           minPrice={minPrice}
           maxPrice={maxPrice}
           onlyAvailable={onlyAvailable}
@@ -212,7 +297,9 @@ export default function CatalogPage() {
           total={products.isLoading ? null : total}
           priceRange={products.data?.priceRange ?? null}
           onChange={updateParams}
-          onClear={() => updateParams({ categoria: '', desde: '', hasta: '', stock: '', ofertas: '' })}
+          onClear={() =>
+            updateParams({ categoria: '', desde: '', hasta: '', stock: '', ofertas: '' })
+          }
           onClose={() => setPanelOpen(false)}
         />
       )}
@@ -221,13 +308,25 @@ export default function CatalogPage() {
 }
 
 // Sin resultados, la salida es pedir el producto: lo que no está en el catálogo se puede conseguir.
-function EmptyResults({ search, onlyOnSale, hasFilters, onClear }: { search: string; onlyOnSale: boolean; hasFilters: boolean; onClear: () => void }) {
+function EmptyResults({
+  search,
+  onlyOnSale,
+  hasFilters,
+  onClear,
+}: {
+  search: string
+  onlyOnSale: boolean
+  hasFilters: boolean
+  onClear: () => void
+}) {
   if (onlyOnSale) {
     return (
       <div className="empty-state">
         <h3>No hay ofertas por ahora</h3>
         <p>Las ofertas cambian seguido: volvé en unos días o mirá todo el catálogo.</p>
-        <button type="button" className="primary-button empty-button" onClick={onClear}>Ver todo el catálogo</button>
+        <button type="button" className="primary-button empty-button" onClick={onClear}>
+          Ver todo el catálogo
+        </button>
       </div>
     )
   }
@@ -235,7 +334,13 @@ function EmptyResults({ search, onlyOnSale, hasFilters, onClear }: { search: str
   const subject = search ? `Busco: ${search}` : 'Busco un producto'
   return (
     <div className="empty-state">
-      <h3>{search ? `No encontramos “${search}”` : hasFilters ? 'Nada con esos filtros' : 'Todavía no hay productos'}</h3>
+      <h3>
+        {search
+          ? `No encontramos “${search}”`
+          : hasFilters
+            ? 'Nada con esos filtros'
+            : 'Todavía no hay productos'}
+      </h3>
       <p>
         {search
           ? 'Si no está en el catálogo, te lo buscamos. Contanos qué modelo necesitás y te respondemos con precio y disponibilidad.'
@@ -244,8 +349,14 @@ function EmptyResults({ search, onlyOnSale, hasFilters, onClear }: { search: str
             : 'Todavía no hay productos cargados en el catálogo.'}
       </p>
       <div className="empty-actions">
-        <Link className="primary-button" to={`/contacto?asunto=${encodeURIComponent(subject)}`}>Pedir un producto</Link>
-        {hasFilters && <button type="button" className="clear-button" onClick={onClear}>Limpiar filtros</button>}
+        <Link className="primary-button" to={`/contacto?asunto=${encodeURIComponent(subject)}`}>
+          Pedir un producto
+        </Link>
+        {hasFilters && (
+          <button type="button" className="clear-button" onClick={onClear}>
+            Limpiar filtros
+          </button>
+        )}
       </div>
     </div>
   )
@@ -268,14 +379,30 @@ interface FilterPanelProps {
 
 // Panel lateral con los filtros. Cada cambio se aplica en el momento y el pie
 // muestra cuántos productos quedan; el <dialog> nativo bloquea el foco y cierra con Escape.
-function FilterPanel({ categories, selectedCategories, onToggleCategory, minPrice, maxPrice, onlyAvailable, onlyOnSale, total, priceRange, onChange, onClear, onClose }: FilterPanelProps) {
+function FilterPanel({
+  categories,
+  selectedCategories,
+  onToggleCategory,
+  minPrice,
+  maxPrice,
+  onlyAvailable,
+  onlyOnSale,
+  total,
+  priceRange,
+  onChange,
+  onClear,
+  onClose,
+}: FilterPanelProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const [from, setFrom] = useState(minPrice === undefined ? '' : String(minPrice))
   const [to, setTo] = useState(maxPrice === undefined ? '' : String(maxPrice))
   // Los campos guardan solo dígitos y los muestran con formato de precio ("$ 200.000").
   const showPrice = (digits: string) => (digits === '' ? '' : formatPrice(Number(digits)))
   const onlyDigits = (text: string) => text.replace(/\D/g, '').replace(/^0+(?=\d)/, '')
-  const priceError = from !== '' && to !== '' && Number(from) > Number(to) ? 'El “desde” es mayor que el “hasta”.' : ''
+  const priceError =
+    from !== '' && to !== '' && Number(from) > Number(to)
+      ? 'El “desde” es mayor que el “hasta”.'
+      : ''
 
   useEffect(() => {
     const dialog = ref.current
@@ -301,12 +428,24 @@ function FilterPanel({ categories, selectedCategories, onToggleCategory, minPric
       ref={ref}
       className="filter-panel"
       aria-labelledby="filter-panel-title"
-      onCancel={(event) => { event.preventDefault(); onClose() }}
-      onMouseDown={(event) => { if (event.target === ref.current) onClose() }}
+      onCancel={(event) => {
+        event.preventDefault()
+        onClose()
+      }}
+      onMouseDown={(event) => {
+        if (event.target === ref.current) onClose()
+      }}
     >
       <div className="filter-panel-header">
         <h2 id="filter-panel-title">Filtros</h2>
-        <button type="button" className="filter-panel-close" aria-label="Cerrar filtros" onClick={onClose}><Icon name="close" /></button>
+        <button
+          type="button"
+          className="filter-panel-close"
+          aria-label="Cerrar filtros"
+          onClick={onClose}
+        >
+          <Icon name="close" />
+        </button>
       </div>
 
       <div className="filter-panel-body">
@@ -315,12 +454,22 @@ function FilterPanel({ categories, selectedCategories, onToggleCategory, minPric
           {/* Casillas ocultas con forma de chip: se pueden marcar varias. "Todas" las desmarca. */}
           <div className="filter-chip-list">
             <label className="filter-chip">
-              <input className="visually-hidden" type="checkbox" checked={selectedCategories.length === 0} onChange={() => onChange({ categoria: '' })} />
+              <input
+                className="visually-hidden"
+                type="checkbox"
+                checked={selectedCategories.length === 0}
+                onChange={() => onChange({ categoria: '' })}
+              />
               Todas
             </label>
             {categories.map((item) => (
               <label key={item.id} className="filter-chip">
-                <input className="visually-hidden" type="checkbox" checked={selectedCategories.includes(item.id)} onChange={() => onToggleCategory(item.id)} />
+                <input
+                  className="visually-hidden"
+                  type="checkbox"
+                  checked={selectedCategories.includes(item.id)}
+                  onChange={() => onToggleCategory(item.id)}
+                />
                 {item.name}
                 <span className="filter-chip-count">{item.productCount}</span>
               </label>
@@ -331,9 +480,19 @@ function FilterPanel({ categories, selectedCategories, onToggleCategory, minPric
         {/* Un grupo sin <fieldset>: el <legend> no deja poner el botón en su misma fila. */}
         <div className="filter-group" role="group" aria-labelledby="filter-price-title">
           <div className="filter-group-header">
-            <span id="filter-price-title" className="filter-group-title">Precio</span>
+            <span id="filter-price-title" className="filter-group-title">
+              Precio
+            </span>
             {(from !== '' || to !== '') && (
-              <button type="button" className="clear-button" onClick={() => { setFrom(''); setTo(''); document.getElementById('filter-from')?.focus() }}>
+              <button
+                type="button"
+                className="clear-button"
+                onClick={() => {
+                  setFrom('')
+                  setTo('')
+                  document.getElementById('filter-from')?.focus()
+                }}
+              >
                 Borrar precios
               </button>
             )}
@@ -341,33 +500,71 @@ function FilterPanel({ categories, selectedCategories, onToggleCategory, minPric
           <div className="filter-price">
             <div className="field">
               <label htmlFor="filter-from">Desde</label>
-              <input id="filter-from" type="text" inputMode="numeric" autoComplete="off" placeholder={priceRange ? formatPrice(priceRange.min) : '$ 0'} value={showPrice(from)} onChange={(event) => setFrom(onlyDigits(event.target.value))} aria-invalid={Boolean(priceError)} aria-describedby={priceError ? 'filter-price-error' : undefined} />
+              <input
+                id="filter-from"
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder={priceRange ? formatPrice(priceRange.min) : '$ 0'}
+                value={showPrice(from)}
+                onChange={(event) => setFrom(onlyDigits(event.target.value))}
+                aria-invalid={Boolean(priceError)}
+                aria-describedby={priceError ? 'filter-price-error' : undefined}
+              />
             </div>
             <div className="field">
               <label htmlFor="filter-to">Hasta</label>
-              <input id="filter-to" type="text" inputMode="numeric" autoComplete="off" placeholder={priceRange ? formatPrice(priceRange.max) : 'Sin tope'} value={showPrice(to)} onChange={(event) => setTo(onlyDigits(event.target.value))} aria-invalid={Boolean(priceError)} aria-describedby={priceError ? 'filter-price-error' : undefined} />
+              <input
+                id="filter-to"
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder={priceRange ? formatPrice(priceRange.max) : 'Sin tope'}
+                value={showPrice(to)}
+                onChange={(event) => setTo(onlyDigits(event.target.value))}
+                aria-invalid={Boolean(priceError)}
+                aria-describedby={priceError ? 'filter-price-error' : undefined}
+              />
             </div>
           </div>
-          {priceError && <p id="filter-price-error" className="filter-error" role="alert">{priceError}</p>}
+          {priceError && (
+            <p id="filter-price-error" className="filter-error" role="alert">
+              {priceError}
+            </p>
+          )}
         </div>
 
         <fieldset className="filter-group">
           <legend>Mostrar solo</legend>
           <label className="filter-option">
-            <input type="checkbox" checked={onlyAvailable} onChange={(event) => onChange({ stock: event.target.checked ? '1' : '' })} />
+            <input
+              type="checkbox"
+              checked={onlyAvailable}
+              onChange={(event) => onChange({ stock: event.target.checked ? '1' : '' })}
+            />
             <span>Productos con stock</span>
           </label>
           <label className="filter-option">
-            <input type="checkbox" checked={onlyOnSale} onChange={(event) => onChange({ ofertas: event.target.checked ? '1' : '' })} />
+            <input
+              type="checkbox"
+              checked={onlyOnSale}
+              onChange={(event) => onChange({ ofertas: event.target.checked ? '1' : '' })}
+            />
             <span>Productos en oferta</span>
           </label>
         </fieldset>
       </div>
 
       <div className="filter-panel-footer">
-        <button type="button" className="clear-button" onClick={clearAll}>Limpiar</button>
+        <button type="button" className="clear-button" onClick={clearAll}>
+          Limpiar
+        </button>
         <button type="button" className="primary-button" onClick={onClose}>
-          {total === null ? 'Ver productos' : total === 1 ? 'Ver 1 producto' : `Ver ${total} productos`}
+          {total === null
+            ? 'Ver productos'
+            : total === 1
+              ? 'Ver 1 producto'
+              : `Ver ${total} productos`}
         </button>
       </div>
     </dialog>

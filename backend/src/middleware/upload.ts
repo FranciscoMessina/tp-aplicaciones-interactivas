@@ -87,7 +87,7 @@ export const receiveImage: RequestHandler = (req, res, next) => {
       const message =
         error.code === "LIMIT_FILE_SIZE"
           ? `No puede pesar más de ${MAX_IMAGE_SIZE_MB} MB`
-          : "Enviá una sola imagen en el campo image";
+          : "Enviá una sola imagen";
 
       next(
         new ApplicationError(

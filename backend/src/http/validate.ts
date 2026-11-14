@@ -9,17 +9,34 @@ import {
 // hace aca porque todas las validaciones de requests pasan por `validate`.
 //
 // La traduccion que trae Zod (`locales.es`) cubre todos los casos pero con
-// frases genericas ("Inválido URL"). Para los errores que el usuario ve en los
-// formularios escribimos mensajes propios; si `customError` devuelve
-// `undefined`, Zod usa su traduccion.
+// frases genericas ("Inválido URL") o con nombres tecnicos ("se esperaba int").
+// Por eso escribimos mensajes propios para todo lo que pueden producir nuestros
+// schemas; la traduccion de Zod queda solo de respaldo, para los casos que
+// `customError` no contempla (devuelve `undefined`).
 z.config(z.locales.es());
+
+// Para cuando llega un valor de otro tipo, por ejemplo un numero en un texto.
+const invalidTypeMessages: Record<string, string> = {
+  string: "Debe ser un texto",
+  number: "Debe ser un número",
+  int: "Debe ser un número entero",
+  boolean: "Debe ser verdadero o falso",
+  array: "Debe ser una lista",
+  // Ningun schema tiene objetos anidados: esto solo pasa con el cuerpo entero.
+  object: "Los datos tienen que enviarse como un objeto JSON",
+};
+
 z.config({
   customError: (issue) => {
     switch (issue.code) {
       case "invalid_type":
+        // Va antes que "obligatorio": un request sin cuerpo tambien llega aca.
+        if (issue.expected === "object") {
+          return invalidTypeMessages.object;
+        }
         return issue.input === undefined
           ? "Este campo es obligatorio"
-          : undefined;
+          : invalidTypeMessages[issue.expected];
       case "too_small":
         if (issue.origin === "string") {
           return Number(issue.minimum) <= 1
@@ -27,16 +44,25 @@ z.config({
             : `Debe tener al menos ${issue.minimum} caracteres`;
         }
         if (issue.origin === "array") {
-          return `Debe tener al menos ${issue.minimum} elemento(s)`;
+          return Number(issue.minimum) === 1
+            ? "Debe tener al menos un elemento"
+            : `Debe tener al menos ${issue.minimum} elementos`;
         }
         if (issue.origin === "number") {
           return `Debe ser mayor o igual a ${issue.minimum}`;
         }
         return undefined;
       case "too_big":
-        return issue.origin === "string"
-          ? `No puede tener más de ${issue.maximum} caracteres`
-          : undefined;
+        if (issue.origin === "string") {
+          return `No puede tener más de ${issue.maximum} caracteres`;
+        }
+        if (issue.origin === "array") {
+          return `No puede tener más de ${issue.maximum} elementos`;
+        }
+        if (issue.origin === "number") {
+          return `Debe ser menor o igual a ${issue.maximum}`;
+        }
+        return undefined;
       case "invalid_format":
         if (issue.format === "email") {
           return "El email no es válido";
@@ -44,7 +70,15 @@ z.config({
         if (issue.format === "url") {
           return "La URL no es válida";
         }
+        if (issue.format === "date") {
+          return "Debe ser una fecha con el formato AAAA-MM-DD";
+        }
         return undefined;
+      // Un valor fuera de la lista permitida: un `z.enum` (estado, orden) o un
+      // `z.stringbool` del query string. No se listan las opciones porque son
+      // los valores internos de la API.
+      case "invalid_value":
+        return "No es una opción válida";
       default:
         return undefined;
     }
@@ -74,8 +108,8 @@ export function validate<TSchema extends ZodType>(
   }
 
   const fields: FieldErrors = {};
-  // Errores que no son de un campo puntual, por ejemplo "Provide at least one
-  // field" cuando se manda un PATCH vacio.
+  // Errores que no son de un campo puntual, por ejemplo "Enviá al menos un
+  // campo para modificar" cuando se manda un PATCH vacio.
   const generalErrors: string[] = [];
 
   for (const issue of result.error.issues) {

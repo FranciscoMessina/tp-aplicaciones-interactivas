@@ -51,7 +51,7 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
   if (!token) {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
-      "Se requiere un token de acceso",
+      "Tenés que iniciar sesión",
     );
   }
 
@@ -62,7 +62,7 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
   } catch {
     throw new ApplicationError(
       ApplicationErrorKind.Unauthenticated,
-      "El token es inválido o está vencido",
+      "Tu sesión no es válida o venció. Volvé a iniciar sesión",
     );
   }
 

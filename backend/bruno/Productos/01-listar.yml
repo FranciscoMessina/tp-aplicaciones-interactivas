@@ -14,7 +14,7 @@ http:
     - name: sortBy
       value: price
       type: query
-      description: publicationDate, price o relevance (relevance requiere search)
+      description: publicationDate, price, name o relevance (relevance requiere search)
     - name: page
       value: "1"
       type: query
@@ -27,10 +27,6 @@ http:
 
 settings:
   encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-  forwardAuthorizationHeader: true
 
 docs: |-
   Busca y lista productos, paginados. Sin filtros devuelve todos los activos, del más nuevo al más viejo.
@@ -45,7 +41,8 @@ docs: |-
   - `minPrice` / `maxPrice`: rango de precio final (con el descuento aplicado).
   - `inStock`: `true` solo con unidades; `false` solo sin stock.
   - `onSale`: `true` solo los que tienen descuento.
-  - `sortBy`: `publicationDate` (por defecto), `price` o `relevance`. `relevance` requiere `search`.
+  - `isActive` e `isFeatured`: filtros del panel (`true` o `false`). `isActive` solo tiene efecto junto con `includeInactive`.
+  - `sortBy`: `publicationDate` (por defecto), `price`, `name` o `relevance`. `relevance` requiere `search`.
   - `sortOrder`: `desc` (por defecto) o `asc`.
   - `page`: desde 1 (por defecto 1).
   - `pageSize`: de 1 a 100 (por defecto 20).

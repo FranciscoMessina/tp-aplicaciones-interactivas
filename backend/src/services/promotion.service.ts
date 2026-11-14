@@ -211,7 +211,8 @@ async function savePromotion(
     if (!category) {
       throw new ApplicationError(
         ApplicationErrorKind.InvalidInput,
-        "No se encontró la categoría",
+        "Hay campos con errores",
+        { category: ["La categoría elegida no existe"] },
       );
     }
   }
@@ -224,7 +225,8 @@ async function savePromotion(
     if (!collection) {
       throw new ApplicationError(
         ApplicationErrorKind.InvalidInput,
-        "No se encontró la colección",
+        "Hay campos con errores",
+        { linkedCollection: ["La colección elegida no existe"] },
       );
     }
   }

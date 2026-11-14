@@ -40,7 +40,11 @@ function PromotionLink({ promotion }: { promotion: Promotion }) {
     : promotion.category
       ? [`/catalogo?categoria=${promotion.category.id}`, `Ver ${promotion.category.name}`]
       : ['/catalogo?ofertas=1', 'Ver las ofertas']
-  return <Link className="promotion-link" to={to}>{label}</Link>
+  return (
+    <Link className="promotion-link" to={to}>
+      {label}
+    </Link>
+  )
 }
 
 function HomePage() {
@@ -61,63 +65,94 @@ function HomePage() {
     const pins = chip.querySelectorAll<HTMLElement>('.chip-pins.is-bottom > span')
     const visible = Array.from(pins).filter((pin) => pin.offsetParent !== null)
     if (visible.length === 0) return
-    const nearest = visible.reduce((best, pin) => {
-      const distance = Math.abs(pin.getBoundingClientRect().left + pin.offsetWidth / 2 - event.clientX)
-      return distance < best.distance ? { pin, distance } : best
-    }, { pin: visible[0], distance: Infinity }).pin
+    const nearest = visible.reduce(
+      (best, pin) => {
+        const distance = Math.abs(
+          pin.getBoundingClientRect().left + pin.offsetWidth / 2 - event.clientX,
+        )
+        return distance < best.distance ? { pin, distance } : best
+      },
+      { pin: visible[0], distance: Infinity },
+    ).pin
     const column = Array.from(pins).indexOf(nearest)
     if (column === probed.current) return
     probed.current = column
     chip.querySelectorAll('.is-probed').forEach((pin) => pin.classList.remove('is-probed'))
     nearest.classList.add('is-probed')
-    chip.querySelectorAll<HTMLElement>('.chip-pins.is-top > span')[column]?.classList.add('is-probed')
+    chip
+      .querySelectorAll<HTMLElement>('.chip-pins.is-top > span')
+      [column]?.classList.add('is-probed')
   }
 
   function unprobe(event: PointerEvent<HTMLElement>) {
     probed.current = -1
-    event.currentTarget.querySelectorAll('.is-probed').forEach((pin) => pin.classList.remove('is-probed'))
+    event.currentTarget
+      .querySelectorAll('.is-probed')
+      .forEach((pin) => pin.classList.remove('is-probed'))
   }
 
   return (
     <main>
-      <section className="welcome" aria-labelledby="welcome-title" onPointerMove={probe} onPointerLeave={unprobe}>
+      <section
+        className="welcome"
+        aria-labelledby="welcome-title"
+        onPointerMove={probe}
+        onPointerLeave={unprobe}
+      >
         <div className="chip-pins is-top" aria-hidden="true">
-          {TOP_PINS.map((pin) => <span key={pin}>{pin}</span>)}
+          {TOP_PINS.map((pin) => (
+            <span key={pin}>{pin}</span>
+          ))}
         </div>
         <div className="chip-pins is-bottom" aria-hidden="true">
-          {BOTTOM_PINS.map((pin) => <span key={pin}>{pin}</span>)}
+          {BOTTOM_PINS.map((pin) => (
+            <span key={pin}>{pin}</span>
+          ))}
         </div>
 
         <div className="welcome-content">
-          <h1 id="welcome-title">Consolas, PCs y todo lo que <span className="welcome-accent">se enchufa.</span></h1>
-          <p>Consolas, computadoras, celulares, juegos y accesorios, con precio en pesos y stock al día.</p>
+          <h1 id="welcome-title">
+            Consolas, PCs y todo lo que <span className="welcome-accent">se enchufa.</span>
+          </h1>
+          <p>
+            Consolas, computadoras, celulares, juegos y accesorios, con precio en pesos y stock al
+            día.
+          </p>
         </div>
       </section>
 
       {!categories.error && (
         <nav className="order-table" aria-label="Categorías principales">
-          {categories.isLoading
-            ? Array.from({ length: MAIN_CATEGORIES + 1 }, (_, index) => <div key={index} className="order-row is-placeholder" aria-hidden="true" />)
-            : (
-                <>
-                  {mainCategories.map((stat, index) => (
-                    <Link key={stat.id} className="order-row" to={`/catalogo?categoria=${stat.id}`}>
-                      <span className="order-code" aria-hidden="true">C-{String(index + 1).padStart(2, '0')}</span>
-                      <span className="order-name">{stat.name}</span>
-                      <span className="order-examples">{stat.examples.join(', ')}</span>
-                      <span className="order-count">{stat.productCount} {stat.productCount === 1 ? 'producto' : 'productos'}</span>
-                      <span className="order-price">desde {formatPrice(stat.minPrice)}</span>
-                    </Link>
-                  ))}
-                  <Link className="order-row is-all" to="/catalogo">
-                    <span className="order-code" aria-hidden="true">C-00</span>
-                    <span className="order-name">Todo el catálogo</span>
-                    <span className="order-examples" />
-                    <span className="order-count">{productCount} productos</span>
-                    <span className="order-price">Buscar y filtrar</span>
-                  </Link>
-                </>
-              )}
+          {categories.isLoading ? (
+            Array.from({ length: MAIN_CATEGORIES + 1 }, (_, index) => (
+              <div key={index} className="order-row is-placeholder" aria-hidden="true" />
+            ))
+          ) : (
+            <>
+              {mainCategories.map((stat, index) => (
+                <Link key={stat.id} className="order-row" to={`/catalogo?categoria=${stat.id}`}>
+                  <span className="order-code" aria-hidden="true">
+                    C-{String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="order-name">{stat.name}</span>
+                  <span className="order-examples">{stat.examples.join(', ')}</span>
+                  <span className="order-count">
+                    {stat.productCount} {stat.productCount === 1 ? 'producto' : 'productos'}
+                  </span>
+                  <span className="order-price">desde {formatPrice(stat.minPrice)}</span>
+                </Link>
+              ))}
+              <Link className="order-row is-all" to="/catalogo">
+                <span className="order-code" aria-hidden="true">
+                  C-00
+                </span>
+                <span className="order-name">Todo el catálogo</span>
+                <span className="order-examples" />
+                <span className="order-count">{productCount} productos</span>
+                <span className="order-price">Buscar y filtrar</span>
+              </Link>
+            </>
+          )}
         </nav>
       )}
 
@@ -125,8 +160,13 @@ function HomePage() {
       {promotions.data && promotions.data.length > 0 && (
         <section className="promotions" aria-label="Promociones vigentes">
           {promotions.data.map((promotion, index) => (
-            <article key={promotion.id} className={`promotion${promotion.image ? ' has-image' : ''}`}>
-              {promotion.image && <img className="promotion-image" src={promotion.image} alt="" loading="lazy" />}
+            <article
+              key={promotion.id}
+              className={`promotion${promotion.image ? ' has-image' : ''}`}
+            >
+              {promotion.image && (
+                <img className="promotion-image" src={promotion.image} alt="" loading="lazy" />
+              )}
               <div className="promotion-content">
                 <span className="promotion-code">
                   P-{String(index + 1).padStart(2, '0')}
@@ -146,40 +186,60 @@ function HomePage() {
         <div className="section-heading">
           <div>
             <h2 id="featured-title">{hasFeatured ? 'Destacados' : 'Recién llegados'}</h2>
-            <p>{hasFeatured ? 'Lo que recomendamos esta temporada.' : 'Lo último que sumamos al catálogo.'}</p>
+            <p>
+              {hasFeatured
+                ? 'Lo que recomendamos esta temporada.'
+                : 'Lo último que sumamos al catálogo.'}
+            </p>
           </div>
-          <Link className="section-link" to="/catalogo">Ver todo el catálogo</Link>
+          <Link className="section-link" to="/catalogo">
+            Ver todo el catálogo
+          </Link>
         </div>
 
         {showcase.isLoading ? (
-          <div className="empty-state" role="status">Cargando productos...</div>
+          <div className="empty-state" role="status">
+            Cargando productos...
+          </div>
         ) : showcase.error ? (
           <div className="empty-state" role="alert">
             <h3>No pudimos cargar los productos</h3>
             <p>{showcase.error} Verificá que el backend esté funcionando en el puerto 8080.</p>
-            <button type="button" className="primary-button empty-button" onClick={showcase.retry}>Reintentar</button>
+            <button type="button" className="primary-button empty-button" onClick={showcase.retry}>
+              Reintentar
+            </button>
           </div>
         ) : (
           <div className="products-grid">
-            {showcase.data?.products.map((product) => <ProductCard key={product.id} product={product} />)}
+            {showcase.data?.products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
         )}
       </section>
 
       {/* Como las promociones: si fallan o no hay, no aparecen. */}
       {collections.data?.map((collection) => (
-        <section key={collection.id} className="products-section is-collection" aria-labelledby={`coleccion-${collection.id}`}>
+        <section
+          key={collection.id}
+          className="products-section is-collection"
+          aria-labelledby={`coleccion-${collection.id}`}
+        >
           <div className="section-heading">
             <div>
               <h2 id={`coleccion-${collection.id}`}>{collection.title}</h2>
               {collection.description && <p>{collection.description}</p>}
             </div>
             <Link className="section-link" to={`/colecciones/${collection.id}`}>
-              {collection.products.length > COLLECTION_PREVIEW ? `Ver los ${collection.products.length}` : 'Ver la colección'}
+              {collection.products.length > COLLECTION_PREVIEW
+                ? `Ver los ${collection.products.length}`
+                : 'Ver la colección'}
             </Link>
           </div>
           <div className="products-grid">
-            {collection.products.slice(0, COLLECTION_PREVIEW).map((product) => <ProductCard key={product.id} product={product} />)}
+            {collection.products.slice(0, COLLECTION_PREVIEW).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
         </section>
       ))}
@@ -187,9 +247,14 @@ function HomePage() {
       <section className="contact-section" aria-labelledby="contact-title">
         <div>
           <h2 id="contact-title">¿No encontrás lo que buscás?</h2>
-          <p>Contanos qué equipo necesitás y te respondemos con disponibilidad y precio. No hace falta crear una cuenta.</p>
+          <p>
+            Contanos qué equipo necesitás y te respondemos con disponibilidad y precio. No hace
+            falta crear una cuenta.
+          </p>
         </div>
-        <Link className="primary-button" to="/contacto">Enviar una consulta</Link>
+        <Link className="primary-button" to="/contacto">
+          Enviar una consulta
+        </Link>
       </section>
     </main>
   )

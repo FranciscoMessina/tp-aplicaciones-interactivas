@@ -11,7 +11,9 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     const controller = new AbortController()
     fetchBusinessInfo(controller.signal)
       .then((info) => setBusinessName(info.name))
-      .catch(() => { /* sin datos cargados, la marca se muestra solo con el logo */ })
+      .catch(() => {
+        /* sin datos cargados, la marca se muestra solo con el logo */
+      })
     return () => controller.abort()
   }, [])
 
@@ -19,5 +21,9 @@ export function BusinessProvider({ children }: { children: ReactNode }) {
     if (businessName) document.title = businessName
   }, [businessName])
 
-  return <BusinessContext.Provider value={{ businessName, setBusinessName }}>{children}</BusinessContext.Provider>
+  return (
+    <BusinessContext.Provider value={{ businessName, setBusinessName }}>
+      {children}
+    </BusinessContext.Provider>
+  )
 }

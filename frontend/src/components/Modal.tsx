@@ -23,12 +23,19 @@ export default function Modal({ title, onClose, children, wide = false }: ModalP
       ref={ref}
       className={`modal${wide ? ' modal-wide' : ''}`}
       aria-labelledby="modal-title"
-      onCancel={(event) => { event.preventDefault(); onClose() }}
-      onMouseDown={(event) => { if (event.target === ref.current) onClose() }}
+      onCancel={(event) => {
+        event.preventDefault()
+        onClose()
+      }}
+      onMouseDown={(event) => {
+        if (event.target === ref.current) onClose()
+      }}
     >
       <div className="modal-header">
         <h2 id="modal-title">{title}</h2>
-        <button type="button" className="admin-icon-button" aria-label="Cerrar" onClick={onClose}><Icon name="close" /></button>
+        <button type="button" className="admin-icon-button" aria-label="Cerrar" onClick={onClose}>
+          <Icon name="close" />
+        </button>
       </div>
       <div className="modal-body">{children}</div>
     </dialog>

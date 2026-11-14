@@ -17,9 +17,15 @@ export function useRequest<T>(load: (signal: AbortSignal) => Promise<T>, key: st
     setIsLoading(true)
     setError('')
     load(controller.signal)
-      .then((result) => { if (!controller.signal.aborted) setData(result) })
-      .catch((cause: unknown) => { if (!controller.signal.aborted) setError(getErrorMessage(cause)) })
-      .finally(() => { if (!controller.signal.aborted) setIsLoading(false) })
+      .then((result) => {
+        if (!controller.signal.aborted) setData(result)
+      })
+      .catch((cause: unknown) => {
+        if (!controller.signal.aborted) setError(getErrorMessage(cause))
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false)
+      })
     return () => controller.abort()
     // `load` se arma en cada render; lo que define la petición es `key`.
     // eslint-disable-next-line react-hooks/exhaustive-deps

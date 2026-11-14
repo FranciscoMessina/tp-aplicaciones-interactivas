@@ -31,15 +31,14 @@ app.set("trust proxy", env.trustProxyHops);
 // estandar de los servidores web, que incluye IP y navegador del cliente.
 app.use(morgan(env.isProduction ? "combined" : "dev"));
 // El front corre en otro origen (otro puerto o dominio) y el navegador bloquea
-// esas llamadas salvo que la API las autorice con los headers de CORS.
-app.use(cors());
+// esas llamadas salvo que la API las autorice con los headers de CORS. Solo se
+// autoriza el origen del comercio, no cualquier sitio.
+app.use(cors({ origin: env.frontendUrl }));
 // Convierte el cuerpo JSON del request en un objeto disponible en `req.body`.
 app.use(express.json());
 // Sirve tal cual los archivos de la carpeta `public`: `public/uploads/foto.jpg`
 // queda disponible en `/uploads/foto.jpg`. Ahi se guardan las imagenes subidas.
 app.use(express.static("public"));
-
-// Cuando tengamos el front con IP/dominio agregamos un middleware para que solo permita requests desde esa IP/dominio.
 
 app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);

@@ -13,8 +13,22 @@ const MAX_IMAGE_MB = 5
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 const MAX_DISCOUNT = 90
+const MAX_IMAGES = 12
+const MAX_IMAGE_URL = 2048
+const MAX_DESCRIPTION = 5000
 
-type Errors = Partial<Record<'name' | 'category' | 'description' | 'price' | 'availableQuantity' | 'discountPercent' | 'images', string>>
+type Errors = Partial<
+  Record<
+    | 'name'
+    | 'category'
+    | 'description'
+    | 'price'
+    | 'availableQuantity'
+    | 'discountPercent'
+    | 'images',
+    string
+  >
+>
 
 export type CategoriesState = 'loading' | 'ready' | 'error'
 
@@ -48,7 +62,15 @@ function isHttpUrl(value: string) {
   }
 }
 
-export default function ProductFormModal({ token, categories, categoriesState, onRetryCategories, product, onClose, onSaved }: Props) {
+export default function ProductFormModal({
+  token,
+  categories,
+  categoriesState,
+  onRetryCategories,
+  product,
+  onClose,
+  onSaved,
+}: Props) {
   const isEdit = product !== null
   const fileInput = useRef<HTMLInputElement>(null)
 
@@ -78,13 +100,21 @@ export default function ProductFormModal({ token, categories, categoriesState, o
     else if (name.trim().length > 150) found.name = 'El nombre no puede superar los 150 caracteres.'
     if (!categoryId) found.category = 'Elegí una categoría.'
     if (!description.trim()) found.description = 'Ingresá una descripción.'
-    if (price.trim() === '' || Number.isNaN(Number(price))) found.price = 'Ingresá un precio válido.'
+    else if (description.trim().length > MAX_DESCRIPTION)
+      found.description = `La descripción no puede superar los ${MAX_DESCRIPTION} caracteres.`
+    if (price.trim() === '' || Number.isNaN(Number(price)))
+      found.price = 'Ingresá un precio válido.'
     else if (Number(price) < 0) found.price = 'El precio no puede ser negativo.'
     if (stock.trim() === '' || !Number.isInteger(Number(stock)) || Number(stock) < 0) {
       found.availableQuantity = 'Ingresá una cantidad entera (0 o más).'
     }
     const discountValue = Number(discount)
-    if (discount.trim() === '' || !Number.isInteger(discountValue) || discountValue < 0 || discountValue > MAX_DISCOUNT) {
+    if (
+      discount.trim() === '' ||
+      !Number.isInteger(discountValue) ||
+      discountValue < 0 ||
+      discountValue > MAX_DISCOUNT
+    ) {
       found.discountPercent = `Ingresá un porcentaje entero entre 0 y ${MAX_DISCOUNT}.`
     }
     if (images.length === 0) found.images = 'Agregá al menos una imagen.'
@@ -110,6 +140,10 @@ export default function ProductFormModal({ token, categories, categoriesState, o
         problems.push(`${file.name}: no puede pesar más de ${MAX_IMAGE_MB} MB.`)
         continue
       }
+      if (images.length + uploaded.length >= MAX_IMAGES) {
+        problems.push(`${file.name}: un producto puede tener hasta ${MAX_IMAGES} imágenes.`)
+        continue
+      }
       try {
         uploaded.push(await uploadImage(token, file))
       } catch (error) {
@@ -128,8 +162,18 @@ export default function ProductFormModal({ token, categories, categoriesState, o
   function addUrl() {
     const value = urlInput.trim()
     if (!value) return
-    if (!isHttpUrl(value)) { setUploadError('La URL de la imagen no es válida (debe empezar con http:// o https://).'); return }
-    if (images.includes(value)) { setUploadError('Esa imagen ya está en la lista.'); return }
+    if (images.length >= MAX_IMAGES) {
+      setUploadError(`Un producto puede tener hasta ${MAX_IMAGES} imágenes.`)
+      return
+    }
+    if (!isHttpUrl(value)) {
+      setUploadError('La URL de la imagen no es válida (debe empezar con http:// o https://).')
+      return
+    }
+    if (images.includes(value)) {
+      setUploadError('Esa imagen ya está en la lista.')
+      return
+    }
     setUploadError('')
     setImages((current) => [...current, value])
     setErrors((current) => ({ ...current, images: undefined }))
@@ -179,20 +223,31 @@ export default function ProductFormModal({ token, categories, categoriesState, o
 
     setSaving(true)
     try {
-      const saved = isEdit ? await updateProduct(token, product.id, input) : await createProduct(token, input)
+      const saved = isEdit
+        ? await updateProduct(token, product.id, input)
+        : await createProduct(token, input)
       onSaved(saved, isEdit)
     } catch (error) {
       if (error instanceof ApiRequestError) {
         // Errores por campo que devuelve el backend (validación de Zod).
         const fields = error.fields ?? {}
         const fromServer: Errors = {}
-        for (const key of ['name', 'category', 'description', 'price', 'availableQuantity', 'discountPercent'] as const) {
+        for (const key of [
+          'name',
+          'category',
+          'description',
+          'price',
+          'availableQuantity',
+          'discountPercent',
+        ] as const) {
           if (fields[key]?.[0]) fromServer[key] = fields[key][0]
         }
         const imagesKey = Object.keys(fields).find((key) => key.startsWith('images'))
         if (imagesKey) fromServer.images = fields[imagesKey][0]
         showErrors(fromServer)
-        setFormError(Object.keys(fromServer).length > 0 ? 'Revisá los campos marcados.' : error.message)
+        setFormError(
+          Object.keys(fromServer).length > 0 ? 'Revisá los campos marcados.' : error.message,
+        )
       } else {
         setFormError('Ocurrió un error inesperado. Intentá de nuevo.')
       }
@@ -216,59 +271,144 @@ export default function ProductFormModal({ token, categories, categoriesState, o
   const fieldClass = (key: keyof Errors) => (errors[key] ? 'admin-field has-error' : 'admin-field')
 
   return (
-    <Modal title={isEdit ? 'Editar producto' : 'Nuevo producto'} onClose={saving ? () => undefined : onClose} wide>
+    <Modal
+      title={isEdit ? 'Editar producto' : 'Nuevo producto'}
+      onClose={saving ? () => undefined : onClose}
+      wide
+    >
       <form className="admin-form" onSubmit={(event) => void submit(event)} noValidate>
-        {formError && <p className="admin-alert is-error" role="alert">{formError}</p>}
+        {formError && (
+          <p className="admin-alert is-error" role="alert">
+            {formError}
+          </p>
+        )}
 
         <div className={fieldClass('name')}>
           <label htmlFor="pf-name">Nombre *</label>
-          <input id="pf-name" maxLength={150} value={name} onChange={(event) => setName(event.target.value)} {...errorProps('name')} />
-          {errors.name && <span id={`${fieldIds.name}-error`} className="admin-error">{errors.name}</span>}
+          <input
+            id="pf-name"
+            maxLength={150}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            {...errorProps('name')}
+          />
+          {errors.name && (
+            <span id={`${fieldIds.name}-error`} className="admin-error">
+              {errors.name}
+            </span>
+          )}
         </div>
 
         <div className="admin-form-row">
           <div className={fieldClass('category')}>
             <label htmlFor="pf-category">Categoría *</label>
-            <select id="pf-category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} disabled={categoriesState !== 'ready'} {...errorProps('category')}>
-              <option value="">{categoriesState === 'loading' ? 'Cargando categorías...' : 'Elegí una categoría'}</option>
-              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            <select
+              id="pf-category"
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
+              disabled={categoriesState !== 'ready'}
+              {...errorProps('category')}
+            >
+              <option value="">
+                {categoriesState === 'loading' ? 'Cargando categorías...' : 'Elegí una categoría'}
+              </option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
-            {errors.category && <span id={`${fieldIds.category}-error`} className="admin-error">{errors.category}</span>}
+            {errors.category && (
+              <span id={`${fieldIds.category}-error`} className="admin-error">
+                {errors.category}
+              </span>
+            )}
             {categoriesState === 'error' && (
               <span className="admin-error" role="alert">
-                No se pudieron cargar las categorías. <button type="button" className="admin-text-link" onClick={onRetryCategories}>Reintentar</button>
+                No se pudieron cargar las categorías.{' '}
+                <button type="button" className="admin-text-link" onClick={onRetryCategories}>
+                  Reintentar
+                </button>
               </span>
             )}
             {categoriesState === 'ready' && categories.length === 0 && (
-              <span className="admin-hint">Todavía no hay categorías. <Link to="/admin/categorias">Creá una</Link> para poder cargar productos.</span>
+              <span className="admin-hint">
+                Todavía no hay categorías. <Link to="/admin/categorias">Creá una</Link> para poder
+                cargar productos.
+              </span>
             )}
           </div>
           <div className={fieldClass('price')}>
             <label htmlFor="pf-price">Precio (ARS) *</label>
-            <input id="pf-price" type="number" inputMode="decimal" min={0} step="0.01" value={price} onChange={(event) => setPrice(event.target.value)} {...errorProps('price')} />
-            {errors.price && <span id={`${fieldIds.price}-error`} className="admin-error">{errors.price}</span>}
+            <input
+              id="pf-price"
+              type="number"
+              inputMode="decimal"
+              min={0}
+              step="0.01"
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
+              {...errorProps('price')}
+            />
+            {errors.price && (
+              <span id={`${fieldIds.price}-error`} className="admin-error">
+                {errors.price}
+              </span>
+            )}
           </div>
           <div className={fieldClass('availableQuantity')}>
             <label htmlFor="pf-stock">Stock *</label>
-            <input id="pf-stock" type="number" inputMode="numeric" min={0} step={1} value={stock} onChange={(event) => setStock(event.target.value)} {...errorProps('availableQuantity')} />
-            {errors.availableQuantity
-              ? <span id={`${fieldIds.availableQuantity}-error`} className="admin-error">{errors.availableQuantity}</span>
-              : <span className="admin-hint">Con 0 se muestra como “Sin stock”.</span>}
+            <input
+              id="pf-stock"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              value={stock}
+              onChange={(event) => setStock(event.target.value)}
+              {...errorProps('availableQuantity')}
+            />
+            {errors.availableQuantity ? (
+              <span id={`${fieldIds.availableQuantity}-error`} className="admin-error">
+                {errors.availableQuantity}
+              </span>
+            ) : (
+              <span className="admin-hint">Con 0 se muestra como “Sin stock”.</span>
+            )}
           </div>
         </div>
 
         <div className="admin-form-row admin-form-row-2">
           <div className={fieldClass('discountPercent')}>
             <label htmlFor="pf-discount">Descuento (%)</label>
-            <input id="pf-discount" type="number" inputMode="numeric" min={0} max={MAX_DISCOUNT} step={1} value={discount} onChange={(event) => setDiscount(event.target.value)} {...errorProps('discountPercent')} />
-            {errors.discountPercent
-              ? <span id={`${fieldIds.discountPercent}-error`} className="admin-error">{errors.discountPercent}</span>
-              : <span className="admin-hint">Con 0 no tiene descuento. El sitio muestra el precio anterior tachado.</span>}
+            <input
+              id="pf-discount"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={MAX_DISCOUNT}
+              step={1}
+              value={discount}
+              onChange={(event) => setDiscount(event.target.value)}
+              {...errorProps('discountPercent')}
+            />
+            {errors.discountPercent ? (
+              <span id={`${fieldIds.discountPercent}-error`} className="admin-error">
+                {errors.discountPercent}
+              </span>
+            ) : (
+              <span className="admin-hint">
+                Con 0 no tiene descuento. El sitio muestra el precio anterior tachado.
+              </span>
+            )}
           </div>
           <div className="admin-field">
             <span className="admin-field-label">Precio final</span>
             <p className="admin-final-price" aria-live="polite">
-              {Number(price) >= 0 && price.trim() !== '' && Number(discount) > 0 && Number(discount) <= MAX_DISCOUNT
+              {Number(price) >= 0 &&
+              price.trim() !== '' &&
+              Number(discount) > 0 &&
+              Number(discount) <= MAX_DISCOUNT
                 ? formatPrice(Math.round((Number(price) * (100 - Number(discount))) / 100))
                 : '—'}
             </p>
@@ -277,23 +417,43 @@ export default function ProductFormModal({ token, categories, categoriesState, o
 
         <div className={fieldClass('description')}>
           <label htmlFor="pf-description">Descripción *</label>
-          <textarea id="pf-description" rows={4} value={description} onChange={(event) => setDescription(event.target.value)} {...errorProps('description')} />
-          {errors.description && <span id={`${fieldIds.description}-error`} className="admin-error">{errors.description}</span>}
+          <textarea
+            id="pf-description"
+            rows={4}
+            maxLength={MAX_DESCRIPTION}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            {...errorProps('description')}
+          />
+          {errors.description && (
+            <span id={`${fieldIds.description}-error`} className="admin-error">
+              {errors.description}
+            </span>
+          )}
         </div>
 
         <div className={fieldClass('images')}>
-          <label htmlFor="pf-files">Imágenes * <span className="admin-hint-inline">Arrastralas para ordenarlas. La primera es la principal.</span></label>
+          <label htmlFor="pf-files">
+            Imágenes *{' '}
+            <span className="admin-hint-inline">
+              Arrastralas para ordenarlas. La primera es la principal.
+            </span>
+          </label>
 
           {images.length > 0 && (
             <ul className="admin-images">
               {images.map((url, index) => (
                 <li
                   key={url}
-                  className={[
-                    index === 0 && 'is-primary',
-                    index === dragIndex && 'is-dragging',
-                    index === dropIndex && index !== dragIndex && 'is-drop-target',
-                  ].filter(Boolean).join(' ') || undefined}
+                  className={
+                    [
+                      index === 0 && 'is-primary',
+                      index === dragIndex && 'is-dragging',
+                      index === dropIndex && index !== dragIndex && 'is-drop-target',
+                    ]
+                      .filter(Boolean)
+                      .join(' ') || undefined
+                  }
                   draggable
                   onDragStart={(event) => {
                     event.dataTransfer.effectAllowed = 'move'
@@ -316,13 +476,37 @@ export default function ProductFormModal({ token, categories, categoriesState, o
                   {index === 0 && <span className="admin-image-badge">Principal</span>}
                   {/* Alternativa al arrastre para teclado y pantallas táctiles. */}
                   <div className="admin-image-actions">
-                    <button type="button" className="admin-icon-button" aria-label={index === 1 ? `Hacer principal la imagen ${index + 1}` : `Mover antes la imagen ${index + 1}`} title={index === 1 ? 'Hacer principal' : 'Mover antes'} disabled={index === 0} onClick={() => moveImage(index, index - 1)}>
+                    <button
+                      type="button"
+                      className="admin-icon-button"
+                      aria-label={
+                        index === 1
+                          ? `Hacer principal la imagen ${index + 1}`
+                          : `Mover antes la imagen ${index + 1}`
+                      }
+                      title={index === 1 ? 'Hacer principal' : 'Mover antes'}
+                      disabled={index === 0}
+                      onClick={() => moveImage(index, index - 1)}
+                    >
                       <Icon name="back" />
                     </button>
-                    <button type="button" className="admin-icon-button" aria-label={`Mover después la imagen ${index + 1}`} title="Mover después" disabled={index === images.length - 1} onClick={() => moveImage(index, index + 1)}>
+                    <button
+                      type="button"
+                      className="admin-icon-button"
+                      aria-label={`Mover después la imagen ${index + 1}`}
+                      title="Mover después"
+                      disabled={index === images.length - 1}
+                      onClick={() => moveImage(index, index + 1)}
+                    >
                       <Icon name="forward" />
                     </button>
-                    <button type="button" className="admin-icon-button is-danger" aria-label={`Quitar la imagen ${index + 1}`} title="Quitar" onClick={() => removeImage(index)}>
+                    <button
+                      type="button"
+                      className="admin-icon-button is-danger"
+                      aria-label={`Quitar la imagen ${index + 1}`}
+                      title="Quitar"
+                      onClick={() => removeImage(index)}
+                    >
                       <Icon name="delete" />
                     </button>
                   </div>
@@ -332,8 +516,23 @@ export default function ProductFormModal({ token, categories, categoriesState, o
           )}
 
           <div className="admin-upload">
-            <input ref={fileInput} id="pf-files" type="file" accept={ACCEPTED_TYPES.join(',')} multiple hidden onChange={(event) => void handleFiles(event)} />
-            <button id={fieldIds.images} type="button" className="admin-secondary" disabled={uploading} onClick={() => fileInput.current?.click()} aria-describedby={errors.images ? `${fieldIds.images}-error` : undefined}>
+            <input
+              ref={fileInput}
+              id="pf-files"
+              type="file"
+              accept={ACCEPTED_TYPES.join(',')}
+              multiple
+              hidden
+              onChange={(event) => void handleFiles(event)}
+            />
+            <button
+              id={fieldIds.images}
+              type="button"
+              className="admin-secondary"
+              disabled={uploading}
+              onClick={() => fileInput.current?.click()}
+              aria-describedby={errors.images ? `${fieldIds.images}-error` : undefined}
+            >
               {uploading ? 'Subiendo...' : 'Subir imágenes'}
             </button>
             <span className="admin-hint">JPG, PNG, WEBP o GIF · máx. {MAX_IMAGE_MB} MB c/u</span>
@@ -342,31 +541,62 @@ export default function ProductFormModal({ token, categories, categoriesState, o
           <div className="admin-url-row">
             <input
               type="url"
+              maxLength={MAX_IMAGE_URL}
               placeholder="…o pegá la URL de una imagen"
               aria-label="URL de una imagen"
               value={urlInput}
               onChange={(event) => setUrlInput(event.target.value)}
-              onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); addUrl() } }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  addUrl()
+                }
+              }}
             />
-            <button type="button" className="admin-secondary" onClick={addUrl}>Agregar</button>
+            <button type="button" className="admin-secondary" onClick={addUrl}>
+              Agregar
+            </button>
           </div>
 
-          {uploadError && <span className="admin-error" role="alert">{uploadError}</span>}
-          {errors.images && <span id={`${fieldIds.images}-error`} className="admin-error">{errors.images}</span>}
+          {uploadError && (
+            <span className="admin-error" role="alert">
+              {uploadError}
+            </span>
+          )}
+          {errors.images && (
+            <span id={`${fieldIds.images}-error`} className="admin-error">
+              {errors.images}
+            </span>
+          )}
         </div>
 
         <label className="admin-check">
-          <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} />
-          <span><strong>Publicado</strong> — si lo desmarcás, el producto no se muestra en el sitio público.</span>
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={(event) => setIsActive(event.target.checked)}
+          />
+          <span>
+            <strong>Publicado</strong> — si lo desmarcás, el producto no se muestra en el sitio
+            público.
+          </span>
         </label>
 
         <label className="admin-check">
-          <input type="checkbox" checked={isFeatured} onChange={(event) => setIsFeatured(event.target.checked)} />
-          <span><strong>Destacado</strong> — aparece en la sección de destacados de la página de inicio.</span>
+          <input
+            type="checkbox"
+            checked={isFeatured}
+            onChange={(event) => setIsFeatured(event.target.checked)}
+          />
+          <span>
+            <strong>Destacado</strong> — aparece en la sección de destacados de la página de inicio.
+          </span>
         </label>
 
         <div className="admin-form-actions">
-          <button type="button" className="admin-secondary" onClick={onClose} disabled={saving}>Cancelar</button>
+          <button type="button" className="admin-secondary" onClick={onClose} disabled={saving}>
+            Cancelar
+          </button>
           <button type="submit" className="admin-primary" disabled={saving || uploading}>
             {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear producto'}
           </button>

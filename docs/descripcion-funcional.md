@@ -32,7 +32,9 @@ objetivo es promocionar los productos y recibir consultas.
   tachado y el porcentaje si tiene descuento) y disponibilidad ("En stock",
   "Quedan 2", "Última unidad" o "Sin stock").
 - **Búsqueda, filtros y orden**: búsqueda por texto en nombre y descripción y
-  orden por más recientes, precio o nombre. Los filtros están en un panel
+  orden por más recientes, precio o nombre. Al buscar por texto aparece además
+  el orden por relevancia, que es el que se usa por defecto (sin búsqueda, el
+  defecto son los más recientes); si el visitante elige otro orden, se respeta. Los filtros están en un panel
   lateral: una o varias categorías, rango de precio (desde/hasta, con el
   precio más bajo y más alto como sugerencia), solo con stock y solo ofertas. Los filtros aplicados se muestran como chips que se quitan de a uno,
   y quedan en la URL para compartir la búsqueda. Si no hay resultados, el

@@ -3,6 +3,7 @@ import {
   ApplicationError,
   ApplicationErrorKind,
 } from "../domain/application-error.ts";
+import { env } from "../config/env.ts";
 import { sendSuccess } from "../http/responses.ts";
 
 export function uploadImage(req: Request, res: Response): void {
@@ -16,7 +17,7 @@ export function uploadImage(req: Request, res: Response): void {
 
   // Devolvemos la URL absoluta porque los productos guardan sus imagenes como
   // URLs: el front la agrega directamente al array `images`.
-  const url = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+  const url = `${env.backendUrl}/uploads/${req.file.filename}`;
 
   sendSuccess(res, { url }, 201);
 }

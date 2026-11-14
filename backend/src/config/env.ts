@@ -43,6 +43,7 @@ function parsePositiveInteger(
   return parsedValue;
 }
 
+const port = parsePort(process.env.PORT);
 const isProduction = process.env.NODE_ENV === "production";
 
 // Sin SMTP los mails se escriben en la consola del servidor. Eso sirve para
@@ -62,7 +63,7 @@ function getSmtpConfig() {
     port: parsePositiveInteger(process.env.SMTP_PORT, 587, "SMTP_PORT"),
     user: process.env.SMTP_USER,
     password: process.env.SMTP_PASSWORD,
-    from: process.env.MAIL_FROM ?? "KernelStore <no-reply@KernelStore.com>",
+    from: process.env.MAIL_FROM ?? "KernelStore <no-reply@kernelstore.com>",
   };
 }
 
@@ -78,7 +79,8 @@ function getJwtSecret(): string {
 
 export const env = Object.freeze({
   isProduction,
-  // Para armar los enlaces que se mandan por mail, como el de recuperacion.
+  // Origen del front: es el unico que CORS autoriza y sirve para armar los
+  // enlaces que se mandan por mail, como el de recuperacion.
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
   // Opcional en desarrollo, obligatorio en produccion.
   smtp: getSmtpConfig(),
@@ -89,7 +91,10 @@ export const env = Object.freeze({
   ),
   jwtSecret: getJwtSecret(),
   mongoUri: getRequiredEnvironmentVariable("MONGODB_URI"),
-  port: parsePort(process.env.PORT),
+  port,
+  // URL publica de la API. Los productos guardan sus imagenes como URLs
+  // absolutas (las del seed y las subidas), asi que hay que conocerla.
+  backendUrl: process.env.BACKEND_URL ?? `http://localhost:${port}`,
   // Cuantos proxies hay delante de la API (0 si ninguno). Con proxy, Express
   // tiene que leer la IP del cliente del header que agrega el proxy: si no, los
   // limites por IP cuentan a todos los visitantes como uno solo.

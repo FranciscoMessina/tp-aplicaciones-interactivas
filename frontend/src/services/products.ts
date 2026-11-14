@@ -1,7 +1,7 @@
 import type { Product, ProductInput, ProductPage } from '../types/product'
 import { apiRequest } from './api'
 
-// Vite reenvía /api al backend local en el puerto 8080.
+// La URL del backend sale de VITE_API_URL (ver services/api.ts).
 // No hacen falta credenciales MongoDB ni variables secretas en React.
 
 export interface ProductFilters {
@@ -28,7 +28,14 @@ function toQuery(filters: ProductFilters & { isActive?: boolean }) {
   })
   if (filters.search) params.set('search', filters.search)
   if (filters.category) params.set('category', filters.category)
-  for (const key of ['isActive', 'isFeatured', 'inStock', 'onSale', 'minPrice', 'maxPrice'] as const) {
+  for (const key of [
+    'isActive',
+    'isFeatured',
+    'inStock',
+    'onSale',
+    'minPrice',
+    'maxPrice',
+  ] as const) {
     if (filters[key] !== undefined) params.set(key, String(filters[key]))
   }
   return params
@@ -52,7 +59,11 @@ export function recordProductView(id: string) {
 // ---- Administración (requiere token de administrador) ----
 
 /** Lista paginada que incluye los productos desactivados. */
-export function fetchAdminProducts(token: string, filters: ProductFilters & { isActive?: boolean }, signal?: AbortSignal) {
+export function fetchAdminProducts(
+  token: string,
+  filters: ProductFilters & { isActive?: boolean },
+  signal?: AbortSignal,
+) {
   const params = toQuery(filters)
   params.set('includeInactive', 'true')
   return apiRequest<ProductPage>(`/api/products?${params}`, { token, signal })
@@ -69,4 +80,3 @@ export function updateProduct(token: string, id: string, changes: Partial<Produc
 export function deleteProduct(token: string, id: string) {
   return apiRequest<void>(`/api/products/${id}`, { method: 'DELETE', token })
 }
-

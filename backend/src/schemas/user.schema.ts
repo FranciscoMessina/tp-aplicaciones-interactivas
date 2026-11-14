@@ -13,35 +13,38 @@ const passwordSchema = z
     message: "Es demasiado larga: usá hasta 72 caracteres sin tildes ni emojis",
   });
 
-export const createUserSchema = z.object({
-  fullName: z.string().trim().min(1),
+// Una contraseña que solo se compara con la guardada (login, contraseña
+// actual): el tope es solo para no procesar textos enormes.
+const enteredPasswordSchema = z.string().min(1).max(200);
+
+const userFields = {
+  fullName: z.string().trim().min(1).max(120),
   email: emailSchema,
-  phone: z.string().trim().min(1),
-});
+  phone: z.string().trim().min(1).max(40),
+};
+
+export const createUserSchema = z.object(userFields);
 
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1),
+  password: enteredPasswordSchema,
 });
 
 export const updateProfileSchema = z
-  .object({
-    fullName: z.string().trim().min(1).optional(),
-    email: emailSchema.optional(),
-    phone: z.string().trim().min(1).optional(),
-  })
+  .object(userFields)
+  .partial()
   .refine((value) => Object.keys(value).length > 0, {
     message: "Enviá al menos un campo para modificar",
   });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1),
+  currentPassword: enteredPasswordSchema,
   newPassword: passwordSchema,
 });
 
 export const forgotPasswordSchema = z.object({ email: emailSchema });
 
 export const resetPasswordSchema = z.object({
-  token: z.string().trim().min(1),
+  token: z.string().trim().min(1).max(200),
   password: passwordSchema,
 });

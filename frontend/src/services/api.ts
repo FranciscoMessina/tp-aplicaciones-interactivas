@@ -1,3 +1,7 @@
+// Los requests son cross-origin: el backend solo acepta el origen del frontend (CORS)
+// y la autenticación va por el header Authorization, sin cookies.
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+
 export class ApiRequestError extends Error {
   readonly status: number
   readonly fields?: Record<string, string[]>
@@ -52,10 +56,13 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   let response: Response
   try {
-    response = await fetch(path, { method, headers, body: payload, signal })
+    response = await fetch(`${API_URL}${path}`, { method, headers, body: payload, signal })
   } catch (error) {
     if (signal?.aborted) throw error
-    throw new ApiRequestError('No se pudo conectar con el servidor. Revisá que el backend esté iniciado.', 0)
+    throw new ApiRequestError(
+      'No se pudo conectar con el servidor. Revisá que el backend esté iniciado.',
+      0,
+    )
   }
 
   if (response.status === 204) return undefined as T
@@ -81,6 +88,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
 /** Mensaje para mostrar al usuario: el primer error de campo o el general. */
 export function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiRequestError) return Object.values(error.fields ?? {})[0]?.[0] ?? error.message
+  if (error instanceof ApiRequestError)
+    return Object.values(error.fields ?? {})[0]?.[0] ?? error.message
   return 'Ocurrió un error inesperado. Intentá de nuevo.'
 }

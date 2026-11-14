@@ -158,7 +158,7 @@ export async function updateEnquiryStatus(
 
   throw new ApplicationError(
     ApplicationErrorKind.Conflict,
-    `No se puede cambiar una consulta de ${enquiry.status} a ${nextStatus}`,
+    `Una consulta ${statusLabels[enquiry.status]} no se puede marcar como ${statusLabels[nextStatus]}`,
   );
 }
 
@@ -182,4 +182,11 @@ const allowedTransitions: Record<EnquiryStatusValue, EnquiryStatusValue[]> = {
   [EnquiryStatus.Pending]: [EnquiryStatus.Read, EnquiryStatus.Resolved],
   [EnquiryStatus.Read]: [EnquiryStatus.Pending, EnquiryStatus.Resolved],
   [EnquiryStatus.Resolved]: [EnquiryStatus.Pending],
+};
+
+// Para los mensajes de error: los valores del enum son internos de la API.
+const statusLabels: Record<EnquiryStatusValue, string> = {
+  [EnquiryStatus.Pending]: "pendiente",
+  [EnquiryStatus.Read]: "leída",
+  [EnquiryStatus.Resolved]: "respondida",
 };

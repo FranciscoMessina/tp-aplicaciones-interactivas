@@ -63,24 +63,34 @@ function toApplicationError(error: unknown): ApplicationError {
     return error;
   }
 
-  // `express.json()` tira este error cuando el cuerpo no es un JSON valido.
-  if (
-    error instanceof SyntaxError &&
-    "type" in error &&
-    error.type === "entity.parse.failed"
-  ) {
+  // Errores de `express.json()`: el cuerpo no es un JSON valido o supera el
+  // tamaño maximo (100 KB por defecto).
+  if (isBodyParserError(error, "entity.parse.failed")) {
     return new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      "El cuerpo del request no es un JSON válido",
+      "Los datos enviados no son un JSON válido",
     );
   }
 
-  // Validaciones del modelo de Mongoose que no cubrio el schema de Zod.
+  if (isBodyParserError(error, "entity.too.large")) {
+    return new ApplicationError(
+      ApplicationErrorKind.InvalidInput,
+      "Los datos enviados superan el tamaño permitido",
+    );
+  }
+
+  // Validaciones del modelo de Mongoose que no cubrio el schema de Zod. El
+  // mensaje de Mongoose esta en ingles y nombra el campo interno, asi que no
+  // se reenvia: solo se distingue si falta el dato o si es invalido.
   if (error instanceof mongoose.Error.ValidationError) {
     const fields: FieldErrors = {};
 
     for (const [field, fieldError] of Object.entries(error.errors)) {
-      fields[field] = [fieldError.message];
+      fields[field] = [
+        fieldError.kind === "required"
+          ? "Este campo es obligatorio"
+          : "El valor no es válido",
+      ];
     }
 
     return new ApplicationError(
@@ -91,11 +101,12 @@ function toApplicationError(error: unknown): ApplicationError {
   }
 
   // Un valor que Mongoose no pudo convertir, por ejemplo un id mal formado.
+  // Los ids de la URL y del cuerpo ya los valida Zod, asi que si llega aca es
+  // un caso no previsto: no se nombra el campo, que puede ser interno.
   if (error instanceof mongoose.Error.CastError) {
     return new ApplicationError(
       ApplicationErrorKind.InvalidInput,
-      `Valor inválido para ${error.path}`,
-      { [error.path]: ["Valor inválido"] },
+      "Algún dato enviado tiene un formato inválido",
     );
   }
 
@@ -104,7 +115,7 @@ function toApplicationError(error: unknown): ApplicationError {
   if (duplicatedFields) {
     return new ApplicationError(
       ApplicationErrorKind.Conflict,
-      "El recurso ya existe",
+      "Hay datos que ya están en uso",
       duplicatedFields,
     );
   }
@@ -112,6 +123,15 @@ function toApplicationError(error: unknown): ApplicationError {
   return new ApplicationError(
     ApplicationErrorKind.Unexpected,
     "Ocurrió un error inesperado en el servidor",
+  );
+}
+
+function isBodyParserError(error: unknown, type: string): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "type" in error &&
+    error.type === type
   );
 }
 

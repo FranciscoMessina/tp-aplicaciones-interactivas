@@ -14,16 +14,14 @@ http:
     data: |-
       {
         // Completar con el token del enlace que llega por mail (o que muestra la consola)
-        "token": "843b2efec9479d10496e9c32fd7bae8590e3308f02fee7ff787c6e72048bb5d6",
+        "token": "PEGAR_TOKEN_DEL_MAIL",
         "password": "Admin123!"
       }
+  auth:
+    type: none
 
 settings:
   encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-  forwardAuthorizationHeader: true
 
 docs: |-
   Cambia la contraseña usando el token de recuperación. El body deja la contraseña del administrador del seed como estaba. También activa las cuentas creadas por otro administrador, que reciben el mismo tipo de token en la invitación. Cierra las sesiones abiertas de la cuenta.

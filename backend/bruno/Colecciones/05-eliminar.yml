@@ -8,7 +8,7 @@ http:
   url: "{{baseUrl}}/api/collections/:id"
   params:
     - name: id
-      value: 6ab6f7514bd9c966c17cf5c2
+      value: ""
       type: path
       description: Id de la colección
   auth: inherit

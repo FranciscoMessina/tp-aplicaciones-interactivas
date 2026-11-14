@@ -42,17 +42,23 @@ export default function AdminProductsPage() {
   const page = Math.max(1, Number(params.get('pagina')) || 1)
 
   // Cambia filtros en la URL; cualquier filtro nuevo vuelve a la primera página.
-  const updateFilters = useCallback((changes: Record<string, string>, replace = false) => {
-    setParams((current) => {
-      const next = new URLSearchParams(current)
-      for (const [key, value] of Object.entries(changes)) {
-        if (value) next.set(key, value)
-        else next.delete(key)
-      }
-      if (!('pagina' in changes)) next.delete('pagina')
-      return next
-    }, { replace })
-  }, [setParams])
+  const updateFilters = useCallback(
+    (changes: Record<string, string>, replace = false) => {
+      setParams(
+        (current) => {
+          const next = new URLSearchParams(current)
+          for (const [key, value] of Object.entries(changes)) {
+            if (value) next.set(key, value)
+            else next.delete(key)
+          }
+          if (!('pagina' in changes)) next.delete('pagina')
+          return next
+        },
+        { replace },
+      )
+    },
+    [setParams],
+  )
 
   const setPage = (next: number) => updateFilters({ pagina: next > 1 ? String(next) : '' })
 
@@ -89,7 +95,9 @@ export default function AdminProductsPage() {
         setCategories(result)
         setCategoriesState('ready')
       })
-      .catch(() => { if (!controller.signal.aborted) setCategoriesState('error') })
+      .catch(() => {
+        if (!controller.signal.aborted) setCategoriesState('error')
+      })
     return () => controller.abort()
   }, [categoriesReload])
 
@@ -101,7 +109,7 @@ export default function AdminProductsPage() {
   // Cada combinación de filtros es un pedido distinto: mientras el último pedido que
   // terminó no sea el actual, el listado está cargando.
   const requestKey = JSON.stringify([search, category, status, stock, featuredOnly, page, reload])
-  const [finished, setFinished] = useState<{ key: string, error: string }>({ key: '', error: '' })
+  const [finished, setFinished] = useState<{ key: string; error: string }>({ key: '', error: '' })
   const loading = finished.key !== requestKey
   const loadError = loading ? '' : finished.error
 
@@ -110,6 +118,8 @@ export default function AdminProductsPage() {
     const controller = new AbortController()
     const filters = {
       search,
+      // Con texto se ordena por relevancia (el backend la rechaza sin búsqueda).
+      sortBy: search ? ('relevance' as const) : undefined,
       category,
       isActive: statusValues[status],
       inStock: stockValues[stock],
@@ -132,12 +142,19 @@ export default function AdminProductsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const hasFilters = Boolean(search || category || status || stock || featuredOnly)
 
-  function refresh() { setReload((value) => value + 1) }
+  function refresh() {
+    setReload((value) => value + 1)
+  }
 
   function handleSaved(product: Product, wasEdit: boolean) {
     setCreating(false)
     setEditing(null)
-    showNotice({ kind: 'success', text: wasEdit ? `Se guardaron los cambios de “${product.name}”.` : `Se creó “${product.name}”.` })
+    showNotice({
+      kind: 'success',
+      text: wasEdit
+        ? `Se guardaron los cambios de “${product.name}”.`
+        : `Se creó “${product.name}”.`,
+    })
     // Al crear, volvemos a la primera página: el nuevo producto es el más reciente.
     if (!wasEdit && page !== 1) setPage(1)
     else refresh()
@@ -147,8 +164,15 @@ export default function AdminProductsPage() {
     setBusyId(product.id)
     try {
       const updated = await updateProduct(token, product.id, { isActive: !product.isActive })
-      setProducts((current) => current.map((item) => item.id === product.id ? { ...item, isActive: updated.isActive } : item))
-      showNotice({ kind: 'success', text: `“${product.name}” ${updated.isActive ? 'se publicó' : 'se ocultó y ya no se ve en el sitio'}.` })
+      setProducts((current) =>
+        current.map((item) =>
+          item.id === product.id ? { ...item, isActive: updated.isActive } : item,
+        ),
+      )
+      showNotice({
+        kind: 'success',
+        text: `“${product.name}” ${updated.isActive ? 'se publicó' : 'se ocultó y ya no se ve en el sitio'}.`,
+      })
     } catch (error) {
       showNotice({ kind: 'error', text: errorMessage(error) })
     } finally {
@@ -186,15 +210,20 @@ export default function AdminProductsPage() {
           <h1>Productos</h1>
           <p>Creá, editá, publicá u ocultá los productos del catálogo.</p>
         </div>
-        <button type="button" className="admin-primary" onClick={() => setCreating(true)}><Icon name="plus" /> Nuevo producto</button>
+        <button type="button" className="admin-primary" onClick={() => setCreating(true)}>
+          <Icon name="plus" /> Nuevo producto
+        </button>
       </div>
 
       <AdminNotice notice={notice} onClose={clearNotice} />
 
       {categoriesState === 'error' && (
         <p className="admin-alert is-error" role="alert">
-          No pudimos cargar las categorías: el filtro por categoría y la carga de productos no van a funcionar.{' '}
-          <button type="button" className="admin-text-link" onClick={retryCategories}>Reintentar</button>
+          No pudimos cargar las categorías: el filtro por categoría y la carga de productos no van a
+          funcionar.{' '}
+          <button type="button" className="admin-text-link" onClick={retryCategories}>
+            Reintentar
+          </button>
         </p>
       )}
 
@@ -202,53 +231,118 @@ export default function AdminProductsPage() {
         <div className="admin-toolbar">
           <div className="admin-search">
             <Icon name="search" />
-            <label htmlFor="admin-search" className="visually-hidden">Buscar productos</label>
-            <input id="admin-search" type="search" placeholder="Buscar por nombre o descripción" value={searchInput} onChange={(event) => setSearchInput(event.target.value)} />
+            <label htmlFor="admin-search" className="visually-hidden">
+              Buscar productos
+            </label>
+            <input
+              id="admin-search"
+              type="search"
+              maxLength={100}
+              placeholder="Buscar por nombre o descripción"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+            />
           </div>
-          <label htmlFor="admin-category" className="visually-hidden">Categoría</label>
-          <select id="admin-category" className="admin-select" value={category} onChange={(event) => updateFilters({ categoria: event.target.value })}>
+          <label htmlFor="admin-category" className="visually-hidden">
+            Categoría
+          </label>
+          <select
+            id="admin-category"
+            className="admin-select"
+            value={category}
+            onChange={(event) => updateFilters({ categoria: event.target.value })}
+          >
             <option value="">Todas las categorías</option>
-            {categories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            {categories.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
           </select>
-          <label htmlFor="admin-status" className="visually-hidden">Estado</label>
-          <select id="admin-status" className="admin-select" value={status} onChange={(event) => updateFilters({ estado: event.target.value })}>
+          <label htmlFor="admin-status" className="visually-hidden">
+            Estado
+          </label>
+          <select
+            id="admin-status"
+            className="admin-select"
+            value={status}
+            onChange={(event) => updateFilters({ estado: event.target.value })}
+          >
             <option value="">Todos los estados</option>
             <option value="publicado">Publicados</option>
             <option value="oculto">Ocultos</option>
           </select>
-          <label htmlFor="admin-stock" className="visually-hidden">Stock</label>
-          <select id="admin-stock" className="admin-select" value={stock} onChange={(event) => updateFilters({ stock: event.target.value })}>
+          <label htmlFor="admin-stock" className="visually-hidden">
+            Stock
+          </label>
+          <select
+            id="admin-stock"
+            className="admin-select"
+            value={stock}
+            onChange={(event) => updateFilters({ stock: event.target.value })}
+          >
             <option value="">Con y sin stock</option>
             <option value="con-stock">Con stock</option>
             <option value="sin-stock">Sin stock</option>
           </select>
           <label className="admin-check admin-toolbar-check">
-            <input type="checkbox" checked={featuredOnly} onChange={(event) => updateFilters({ destacados: event.target.checked ? 'si' : '' })} />
+            <input
+              type="checkbox"
+              checked={featuredOnly}
+              onChange={(event) => updateFilters({ destacados: event.target.checked ? 'si' : '' })}
+            />
             Solo destacados
           </label>
-          {hasFilters && <button type="button" className="admin-text-link" onClick={clearFilters}>Limpiar filtros</button>}
+          {hasFilters && (
+            <button type="button" className="admin-text-link" onClick={clearFilters}>
+              Limpiar filtros
+            </button>
+          )}
           <p className="admin-count" aria-live="polite">
-            {loading ? 'Cargando…' : `${total} ${total === 1 ? 'producto' : 'productos'}${hasFilters ? (total === 1 ? ' encontrado' : ' encontrados') : ''}`}
+            {loading
+              ? 'Cargando…'
+              : `${total} ${total === 1 ? 'producto' : 'productos'}${hasFilters ? (total === 1 ? ' encontrado' : ' encontrados') : ''}`}
           </p>
         </div>
 
         {loadError ? (
-          <AdminEmpty icon="alert" title="No pudimos cargar los productos" isError action={<button type="button" className="admin-secondary" onClick={refresh}>Reintentar</button>}>
+          <AdminEmpty
+            icon="alert"
+            title="No pudimos cargar los productos"
+            isError
+            action={
+              <button type="button" className="admin-secondary" onClick={refresh}>
+                Reintentar
+              </button>
+            }
+          >
             {loadError}
           </AdminEmpty>
         ) : loading && products.length === 0 ? (
           <div className="admin-skeleton is-rows" role="status" aria-label="Cargando productos">
-            {Array.from({ length: 6 }, (_, index) => <div key={index} />)}
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={index} />
+            ))}
           </div>
         ) : products.length === 0 ? (
           <AdminEmpty
             icon="products"
             title={hasFilters ? 'No encontramos productos' : 'Todavía no hay productos'}
-            action={hasFilters
-              ? <button type="button" className="admin-secondary" onClick={clearFilters}>Limpiar filtros</button>
-              : <button type="button" className="admin-primary" onClick={() => setCreating(true)}><Icon name="plus" /> Nuevo producto</button>}
+            action={
+              hasFilters ? (
+                <button type="button" className="admin-secondary" onClick={clearFilters}>
+                  Limpiar filtros
+                </button>
+              ) : (
+                <button type="button" className="admin-primary" onClick={() => setCreating(true)}>
+                  <Icon name="plus" /> Nuevo producto
+                </button>
+              )
+            }
           >
-            {hasFilters ? 'Probá con otra búsqueda o categoría.' : 'Cargá el primero para que aparezca en el catálogo.'}
+            {hasFilters
+              ? 'Probá con otra búsqueda o categoría.'
+              : 'Cargá el primero para que aparezca en el catálogo.'}
           </AdminEmpty>
         ) : (
           <div className={`admin-table-wrap${loading ? ' is-loading' : ''}`}>
@@ -257,10 +351,16 @@ export default function AdminProductsPage() {
                 <tr>
                   <th scope="col">Producto</th>
                   <th scope="col">Categoría</th>
-                  <th scope="col" className="is-numeric">Precio</th>
-                  <th scope="col" className="is-numeric">Stock</th>
+                  <th scope="col" className="is-numeric">
+                    Precio
+                  </th>
+                  <th scope="col" className="is-numeric">
+                    Stock
+                  </th>
                   <th scope="col">Estado</th>
-                  <th scope="col"><span className="visually-hidden">Acciones</span></th>
+                  <th scope="col">
+                    <span className="visually-hidden">Acciones</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -268,9 +368,13 @@ export default function AdminProductsPage() {
                   <tr key={product.id} className={product.isActive ? undefined : 'is-inactive'}>
                     <td data-label="Producto">
                       <div className="admin-product-cell">
-                        {product.images?.[0]
-                          ? <img src={product.images[0]} alt="" loading="lazy" />
-                          : <span className="admin-thumb-placeholder" aria-hidden="true"><Icon name="products" /></span>}
+                        {product.images?.[0] ? (
+                          <img src={product.images[0]} alt="" loading="lazy" />
+                        ) : (
+                          <span className="admin-thumb-placeholder" aria-hidden="true">
+                            <Icon name="products" />
+                          </span>
+                        )}
                         <div>
                           <strong>{product.name}</strong>
                           {(product.isFeatured || product.images.length > 1) && (
@@ -285,21 +389,46 @@ export default function AdminProductsPage() {
                     <td data-label="Categoría">{product.category?.name ?? 'Sin categoría'}</td>
                     <td data-label="Precio" className="is-numeric">
                       {formatPrice(product.finalPrice)}
-                      {product.promotion
-                        ? <> <span className="admin-tag" title={`Por la promoción ${product.promotion.title}`}>-{product.promotion.discountPercent}% promo</span></>
-                        : product.discountPercent > 0 && <> <span className="admin-tag">-{product.discountPercent}%</span></>}
+                      {product.promotion ? (
+                        <>
+                          {' '}
+                          <span
+                            className="admin-tag"
+                            title={`Por la promoción ${product.promotion.title}`}
+                          >
+                            -{product.promotion.discountPercent}% promo
+                          </span>
+                        </>
+                      ) : (
+                        product.discountPercent > 0 && (
+                          <>
+                            {' '}
+                            <span className="admin-tag">-{product.discountPercent}%</span>
+                          </>
+                        )
+                      )}
                     </td>
                     <td data-label="Stock" className="is-numeric">
-                      {product.availableQuantity > 0
-                        ? product.availableQuantity
-                        : <span className="admin-out-of-stock">Sin stock</span>}
+                      {product.availableQuantity > 0 ? (
+                        product.availableQuantity
+                      ) : (
+                        <span className="admin-out-of-stock">Sin stock</span>
+                      )}
                     </td>
                     <td data-label="Estado">
-                      <span className={`admin-status ${product.isActive ? 'is-on' : 'is-off'}`}>{product.isActive ? 'Publicado' : 'Oculto'}</span>
+                      <span className={`admin-status ${product.isActive ? 'is-on' : 'is-off'}`}>
+                        {product.isActive ? 'Publicado' : 'Oculto'}
+                      </span>
                     </td>
                     <td className="admin-actions-cell">
                       <div className="admin-row-actions">
-                        <button type="button" className="admin-icon-button" aria-label={`Editar ${product.name}`} title="Editar" onClick={() => setEditing(product)}>
+                        <button
+                          type="button"
+                          className="admin-icon-button"
+                          aria-label={`Editar ${product.name}`}
+                          title="Editar"
+                          onClick={() => setEditing(product)}
+                        >
                           <Icon name="edit" />
                         </button>
                         <button
@@ -313,7 +442,13 @@ export default function AdminProductsPage() {
                         >
                           <Icon name={product.isActive ? 'hide' : 'show'} />
                         </button>
-                        <button type="button" className="admin-icon-button is-danger" aria-label={`Eliminar ${product.name}`} title="Eliminar" onClick={() => setDeleting(product)}>
+                        <button
+                          type="button"
+                          className="admin-icon-button is-danger"
+                          aria-label={`Eliminar ${product.name}`}
+                          title="Eliminar"
+                          onClick={() => setDeleting(product)}
+                        >
                           <Icon name="delete" />
                         </button>
                       </div>
@@ -327,9 +462,25 @@ export default function AdminProductsPage() {
 
         {!loadError && totalPages > 1 && (
           <nav className="admin-pagination" aria-label="Paginación de productos">
-            <span>Página {page} de {totalPages}</span>
-            <button type="button" className="admin-secondary" disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-            <button type="button" className="admin-secondary" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Siguiente</button>
+            <span>
+              Página {page} de {totalPages}
+            </span>
+            <button
+              type="button"
+              className="admin-secondary"
+              disabled={page === 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              className="admin-secondary"
+              disabled={page === totalPages}
+              onClick={() => setPage(page + 1)}
+            >
+              Siguiente
+            </button>
           </nav>
         )}
       </section>
@@ -341,20 +492,40 @@ export default function AdminProductsPage() {
           categoriesState={categoriesState}
           onRetryCategories={retryCategories}
           product={editing}
-          onClose={() => { setCreating(false); setEditing(null) }}
+          onClose={() => {
+            setCreating(false)
+            setEditing(null)
+          }}
           onSaved={handleSaved}
         />
       )}
 
       {deleting && (
-        <Modal title="Eliminar producto" onClose={() => { if (!deleteBusy) setDeleting(null) }}>
+        <Modal
+          title="Eliminar producto"
+          onClose={() => {
+            if (!deleteBusy) setDeleting(null)
+          }}
+        >
           <p className="admin-confirm-text">
-            ¿Seguro que querés eliminar <strong>{deleting.name}</strong>? Esta acción no se puede deshacer.
-            Si solo querés que deje de verse en el sitio, usá <em>Ocultar</em>.
+            ¿Seguro que querés eliminar <strong>{deleting.name}</strong>? Esta acción no se puede
+            deshacer. Si solo querés que deje de verse en el sitio, usá <em>Ocultar</em>.
           </p>
           <div className="admin-form-actions">
-            <button type="button" className="admin-secondary" disabled={deleteBusy} onClick={() => setDeleting(null)}>Cancelar</button>
-            <button type="button" className="admin-danger" disabled={deleteBusy} onClick={() => void confirmDelete()}>
+            <button
+              type="button"
+              className="admin-secondary"
+              disabled={deleteBusy}
+              onClick={() => setDeleting(null)}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="admin-danger"
+              disabled={deleteBusy}
+              onClick={() => void confirmDelete()}
+            >
               {deleteBusy ? 'Eliminando...' : 'Sí, eliminar'}
             </button>
           </div>

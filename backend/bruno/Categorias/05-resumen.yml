@@ -1,0 +1,26 @@
+info:
+  name: Resumen de categorias
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/categories/summary"
+  auth:
+    type: none
+
+docs: |-
+  Resume cada categoría con la cantidad de productos activos, el precio más bajo de hoy (con las promociones aplicadas) y hasta 5 nombres de ejemplo. Solo aparecen las categorías con productos activos; vienen de la que más productos tiene a la que menos.
+
+  **Auth:** no requiere.
+
+  **Recibe**
+
+  Nada.
+
+  **Devuelve**
+
+  - `200` con un array de resúmenes (`id`, `name`, `productCount`, `minPrice` y `examples`).
+
+settings:
+  encodeUrl: true

@@ -9,14 +9,23 @@ import Icon from '../components/Icon'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/auth-context'
 import { getErrorMessage } from '../services/api'
-import { deleteEnquiry, fetchEnquiries, replyToEnquiry, updateEnquiryStatus } from '../services/enquiries'
+import {
+  deleteEnquiry,
+  fetchEnquiries,
+  replyToEnquiry,
+  updateEnquiryStatus,
+} from '../services/enquiries'
 import type { Enquiry, EnquiryStatus } from '../types/business'
 import { formatDate } from '../utils/format'
 
 const PAGE_SIZE = 20
 const MAX_REPLY = 5000
 
-const statusLabels: Record<EnquiryStatus, string> = { PENDING: 'Pendiente', READ: 'Leída', RESOLVED: 'Respondida' }
+const statusLabels: Record<EnquiryStatus, string> = {
+  PENDING: 'Pendiente',
+  READ: 'Leída',
+  RESOLVED: 'Respondida',
+}
 
 // Mismas transiciones que permite el backend: una consulta respondida solo puede volver a pendiente.
 const nextStatuses: Record<EnquiryStatus, EnquiryStatus[]> = {
@@ -40,7 +49,15 @@ const filters: { value: EnquiryStatus | ''; param: string; label: string }[] = [
 ]
 
 // Responde desde el panel: el backend le manda el correo al visitante y guarda la respuesta.
-function ReplyForm({ token, enquiry, onReplied }: { token: string; enquiry: Enquiry; onReplied: (updated: Enquiry) => void }) {
+function ReplyForm({
+  token,
+  enquiry,
+  onReplied,
+}: {
+  token: string
+  enquiry: Enquiry
+  onReplied: (updated: Enquiry) => void
+}) {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
@@ -70,7 +87,11 @@ function ReplyForm({ token, enquiry, onReplied }: { token: string; enquiry: Enqu
   }
 
   return (
-    <form className="admin-form admin-inbox-reply" onSubmit={(event) => void submit(event)} noValidate>
+    <form
+      className="admin-form admin-inbox-reply"
+      onSubmit={(event) => void submit(event)}
+      noValidate
+    >
       <div className={error ? 'admin-field has-error' : 'admin-field'}>
         <label htmlFor="enquiry-reply">Responder a {enquiry.name}</label>
         <textarea
@@ -83,9 +104,16 @@ function ReplyForm({ token, enquiry, onReplied }: { token: string; enquiry: Enqu
           aria-invalid={Boolean(error)}
           aria-describedby={error ? 'enquiry-reply-error' : 'enquiry-reply-hint'}
         />
-        {error
-          ? <span id="enquiry-reply-error" className="admin-error">{error}</span>
-          : <span id="enquiry-reply-hint" className="admin-hint">Le llega por correo a {enquiry.email}; si contesta, el mail te llega a vos. La consulta queda como respondida.</span>}
+        {error ? (
+          <span id="enquiry-reply-error" className="admin-error">
+            {error}
+          </span>
+        ) : (
+          <span id="enquiry-reply-hint" className="admin-hint">
+            Le llega por correo a {enquiry.email}; si contesta, el mail te llega a vos. La consulta
+            queda como respondida.
+          </span>
+        )}
       </div>
       <div className="admin-form-actions">
         <button type="submit" className="admin-primary" disabled={sending}>
@@ -123,32 +151,45 @@ export default function AdminEnquiriesPage() {
   const selected = enquiries.find((item) => item.id === selectedId) ?? null
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
-  const setPage = useCallback((next: number) => {
-    setParams((current) => {
-      const nextParams = new URLSearchParams(current)
-      if (next > 1) nextParams.set('pagina', String(next))
-      else nextParams.delete('pagina')
-      nextParams.delete('consulta')
-      return nextParams
-    })
-  }, [setParams])
+  const setPage = useCallback(
+    (next: number) => {
+      setParams((current) => {
+        const nextParams = new URLSearchParams(current)
+        if (next > 1) nextParams.set('pagina', String(next))
+        else nextParams.delete('pagina')
+        nextParams.delete('consulta')
+        return nextParams
+      })
+    },
+    [setParams],
+  )
 
   useEffect(() => {
     if (!token) return
     const controller = new AbortController()
-    fetchEnquiries(token, { status: status || undefined, page, pageSize: PAGE_SIZE }, controller.signal)
+    fetchEnquiries(
+      token,
+      { status: status || undefined, page, pageSize: PAGE_SIZE },
+      controller.signal,
+    )
       .then((result) => {
         // La página quedó vacía (se eliminó o cambió de estado lo último que tenía): vamos a la anterior.
         if (result.items.length === 0 && page > 1) return setPage(page - 1)
         setEnquiries(result.items)
         setTotal(result.total)
       })
-      .catch((error: unknown) => { if (!controller.signal.aborted) setLoadError(getErrorMessage(error)) })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) setLoadError(getErrorMessage(error))
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
     return () => controller.abort()
   }, [token, status, page, reload, setPage])
 
-  useEffect(() => { detailHeading.current?.focus() }, [selectedId])
+  useEffect(() => {
+    detailHeading.current?.focus()
+  }, [selectedId])
 
   function reloadWith(nextStatus: EnquiryStatus | '') {
     setLoading(true)
@@ -172,7 +213,7 @@ export default function AdminEnquiriesPage() {
   // se vuelve a pedir la página para completarla con la siguiente.
   function applyUpdate(updated: Enquiry) {
     if (status && status !== updated.status) setReload((value) => value + 1)
-    else setEnquiries((current) => current.map((item) => item.id === updated.id ? updated : item))
+    else setEnquiries((current) => current.map((item) => (item.id === updated.id ? updated : item)))
     refreshPending()
   }
 
@@ -181,7 +222,10 @@ export default function AdminEnquiriesPage() {
     try {
       const updated = await updateEnquiryStatus(token, enquiry.id, next)
       applyUpdate(updated)
-      setNotice({ kind: 'success', text: `La consulta de ${enquiry.name} quedó como ${statusLabels[updated.status].toLowerCase()}.` })
+      setNotice({
+        kind: 'success',
+        text: `La consulta de ${enquiry.name} quedó como ${statusLabels[updated.status].toLowerCase()}.`,
+      })
     } catch (error) {
       setNotice({ kind: 'error', text: getErrorMessage(error) })
     } finally {
@@ -228,7 +272,12 @@ export default function AdminEnquiriesPage() {
           <div className="admin-inbox-toolbar">
             <div className="admin-segmented" role="group" aria-label="Filtrar por estado">
               {filters.map((filter) => (
-                <button key={filter.label} type="button" aria-pressed={status === filter.value} onClick={() => reloadWith(filter.value)}>
+                <button
+                  key={filter.label}
+                  type="button"
+                  aria-pressed={status === filter.value}
+                  onClick={() => reloadWith(filter.value)}
+                >
                   {filter.label}
                 </button>
               ))}
@@ -239,15 +288,33 @@ export default function AdminEnquiriesPage() {
           </div>
 
           {loadError ? (
-            <AdminEmpty icon="alert" title="No pudimos cargar las consultas" isError action={<button type="button" className="admin-secondary" onClick={() => reloadWith(status)}>Reintentar</button>}>
+            <AdminEmpty
+              icon="alert"
+              title="No pudimos cargar las consultas"
+              isError
+              action={
+                <button
+                  type="button"
+                  className="admin-secondary"
+                  onClick={() => reloadWith(status)}
+                >
+                  Reintentar
+                </button>
+              }
+            >
               {loadError}
             </AdminEmpty>
           ) : loading && enquiries.length === 0 ? (
             <div className="admin-skeleton is-rows" role="status" aria-label="Cargando consultas">
-              {Array.from({ length: 5 }, (_, index) => <div key={index} />)}
+              {Array.from({ length: 5 }, (_, index) => (
+                <div key={index} />
+              ))}
             </div>
           ) : enquiries.length === 0 ? (
-            <AdminEmpty icon="enquiries" title={`No hay consultas${status ? ` ${filterLabel}` : ''}`}>
+            <AdminEmpty
+              icon="enquiries"
+              title={`No hay consultas${status ? ` ${filterLabel}` : ''}`}
+            >
               Las consultas que lleguen desde la página de contacto van a aparecer acá.
             </AdminEmpty>
           ) : (
@@ -266,7 +333,9 @@ export default function AdminEnquiriesPage() {
                     </span>
                     <span className="admin-inbox-item-subject">{enquiry.subject}</span>
                     <span className="admin-inbox-item-preview">{enquiry.message}</span>
-                    <span className={`admin-enquiry-status is-${enquiry.status.toLowerCase()}`}>{statusLabels[enquiry.status]}</span>
+                    <span className={`admin-enquiry-status is-${enquiry.status.toLowerCase()}`}>
+                      {statusLabels[enquiry.status]}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -275,9 +344,25 @@ export default function AdminEnquiriesPage() {
 
           {!loadError && totalPages > 1 && (
             <nav className="admin-pagination" aria-label="Paginación de consultas">
-              <span>Página {page} de {totalPages}</span>
-              <button type="button" className="admin-secondary" disabled={page === 1 || loading} onClick={() => setPage(page - 1)}>Anterior</button>
-              <button type="button" className="admin-secondary" disabled={page >= totalPages || loading} onClick={() => setPage(page + 1)}>Siguiente</button>
+              <span>
+                Página {page} de {totalPages}
+              </span>
+              <button
+                type="button"
+                className="admin-secondary"
+                disabled={page === 1 || loading}
+                onClick={() => setPage(page - 1)}
+              >
+                Anterior
+              </button>
+              <button
+                type="button"
+                className="admin-secondary"
+                disabled={page >= totalPages || loading}
+                onClick={() => setPage(page + 1)}
+              >
+                Siguiente
+              </button>
             </nav>
           )}
         </section>
@@ -285,18 +370,46 @@ export default function AdminEnquiriesPage() {
         <section className="admin-panel admin-inbox-detail" aria-label="Consulta seleccionada">
           {selected ? (
             <article>
-              <button type="button" className="admin-text-link admin-inbox-back" onClick={() => setSelectedId(null)}>
+              <button
+                type="button"
+                className="admin-text-link admin-inbox-back"
+                onClick={() => setSelectedId(null)}
+              >
                 <Icon name="back" /> Volver a la lista
               </button>
               <header className="admin-inbox-detail-header">
-                <h2 ref={detailHeading} tabIndex={-1}>{selected.subject}</h2>
-                <span className={`admin-enquiry-status is-${selected.status.toLowerCase()}`}>{statusLabels[selected.status]}</span>
+                <h2 ref={detailHeading} tabIndex={-1}>
+                  {selected.subject}
+                </h2>
+                <span className={`admin-enquiry-status is-${selected.status.toLowerCase()}`}>
+                  {statusLabels[selected.status]}
+                </span>
               </header>
               <dl className="admin-inbox-meta">
-                <div><dt>De</dt><dd>{selected.name}</dd></div>
-                <div><dt>Correo</dt><dd><a href={`mailto:${selected.email}`}>{selected.email}</a></dd></div>
-                {selected.phone && <div><dt>Teléfono</dt><dd><a href={`tel:${selected.phone.replace(/[^\d+]/g, '')}`}>{selected.phone}</a></dd></div>}
-                <div><dt>Recibida</dt><dd><time dateTime={selected.createdAt}>{formatDate(selected.createdAt)}</time></dd></div>
+                <div>
+                  <dt>De</dt>
+                  <dd>{selected.name}</dd>
+                </div>
+                <div>
+                  <dt>Correo</dt>
+                  <dd>
+                    <a href={`mailto:${selected.email}`}>{selected.email}</a>
+                  </dd>
+                </div>
+                {selected.phone && (
+                  <div>
+                    <dt>Teléfono</dt>
+                    <dd>
+                      <a href={`tel:${selected.phone.replace(/[^\d+]/g, '')}`}>{selected.phone}</a>
+                    </dd>
+                  </div>
+                )}
+                <div>
+                  <dt>Recibida</dt>
+                  <dd>
+                    <time dateTime={selected.createdAt}>{formatDate(selected.createdAt)}</time>
+                  </dd>
+                </div>
               </dl>
               <p className="admin-inbox-message">{selected.message}</p>
 
@@ -305,7 +418,8 @@ export default function AdminEnquiriesPage() {
                   {selected.replies.map((reply) => (
                     <li key={reply.id}>
                       <p className="admin-inbox-reply-meta">
-                        <strong>{reply.authorName}</strong> respondió el <time dateTime={reply.createdAt}>{formatDate(reply.createdAt)}</time>
+                        <strong>{reply.authorName}</strong> respondió el{' '}
+                        <time dateTime={reply.createdAt}>{formatDate(reply.createdAt)}</time>
                       </p>
                       <p className="admin-inbox-message">{reply.message}</p>
                     </li>
@@ -314,15 +428,32 @@ export default function AdminEnquiriesPage() {
               )}
 
               {/* La key reinicia el borrador al cambiar de consulta. */}
-              <ReplyForm key={selected.id} token={token} enquiry={selected} onReplied={handleReplied} />
+              <ReplyForm
+                key={selected.id}
+                token={token}
+                enquiry={selected}
+                onReplied={handleReplied}
+              />
 
               <div className="admin-inbox-actions">
                 {nextStatuses[selected.status].map((next) => (
-                  <button key={next} type="button" className="admin-secondary" disabled={busyId === selected.id} onClick={() => void changeStatus(selected, next)}>
+                  <button
+                    key={next}
+                    type="button"
+                    className="admin-secondary"
+                    disabled={busyId === selected.id}
+                    onClick={() => void changeStatus(selected, next)}
+                  >
                     {actionLabels[next]}
                   </button>
                 ))}
-                <button type="button" className="admin-icon-button is-danger" aria-label="Eliminar consulta" title="Eliminar" onClick={() => setDeleting(selected)}>
+                <button
+                  type="button"
+                  className="admin-icon-button is-danger"
+                  aria-label="Eliminar consulta"
+                  title="Eliminar"
+                  onClick={() => setDeleting(selected)}
+                >
                   <Icon name="delete" />
                 </button>
               </div>
@@ -337,13 +468,31 @@ export default function AdminEnquiriesPage() {
       </div>
 
       {deleting && (
-        <Modal title="Eliminar consulta" onClose={() => { if (!deleteBusy) setDeleting(null) }}>
+        <Modal
+          title="Eliminar consulta"
+          onClose={() => {
+            if (!deleteBusy) setDeleting(null)
+          }}
+        >
           <p className="admin-confirm-text">
-            ¿Seguro que querés eliminar la consulta <strong>{deleting.subject}</strong> de {deleting.name}? Esta acción no se puede deshacer.
+            ¿Seguro que querés eliminar la consulta <strong>{deleting.subject}</strong> de{' '}
+            {deleting.name}? Esta acción no se puede deshacer.
           </p>
           <div className="admin-form-actions">
-            <button type="button" className="admin-secondary" disabled={deleteBusy} onClick={() => setDeleting(null)}>Cancelar</button>
-            <button type="button" className="admin-danger" disabled={deleteBusy} onClick={() => void confirmDelete()}>
+            <button
+              type="button"
+              className="admin-secondary"
+              disabled={deleteBusy}
+              onClick={() => setDeleting(null)}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="admin-danger"
+              disabled={deleteBusy}
+              onClick={() => void confirmDelete()}
+            >
               {deleteBusy ? 'Eliminando...' : 'Sí, eliminar'}
             </button>
           </div>

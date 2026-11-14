@@ -10,10 +10,20 @@ import { fetchBusinessInfo, saveBusinessInfo } from '../services/businessInfo'
 import type { BusinessInfo, BusinessInfoInput } from '../types/business'
 
 // Los textareas se guardan como texto (una línea por elemento) y se convierten a arrays al enviar.
-type FormState = Record<'name' | 'description' | 'address' | 'phone' | 'socialNetworks' | 'openingHours', string>
+type FormState = Record<
+  'name' | 'description' | 'address' | 'phone' | 'socialNetworks' | 'openingHours',
+  string
+>
 type Errors = Partial<Record<keyof FormState, string>>
 
-const FIELDS: (keyof FormState)[] = ['name', 'description', 'address', 'phone', 'socialNetworks', 'openingHours']
+const FIELDS: (keyof FormState)[] = [
+  'name',
+  'description',
+  'address',
+  'phone',
+  'socialNetworks',
+  'openingHours',
+]
 
 // Id de cada control, en el orden en que aparecen en pantalla.
 const FIELD_IDS: Record<keyof FormState, string> = {
@@ -24,6 +34,11 @@ const FIELD_IDS: Record<keyof FormState, string> = {
   openingHours: 'bi-hours',
   socialNetworks: 'bi-social',
 }
+// Topes que valida también el backend.
+const MAX_NETWORKS = 10
+const MAX_NETWORK_URL = 300
+const MAX_HOURS = 14
+const MAX_HOURS_LINE = 120
 const PHONE_PATTERN = /^[+\d\s()-]{6,}$/
 
 function isHttpUrl(value: string) {
@@ -35,7 +50,10 @@ function isHttpUrl(value: string) {
 }
 
 function toLines(text: string) {
-  return text.split('\n').map((line) => line.trim()).filter(Boolean)
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
 }
 
 function toForm(info?: BusinessInfo): FormState {
@@ -56,9 +74,17 @@ function validate(form: FormState): Errors {
   if (!form.address.trim()) found.address = 'Ingresá la dirección.'
   if (!form.phone.trim()) found.phone = 'Ingresá el teléfono.'
   else if (!PHONE_PATTERN.test(form.phone.trim())) found.phone = 'Ingresá un teléfono válido.'
-  if (toLines(form.socialNetworks).some((url) => !isHttpUrl(url))) {
+  const networks = toLines(form.socialNetworks)
+  if (networks.length > MAX_NETWORKS) found.socialNetworks = `Cargá hasta ${MAX_NETWORKS} redes.`
+  else if (networks.some((url) => url.length > MAX_NETWORK_URL))
+    found.socialNetworks = `Cada URL puede tener hasta ${MAX_NETWORK_URL} caracteres.`
+  else if (networks.some((url) => !isHttpUrl(url))) {
     found.socialNetworks = 'Revisá las URLs: cada línea debe empezar con http:// o https://.'
   }
+  const hours = toLines(form.openingHours)
+  if (hours.length > MAX_HOURS) found.openingHours = `Cargá hasta ${MAX_HOURS} horarios.`
+  else if (hours.some((line) => line.length > MAX_HOURS_LINE))
+    found.openingHours = `Cada horario puede tener hasta ${MAX_HOURS_LINE} caracteres.`
   return found
 }
 
@@ -96,7 +122,9 @@ export default function AdminBusinessInfoPage() {
           setLoadError(errorMessage(error))
         }
       })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
     return () => controller.abort()
   }, [reload])
 
@@ -152,7 +180,9 @@ export default function AdminBusinessInfoPage() {
           if (message && FIELDS.includes(field) && !fromServer[field]) fromServer[field] = message
         }
         showErrors(fromServer)
-        setFormError(Object.keys(fromServer).length > 0 ? 'Revisá los campos marcados.' : errorMessage(error))
+        setFormError(
+          Object.keys(fromServer).length > 0 ? 'Revisá los campos marcados.' : errorMessage(error),
+        )
       } else {
         setFormError(errorMessage(error))
       }
@@ -161,7 +191,8 @@ export default function AdminBusinessInfoPage() {
     }
   }
 
-  const fieldClass = (key: keyof FormState) => (errors[key] ? 'admin-field has-error' : 'admin-field')
+  const fieldClass = (key: keyof FormState) =>
+    errors[key] ? 'admin-field has-error' : 'admin-field'
 
   return (
     <>
@@ -175,19 +206,43 @@ export default function AdminBusinessInfoPage() {
       <AdminNotice notice={notice} onClose={clearNotice} />
 
       {loadError ? (
-        <AdminEmpty icon="alert" title="No pudimos cargar la información del comercio" isError action={<button type="button" className="admin-secondary" onClick={retry}>Reintentar</button>}>
+        <AdminEmpty
+          icon="alert"
+          title="No pudimos cargar la información del comercio"
+          isError
+          action={
+            <button type="button" className="admin-secondary" onClick={retry}>
+              Reintentar
+            </button>
+          }
+        >
           {loadError}
         </AdminEmpty>
       ) : loading ? (
-        <div className="admin-skeleton" role="status" aria-label="Cargando información del comercio">
-          <div /><div />
+        <div
+          className="admin-skeleton"
+          role="status"
+          aria-label="Cargando información del comercio"
+        >
+          <div />
+          <div />
         </div>
       ) : (
-        <form className="admin-panel admin-settings" onSubmit={(event) => void submit(event)} noValidate>
+        <form
+          className="admin-panel admin-settings"
+          onSubmit={(event) => void submit(event)}
+          noValidate
+        >
           {(notCreated || formError) && (
             <div className="admin-panel-body">
-              {notCreated && <p className="admin-alert">Todavía no cargaste la información del comercio.</p>}
-              {formError && <p className="admin-alert is-error" role="alert">{formError}</p>}
+              {notCreated && (
+                <p className="admin-alert">Todavía no cargaste la información del comercio.</p>
+              )}
+              {formError && (
+                <p className="admin-alert is-error" role="alert">
+                  {formError}
+                </p>
+              )}
             </div>
           )}
 
@@ -199,27 +254,75 @@ export default function AdminBusinessInfoPage() {
             <div className="admin-form">
               <div className={fieldClass('name')}>
                 <label htmlFor="bi-name">Nombre del comercio *</label>
-                <input id="bi-name" value={form.name} onChange={(event) => setField('name', event.target.value)} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? `${FIELD_IDS.name}-error` : undefined} />
-                {errors.name && <span id="bi-name-error" className="admin-error">{errors.name}</span>}
+                <input
+                  id="bi-name"
+                  maxLength={120}
+                  value={form.name}
+                  onChange={(event) => setField('name', event.target.value)}
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={errors.name ? `${FIELD_IDS.name}-error` : undefined}
+                />
+                {errors.name && (
+                  <span id="bi-name-error" className="admin-error">
+                    {errors.name}
+                  </span>
+                )}
               </div>
 
               <div className="admin-form-row admin-form-row-2">
                 <div className={fieldClass('address')}>
                   <label htmlFor="bi-address">Dirección *</label>
-                  <input id="bi-address" value={form.address} onChange={(event) => setField('address', event.target.value)} aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? `${FIELD_IDS.address}-error` : undefined} />
-                  {errors.address && <span id="bi-address-error" className="admin-error">{errors.address}</span>}
+                  <input
+                    id="bi-address"
+                    maxLength={200}
+                    value={form.address}
+                    onChange={(event) => setField('address', event.target.value)}
+                    aria-invalid={Boolean(errors.address)}
+                    aria-describedby={errors.address ? `${FIELD_IDS.address}-error` : undefined}
+                  />
+                  {errors.address && (
+                    <span id="bi-address-error" className="admin-error">
+                      {errors.address}
+                    </span>
+                  )}
                 </div>
                 <div className={fieldClass('phone')}>
                   <label htmlFor="bi-phone">Teléfono *</label>
-                  <input id="bi-phone" type="tel" value={form.phone} onChange={(event) => setField('phone', event.target.value)} aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? `${FIELD_IDS.phone}-error` : undefined} />
-                  {errors.phone && <span id="bi-phone-error" className="admin-error">{errors.phone}</span>}
+                  <input
+                    id="bi-phone"
+                    type="tel"
+                    maxLength={40}
+                    value={form.phone}
+                    onChange={(event) => setField('phone', event.target.value)}
+                    aria-invalid={Boolean(errors.phone)}
+                    aria-describedby={errors.phone ? `${FIELD_IDS.phone}-error` : undefined}
+                  />
+                  {errors.phone && (
+                    <span id="bi-phone-error" className="admin-error">
+                      {errors.phone}
+                    </span>
+                  )}
                 </div>
               </div>
 
               <div className={fieldClass('description')}>
                 <label htmlFor="bi-description">Descripción *</label>
-                <textarea id="bi-description" rows={4} value={form.description} onChange={(event) => setField('description', event.target.value)} aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? `${FIELD_IDS.description}-error` : undefined} />
-                {errors.description && <span id="bi-description-error" className="admin-error">{errors.description}</span>}
+                <textarea
+                  id="bi-description"
+                  rows={4}
+                  maxLength={2000}
+                  value={form.description}
+                  onChange={(event) => setField('description', event.target.value)}
+                  aria-invalid={Boolean(errors.description)}
+                  aria-describedby={
+                    errors.description ? `${FIELD_IDS.description}-error` : undefined
+                  }
+                />
+                {errors.description && (
+                  <span id="bi-description-error" className="admin-error">
+                    {errors.description}
+                  </span>
+                )}
               </div>
             </div>
           </fieldset>
@@ -232,18 +335,48 @@ export default function AdminBusinessInfoPage() {
             <div className="admin-form">
               <div className={fieldClass('openingHours')}>
                 <label htmlFor="bi-hours">Horarios de atención</label>
-                <textarea id="bi-hours" rows={3} value={form.openingHours} onChange={(event) => setField('openingHours', event.target.value)} aria-invalid={Boolean(errors.openingHours)} aria-describedby={errors.openingHours ? `${FIELD_IDS.openingHours}-error` : undefined} />
-                {errors.openingHours
-                  ? <span id="bi-hours-error" className="admin-error">{errors.openingHours}</span>
-                  : <span className="admin-hint">Uno por línea, por ejemplo: Lunes a viernes de 10 a 20 hs</span>}
+                <textarea
+                  id="bi-hours"
+                  rows={3}
+                  value={form.openingHours}
+                  onChange={(event) => setField('openingHours', event.target.value)}
+                  aria-invalid={Boolean(errors.openingHours)}
+                  aria-describedby={
+                    errors.openingHours ? `${FIELD_IDS.openingHours}-error` : undefined
+                  }
+                />
+                {errors.openingHours ? (
+                  <span id="bi-hours-error" className="admin-error">
+                    {errors.openingHours}
+                  </span>
+                ) : (
+                  <span className="admin-hint">
+                    Uno por línea, por ejemplo: Lunes a viernes de 10 a 20 hs
+                  </span>
+                )}
               </div>
 
               <div className={fieldClass('socialNetworks')}>
                 <label htmlFor="bi-social">Redes sociales</label>
-                <textarea id="bi-social" rows={3} value={form.socialNetworks} onChange={(event) => setField('socialNetworks', event.target.value)} aria-invalid={Boolean(errors.socialNetworks)} aria-describedby={errors.socialNetworks ? `${FIELD_IDS.socialNetworks}-error` : undefined} />
-                {errors.socialNetworks
-                  ? <span id="bi-social-error" className="admin-error">{errors.socialNetworks}</span>
-                  : <span className="admin-hint">Una URL por línea (Instagram, Facebook, WhatsApp...)</span>}
+                <textarea
+                  id="bi-social"
+                  rows={3}
+                  value={form.socialNetworks}
+                  onChange={(event) => setField('socialNetworks', event.target.value)}
+                  aria-invalid={Boolean(errors.socialNetworks)}
+                  aria-describedby={
+                    errors.socialNetworks ? `${FIELD_IDS.socialNetworks}-error` : undefined
+                  }
+                />
+                {errors.socialNetworks ? (
+                  <span id="bi-social-error" className="admin-error">
+                    {errors.socialNetworks}
+                  </span>
+                ) : (
+                  <span className="admin-hint">
+                    Una URL por línea (Instagram, Facebook, WhatsApp...)
+                  </span>
+                )}
               </div>
             </div>
           </fieldset>

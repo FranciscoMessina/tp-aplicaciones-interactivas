@@ -7,7 +7,12 @@ import Icon from '../components/Icon'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/auth-context'
 import { ApiRequestError, getErrorMessage as errorMessage } from '../services/api'
-import { createCategory, deleteCategory, fetchCategories, updateCategory } from '../services/categories'
+import {
+  createCategory,
+  deleteCategory,
+  fetchCategories,
+  updateCategory,
+} from '../services/categories'
 import type { Category } from '../types/product'
 
 const MAX_NAME = 80
@@ -35,12 +40,15 @@ function CategoryFormModal({ token, category, onClose, onSaved }: CategoryFormMo
 
     const trimmed = name.trim()
     if (!trimmed) return setError('Ingresá el nombre de la categoría.')
-    if (trimmed.length > MAX_NAME) return setError(`El nombre no puede superar los ${MAX_NAME} caracteres.`)
+    if (trimmed.length > MAX_NAME)
+      return setError(`El nombre no puede superar los ${MAX_NAME} caracteres.`)
 
     setError('')
     setSaving(true)
     try {
-      const saved = isEdit ? await updateCategory(token, category.id, trimmed) : await createCategory(token, trimmed)
+      const saved = isEdit
+        ? await updateCategory(token, category.id, trimmed)
+        : await createCategory(token, trimmed)
       onSaved(saved, isEdit)
     } catch (caught) {
       const duplicated = caught instanceof ApiRequestError && caught.status === 409
@@ -52,16 +60,32 @@ function CategoryFormModal({ token, category, onClose, onSaved }: CategoryFormMo
   }
 
   return (
-    <Modal title={isEdit ? 'Editar categoría' : 'Nueva categoría'} onClose={saving ? () => undefined : onClose}>
+    <Modal
+      title={isEdit ? 'Editar categoría' : 'Nueva categoría'}
+      onClose={saving ? () => undefined : onClose}
+    >
       <form className="admin-form" onSubmit={(event) => void submit(event)} noValidate>
         <div className={error ? 'admin-field has-error' : 'admin-field'}>
           <label htmlFor="cf-name">Nombre *</label>
-          <input id="cf-name" maxLength={MAX_NAME} value={name} onChange={(event) => setName(event.target.value)} aria-invalid={Boolean(error)} aria-describedby={error ? 'cf-name-error' : undefined} />
-          {error && <span id="cf-name-error" className="admin-error">{error}</span>}
+          <input
+            id="cf-name"
+            maxLength={MAX_NAME}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? 'cf-name-error' : undefined}
+          />
+          {error && (
+            <span id="cf-name-error" className="admin-error">
+              {error}
+            </span>
+          )}
         </div>
 
         <div className="admin-form-actions">
-          <button type="button" className="admin-secondary" onClick={onClose} disabled={saving}>Cancelar</button>
+          <button type="button" className="admin-secondary" onClick={onClose} disabled={saving}>
+            Cancelar
+          </button>
           <button type="submit" className="admin-primary" disabled={saving}>
             {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear categoría'}
           </button>
@@ -95,7 +119,9 @@ export default function AdminCategoriesPage() {
       .catch((error: unknown) => {
         if (!controller.signal.aborted) setLoadError(errorMessage(error))
       })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
     return () => controller.abort()
   }, [reload])
 
@@ -108,10 +134,17 @@ export default function AdminCategoriesPage() {
   function handleSaved(saved: Category, wasEdit: boolean) {
     setCreating(false)
     setEditing(null)
-    setCategories((current) => sortByName(wasEdit
-      ? current.map((item) => (item.id === saved.id ? saved : item))
-      : [...current, saved]))
-    setNotice({ kind: 'success', text: wasEdit ? `Se guardaron los cambios de “${saved.name}”.` : `Se creó “${saved.name}”.` })
+    setCategories((current) =>
+      sortByName(
+        wasEdit
+          ? current.map((item) => (item.id === saved.id ? saved : item))
+          : [...current, saved],
+      ),
+    )
+    setNotice({
+      kind: 'success',
+      text: wasEdit ? `Se guardaron los cambios de “${saved.name}”.` : `Se creó “${saved.name}”.`,
+    })
   }
 
   async function confirmDelete() {
@@ -136,22 +169,43 @@ export default function AdminCategoriesPage() {
           <h1>Categorías</h1>
           <p>Organizá el catálogo: cada producto pertenece a una categoría.</p>
         </div>
-        <button type="button" className="admin-primary" onClick={() => setCreating(true)}><Icon name="plus" /> Nueva categoría</button>
+        <button type="button" className="admin-primary" onClick={() => setCreating(true)}>
+          <Icon name="plus" /> Nueva categoría
+        </button>
       </div>
 
       <AdminNotice notice={notice} onClose={clearNotice} />
 
       <section className="admin-panel" aria-label="Listado de categorías">
         {loadError ? (
-          <AdminEmpty icon="alert" title="No pudimos cargar las categorías" isError action={<button type="button" className="admin-secondary" onClick={retry}>Reintentar</button>}>
+          <AdminEmpty
+            icon="alert"
+            title="No pudimos cargar las categorías"
+            isError
+            action={
+              <button type="button" className="admin-secondary" onClick={retry}>
+                Reintentar
+              </button>
+            }
+          >
             {loadError}
           </AdminEmpty>
         ) : loading ? (
           <div className="admin-skeleton is-rows" role="status" aria-label="Cargando categorías">
-            {Array.from({ length: 5 }, (_, index) => <div key={index} />)}
+            {Array.from({ length: 5 }, (_, index) => (
+              <div key={index} />
+            ))}
           </div>
         ) : categories.length === 0 ? (
-          <AdminEmpty icon="categories" title="Todavía no hay categorías" action={<button type="button" className="admin-primary" onClick={() => setCreating(true)}><Icon name="plus" /> Nueva categoría</button>}>
+          <AdminEmpty
+            icon="categories"
+            title="Todavía no hay categorías"
+            action={
+              <button type="button" className="admin-primary" onClick={() => setCreating(true)}>
+                <Icon name="plus" /> Nueva categoría
+              </button>
+            }
+          >
             Creá la primera para poder asignarle productos.
           </AdminEmpty>
         ) : (
@@ -160,19 +214,35 @@ export default function AdminCategoriesPage() {
               <thead>
                 <tr>
                   <th scope="col">Nombre</th>
-                  <th scope="col"><span className="visually-hidden">Acciones</span></th>
+                  <th scope="col">
+                    <span className="visually-hidden">Acciones</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {categories.map((category) => (
                   <tr key={category.id}>
-                    <td data-label="Nombre"><strong>{category.name}</strong></td>
+                    <td data-label="Nombre">
+                      <strong>{category.name}</strong>
+                    </td>
                     <td className="admin-actions-cell">
                       <div className="admin-row-actions">
-                        <button type="button" className="admin-icon-button" aria-label={`Editar ${category.name}`} title="Editar" onClick={() => setEditing(category)}>
+                        <button
+                          type="button"
+                          className="admin-icon-button"
+                          aria-label={`Editar ${category.name}`}
+                          title="Editar"
+                          onClick={() => setEditing(category)}
+                        >
                           <Icon name="edit" />
                         </button>
-                        <button type="button" className="admin-icon-button is-danger" aria-label={`Eliminar ${category.name}`} title="Eliminar" onClick={() => setDeleting(category)}>
+                        <button
+                          type="button"
+                          className="admin-icon-button is-danger"
+                          aria-label={`Eliminar ${category.name}`}
+                          title="Eliminar"
+                          onClick={() => setDeleting(category)}
+                        >
                           <Icon name="delete" />
                         </button>
                       </div>
@@ -189,19 +259,40 @@ export default function AdminCategoriesPage() {
         <CategoryFormModal
           token={token}
           category={editing}
-          onClose={() => { setCreating(false); setEditing(null) }}
+          onClose={() => {
+            setCreating(false)
+            setEditing(null)
+          }}
           onSaved={handleSaved}
         />
       )}
 
       {deleting && (
-        <Modal title="Eliminar categoría" onClose={() => { if (!deleteBusy) setDeleting(null) }}>
+        <Modal
+          title="Eliminar categoría"
+          onClose={() => {
+            if (!deleteBusy) setDeleting(null)
+          }}
+        >
           <p className="admin-confirm-text">
-            ¿Seguro que querés eliminar <strong>{deleting.name}</strong>? Solo se pueden eliminar categorías sin productos asociados.
+            ¿Seguro que querés eliminar <strong>{deleting.name}</strong>? Solo se pueden eliminar
+            categorías sin productos asociados.
           </p>
           <div className="admin-form-actions">
-            <button type="button" className="admin-secondary" disabled={deleteBusy} onClick={() => setDeleting(null)}>Cancelar</button>
-            <button type="button" className="admin-danger" disabled={deleteBusy} onClick={() => void confirmDelete()}>
+            <button
+              type="button"
+              className="admin-secondary"
+              disabled={deleteBusy}
+              onClick={() => setDeleting(null)}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="admin-danger"
+              disabled={deleteBusy}
+              onClick={() => void confirmDelete()}
+            >
               {deleteBusy ? 'Eliminando...' : 'Sí, eliminar'}
             </button>
           </div>

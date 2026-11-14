@@ -10,21 +10,31 @@ import { getErrorMessage as errorMessage } from '../services/api'
 import { fetchCategories } from '../services/categories'
 import { fetchAdminCollections } from '../services/collections'
 import { uploadImage } from '../services/images'
-import { createPromotion, deletePromotion, fetchAdminPromotions, updatePromotion } from '../services/promotions'
+import {
+  createPromotion,
+  deletePromotion,
+  fetchAdminPromotions,
+  updatePromotion,
+} from '../services/promotions'
 import type { Collection } from '../types/collection'
 import type { Category } from '../types/product'
 import type { Promotion, PromotionInput } from '../types/promotion'
 import { formatDay } from '../utils/format'
 
 // Mismo día que usa el backend para decidir qué promociones están vigentes.
-const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date())
+const today = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(
+    new Date(),
+  )
 
 // Lo que ve hoy un visitante de cada promoción.
 function promotionStatus(promotion: Promotion): { label: string; isOn: boolean } {
   const day = today()
   if (!promotion.isActive) return { label: 'Apagada', isOn: false }
-  if (promotion.linkedCollection && !promotion.linkedCollection.isActive) return { label: 'Su colección está apagada', isOn: false }
-  if (promotion.startDate && promotion.startDate > day) return { label: `Empieza el ${formatDay(promotion.startDate)}`, isOn: false }
+  if (promotion.linkedCollection && !promotion.linkedCollection.isActive)
+    return { label: 'Su colección está apagada', isOn: false }
+  if (promotion.startDate && promotion.startDate > day)
+    return { label: `Empieza el ${formatDay(promotion.startDate)}`, isOn: false }
   if (promotion.endDate && promotion.endDate < day) return { label: 'Vencida', isOn: false }
   return { label: 'Visible en el sitio', isOn: true }
 }
@@ -32,7 +42,9 @@ function promotionStatus(promotion: Promotion): { label: string; isOn: boolean }
 // A dónde lleva el aviso, para el listado.
 function destination(promotion: Promotion) {
   if (promotion.linkedCollection) {
-    return promotion.discountPercent ? `${promotion.linkedCollection.title} (-${promotion.discountPercent}%)` : promotion.linkedCollection.title
+    return promotion.discountPercent
+      ? `${promotion.linkedCollection.title} (-${promotion.discountPercent}%)`
+      : promotion.linkedCollection.title
   }
   return promotion.category?.name ?? 'Ofertas'
 }
@@ -47,7 +59,8 @@ function destinationValue(promotion: Promotion | null) {
 const MAX_DISCOUNT = 90
 
 function validity(promotion: Promotion) {
-  if (promotion.startDate && promotion.endDate) return `${formatDay(promotion.startDate)} al ${formatDay(promotion.endDate)}`
+  if (promotion.startDate && promotion.endDate)
+    return `${formatDay(promotion.startDate)} al ${formatDay(promotion.endDate)}`
   if (promotion.startDate) return `Desde el ${formatDay(promotion.startDate)}`
   if (promotion.endDate) return `Hasta el ${formatDay(promotion.endDate)}`
   return 'Sin fechas'
@@ -62,14 +75,23 @@ interface PromotionFormModalProps {
   onSaved: (promotion: Promotion, wasEdit: boolean) => void
 }
 
-function PromotionFormModal({ token, categories, collections, promotion, onClose, onSaved }: PromotionFormModalProps) {
+function PromotionFormModal({
+  token,
+  categories,
+  collections,
+  promotion,
+  onClose,
+  onSaved,
+}: PromotionFormModalProps) {
   const isEdit = promotion !== null
   const fileInput = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState(promotion?.title ?? '')
   const [description, setDescription] = useState(promotion?.description ?? '')
   const [image, setImage] = useState(promotion?.image ?? '')
   const [target, setTarget] = useState(destinationValue(promotion))
-  const [discount, setDiscount] = useState(promotion?.discountPercent ? String(promotion.discountPercent) : '')
+  const [discount, setDiscount] = useState(
+    promotion?.discountPercent ? String(promotion.discountPercent) : '',
+  )
   const [startDate, setStartDate] = useState(promotion?.startDate ?? '')
   const [endDate, setEndDate] = useState(promotion?.endDate ?? '')
   const [isActive, setIsActive] = useState(promotion?.isActive ?? true)
@@ -96,14 +118,22 @@ function PromotionFormModal({ token, categories, collections, promotion, onClose
     event.preventDefault()
     if (saving || uploading) return
 
-    if (!title.trim() || !description.trim()) return setError('Completá el título y la descripción.')
-    if (startDate && endDate && startDate > endDate) return setError('La fecha de fin tiene que ser igual o posterior a la de inicio.')
+    if (!title.trim() || !description.trim())
+      return setError('Completá el título y la descripción.')
+    if (startDate && endDate && startDate > endDate)
+      return setError('La fecha de fin tiene que ser igual o posterior a la de inicio.')
 
     const [targetKind, targetId] = target.split(':')
     const isCollection = targetKind === 'coleccion'
     const percent = discount.trim() === '' ? null : Number(discount)
-    if (isCollection && percent !== null && (!Number.isInteger(percent) || percent < 1 || percent > MAX_DISCOUNT)) {
-      return setError(`El descuento tiene que ser un porcentaje entero entre 1 y ${MAX_DISCOUNT}, o quedar vacío.`)
+    if (
+      isCollection &&
+      percent !== null &&
+      (!Number.isInteger(percent) || percent < 1 || percent > MAX_DISCOUNT)
+    ) {
+      return setError(
+        `El descuento tiene que ser un porcentaje entero entre 1 y ${MAX_DISCOUNT}, o quedar vacío.`,
+      )
     }
 
     const input: PromotionInput = {
@@ -121,7 +151,9 @@ function PromotionFormModal({ token, categories, collections, promotion, onClose
     setError('')
     setSaving(true)
     try {
-      const saved = isEdit ? await updatePromotion(token, promotion.id, input) : await createPromotion(token, input)
+      const saved = isEdit
+        ? await updatePromotion(token, promotion.id, input)
+        : await createPromotion(token, input)
       onSaved(saved, isEdit)
     } catch (caught) {
       setError(errorMessage(caught))
@@ -131,62 +163,134 @@ function PromotionFormModal({ token, categories, collections, promotion, onClose
   }
 
   return (
-    <Modal title={isEdit ? 'Editar promoción' : 'Nueva promoción'} onClose={saving ? () => undefined : onClose} wide>
+    <Modal
+      title={isEdit ? 'Editar promoción' : 'Nueva promoción'}
+      onClose={saving ? () => undefined : onClose}
+      wide
+    >
       <form className="admin-form" onSubmit={(event) => void submit(event)} noValidate>
-        {error && <p className="admin-alert is-error" role="alert">{error}</p>}
+        {error && (
+          <p className="admin-alert is-error" role="alert">
+            {error}
+          </p>
+        )}
 
         <div className="admin-field">
           <label htmlFor="pr-title">Título *</label>
-          <input id="pr-title" maxLength={80} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Ej.: Semana del audio" />
+          <input
+            id="pr-title"
+            maxLength={80}
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Ej.: Semana del audio"
+          />
         </div>
 
         <div className="admin-field">
           <label htmlFor="pr-description">Descripción *</label>
-          <textarea id="pr-description" rows={3} maxLength={300} value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Contá de qué se trata y hasta cuándo vale." />
+          <textarea
+            id="pr-description"
+            rows={3}
+            maxLength={300}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder="Contá de qué se trata y hasta cuándo vale."
+          />
         </div>
 
         <div className="admin-form-row">
           <div className="admin-field">
             <label htmlFor="pr-category">Lleva a</label>
-            <select id="pr-category" value={target} onChange={(event) => setTarget(event.target.value)}>
+            <select
+              id="pr-category"
+              value={target}
+              onChange={(event) => setTarget(event.target.value)}
+            >
               <option value="">Productos en oferta</option>
               {collections.length > 0 && (
                 <optgroup label="Colecciones">
-                  {collections.map((collection) => <option key={collection.id} value={`coleccion:${collection.id}`}>{collection.title}{collection.isActive ? '' : ' (apagada)'}</option>)}
+                  {collections.map((collection) => (
+                    <option key={collection.id} value={`coleccion:${collection.id}`}>
+                      {collection.title}
+                      {collection.isActive ? '' : ' (apagada)'}
+                    </option>
+                  ))}
                 </optgroup>
               )}
               <optgroup label="Categorías">
-                {categories.map((category) => <option key={category.id} value={`categoria:${category.id}`}>{category.name}</option>)}
+                {categories.map((category) => (
+                  <option key={category.id} value={`categoria:${category.id}`}>
+                    {category.name}
+                  </option>
+                ))}
               </optgroup>
             </select>
           </div>
           <div className="admin-field">
             <label htmlFor="pr-start">Desde</label>
-            <input id="pr-start" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
+            <input
+              id="pr-start"
+              type="date"
+              value={startDate}
+              onChange={(event) => setStartDate(event.target.value)}
+            />
           </div>
           <div className="admin-field">
             <label htmlFor="pr-end">Hasta</label>
-            <input id="pr-end" type="date" value={endDate} min={startDate || undefined} onChange={(event) => setEndDate(event.target.value)} />
+            <input
+              id="pr-end"
+              type="date"
+              value={endDate}
+              min={startDate || undefined}
+              onChange={(event) => setEndDate(event.target.value)}
+            />
           </div>
         </div>
-        <span className="admin-hint">Las dos fechas son opcionales: sin fechas, la promoción se ve mientras esté encendida.</span>
+        <span className="admin-hint">
+          Las dos fechas son opcionales: sin fechas, la promoción se ve mientras esté encendida.
+        </span>
 
         {target.startsWith('coleccion:') && (
           <div className="admin-field">
-            <label htmlFor="pr-discount">Descuento para los productos de la colección <span className="admin-hint-inline">Opcional, en %</span></label>
-            <input id="pr-discount" type="number" inputMode="numeric" min={1} max={MAX_DISCOUNT} step={1} value={discount} onChange={(event) => setDiscount(event.target.value)} placeholder="Ej.: 10" />
-            <span className="admin-hint">Mientras la promoción esté vigente, el sitio muestra estos productos con el descuento y el nombre de la promoción. Si un producto ya tiene un descuento mayor, se mantiene el suyo.</span>
+            <label htmlFor="pr-discount">
+              Descuento para los productos de la colección{' '}
+              <span className="admin-hint-inline">Opcional, en %</span>
+            </label>
+            <input
+              id="pr-discount"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={MAX_DISCOUNT}
+              step={1}
+              value={discount}
+              onChange={(event) => setDiscount(event.target.value)}
+              placeholder="Ej.: 10"
+            />
+            <span className="admin-hint">
+              Mientras la promoción esté vigente, el sitio muestra estos productos con el descuento
+              y el nombre de la promoción. Si un producto ya tiene un descuento mayor, se mantiene
+              el suyo.
+            </span>
           </div>
         )}
 
         <div className="admin-field">
-          <label htmlFor="pr-file">Imagen <span className="admin-hint-inline">Opcional</span></label>
+          <label htmlFor="pr-file">
+            Imagen <span className="admin-hint-inline">Opcional</span>
+          </label>
           {image && (
             <ul className="admin-images">
               <li>
                 <img src={image} alt="Imagen de la promoción" />
                 <div className="admin-image-actions">
-                  <button type="button" className="admin-icon-button is-danger" aria-label="Quitar la imagen" title="Quitar" onClick={() => setImage('')}>
+                  <button
+                    type="button"
+                    className="admin-icon-button is-danger"
+                    aria-label="Quitar la imagen"
+                    title="Quitar"
+                    onClick={() => setImage('')}
+                  >
                     <Icon name="delete" />
                   </button>
                 </div>
@@ -194,8 +298,20 @@ function PromotionFormModal({ token, categories, collections, promotion, onClose
             </ul>
           )}
           <div className="admin-upload">
-            <input ref={fileInput} id="pr-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden onChange={(event) => void handleFile(event)} />
-            <button type="button" className="admin-secondary" disabled={uploading} onClick={() => fileInput.current?.click()}>
+            <input
+              ref={fileInput}
+              id="pr-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              hidden
+              onChange={(event) => void handleFile(event)}
+            />
+            <button
+              type="button"
+              className="admin-secondary"
+              disabled={uploading}
+              onClick={() => fileInput.current?.click()}
+            >
               {uploading ? 'Subiendo...' : image ? 'Cambiar imagen' : 'Subir imagen'}
             </button>
             <span className="admin-hint">JPG, PNG, WEBP o GIF · máx. 5 MB</span>
@@ -203,12 +319,20 @@ function PromotionFormModal({ token, categories, collections, promotion, onClose
         </div>
 
         <label className="admin-check">
-          <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} />
-          <span><strong>Encendida</strong> — se muestra en el inicio del sitio dentro de sus fechas.</span>
+          <input
+            type="checkbox"
+            checked={isActive}
+            onChange={(event) => setIsActive(event.target.checked)}
+          />
+          <span>
+            <strong>Encendida</strong> — se muestra en el inicio del sitio dentro de sus fechas.
+          </span>
         </label>
 
         <div className="admin-form-actions">
-          <button type="button" className="admin-secondary" onClick={onClose} disabled={saving}>Cancelar</button>
+          <button type="button" className="admin-secondary" onClick={onClose} disabled={saving}>
+            Cancelar
+          </button>
           <button type="submit" className="admin-primary" disabled={saving || uploading}>
             {saving ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear promoción'}
           </button>
@@ -239,14 +363,22 @@ export default function AdminPromotionsPage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    Promise.all([fetchAdminPromotions(token, controller.signal), fetchCategories(controller.signal), fetchAdminCollections(token, controller.signal)])
+    Promise.all([
+      fetchAdminPromotions(token, controller.signal),
+      fetchCategories(controller.signal),
+      fetchAdminCollections(token, controller.signal),
+    ])
       .then(([promotionList, categoryList, collectionList]) => {
         setPromotions(promotionList)
         setCategories(categoryList)
         setCollections(collectionList)
       })
-      .catch((error: unknown) => { if (!controller.signal.aborted) setLoadError(errorMessage(error)) })
-      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) setLoadError(errorMessage(error))
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
     return () => controller.abort()
   }, [token, reload])
 
@@ -259,8 +391,13 @@ export default function AdminPromotionsPage() {
   function handleSaved(saved: Promotion, wasEdit: boolean) {
     setCreating(false)
     setEditing(null)
-    setPromotions((current) => wasEdit ? current.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...current])
-    setNotice({ kind: 'success', text: wasEdit ? `Se guardaron los cambios de “${saved.title}”.` : `Se creó “${saved.title}”.` })
+    setPromotions((current) =>
+      wasEdit ? current.map((item) => (item.id === saved.id ? saved : item)) : [saved, ...current],
+    )
+    setNotice({
+      kind: 'success',
+      text: wasEdit ? `Se guardaron los cambios de “${saved.title}”.` : `Se creó “${saved.title}”.`,
+    })
   }
 
   async function toggleActive(promotion: Promotion) {
@@ -268,7 +405,10 @@ export default function AdminPromotionsPage() {
     try {
       const updated = await updatePromotion(token, promotion.id, { isActive: !promotion.isActive })
       setPromotions((current) => current.map((item) => (item.id === updated.id ? updated : item)))
-      setNotice({ kind: 'success', text: `“${promotion.title}” ${updated.isActive ? 'se encendió' : 'se apagó y ya no se ve en el sitio'}.` })
+      setNotice({
+        kind: 'success',
+        text: `“${promotion.title}” ${updated.isActive ? 'se encendió' : 'se apagó y ya no se ve en el sitio'}.`,
+      })
     } catch (error) {
       setNotice({ kind: 'error', text: errorMessage(error) })
     } finally {
@@ -291,14 +431,21 @@ export default function AdminPromotionsPage() {
     }
   }
 
-  const newButton = <button type="button" className="admin-primary" onClick={() => setCreating(true)}><Icon name="plus" /> Nueva promoción</button>
+  const newButton = (
+    <button type="button" className="admin-primary" onClick={() => setCreating(true)}>
+      <Icon name="plus" /> Nueva promoción
+    </button>
+  )
 
   return (
     <>
       <div className="admin-heading">
         <div>
           <h1>Promociones</h1>
-          <p>Avisos que se muestran en el inicio. Una promoción que lleva a una colección puede bajarles el precio a todos sus productos.</p>
+          <p>
+            Avisos que se muestran en el inicio. Una promoción que lleva a una colección puede
+            bajarles el precio a todos sus productos.
+          </p>
         </div>
         {newButton}
       </div>
@@ -307,12 +454,23 @@ export default function AdminPromotionsPage() {
 
       <section className="admin-panel" aria-label="Listado de promociones">
         {loadError ? (
-          <AdminEmpty icon="alert" title="No pudimos cargar las promociones" isError action={<button type="button" className="admin-secondary" onClick={retry}>Reintentar</button>}>
+          <AdminEmpty
+            icon="alert"
+            title="No pudimos cargar las promociones"
+            isError
+            action={
+              <button type="button" className="admin-secondary" onClick={retry}>
+                Reintentar
+              </button>
+            }
+          >
             {loadError}
           </AdminEmpty>
         ) : loading ? (
           <div className="admin-skeleton is-rows" role="status" aria-label="Cargando promociones">
-            {Array.from({ length: 3 }, (_, index) => <div key={index} />)}
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} />
+            ))}
           </div>
         ) : promotions.length === 0 ? (
           <AdminEmpty icon="promotions" title="Todavía no hay promociones" action={newButton}>
@@ -327,7 +485,9 @@ export default function AdminPromotionsPage() {
                   <th scope="col">Lleva a</th>
                   <th scope="col">Vigencia</th>
                   <th scope="col">Estado</th>
-                  <th scope="col"><span className="visually-hidden">Acciones</span></th>
+                  <th scope="col">
+                    <span className="visually-hidden">Acciones</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -337,9 +497,13 @@ export default function AdminPromotionsPage() {
                     <tr key={promotion.id} className={status.isOn ? undefined : 'is-inactive'}>
                       <td data-label="Producto">
                         <div className="admin-product-cell">
-                          {promotion.image
-                            ? <img src={promotion.image} alt="" loading="lazy" />
-                            : <span className="admin-thumb-placeholder" aria-hidden="true"><Icon name="promotions" /></span>}
+                          {promotion.image ? (
+                            <img src={promotion.image} alt="" loading="lazy" />
+                          ) : (
+                            <span className="admin-thumb-placeholder" aria-hidden="true">
+                              <Icon name="promotions" />
+                            </span>
+                          )}
                           <div>
                             <strong>{promotion.title}</strong>
                             <small>{promotion.description}</small>
@@ -349,11 +513,19 @@ export default function AdminPromotionsPage() {
                       <td data-label="Lleva a">{destination(promotion)}</td>
                       <td data-label="Vigencia">{validity(promotion)}</td>
                       <td data-label="Estado">
-                        <span className={`admin-status ${status.isOn ? 'is-on' : 'is-off'}`}>{status.label}</span>
+                        <span className={`admin-status ${status.isOn ? 'is-on' : 'is-off'}`}>
+                          {status.label}
+                        </span>
                       </td>
                       <td className="admin-actions-cell">
                         <div className="admin-row-actions">
-                          <button type="button" className="admin-icon-button" aria-label={`Editar ${promotion.title}`} title="Editar" onClick={() => setEditing(promotion)}>
+                          <button
+                            type="button"
+                            className="admin-icon-button"
+                            aria-label={`Editar ${promotion.title}`}
+                            title="Editar"
+                            onClick={() => setEditing(promotion)}
+                          >
                             <Icon name="edit" />
                           </button>
                           <button
@@ -367,7 +539,13 @@ export default function AdminPromotionsPage() {
                           >
                             <Icon name={promotion.isActive ? 'hide' : 'show'} />
                           </button>
-                          <button type="button" className="admin-icon-button is-danger" aria-label={`Eliminar ${promotion.title}`} title="Eliminar" onClick={() => setDeleting(promotion)}>
+                          <button
+                            type="button"
+                            className="admin-icon-button is-danger"
+                            aria-label={`Eliminar ${promotion.title}`}
+                            title="Eliminar"
+                            onClick={() => setDeleting(promotion)}
+                          >
                             <Icon name="delete" />
                           </button>
                         </div>
@@ -387,17 +565,40 @@ export default function AdminPromotionsPage() {
           categories={categories}
           collections={collections}
           promotion={editing}
-          onClose={() => { setCreating(false); setEditing(null) }}
+          onClose={() => {
+            setCreating(false)
+            setEditing(null)
+          }}
           onSaved={handleSaved}
         />
       )}
 
       {deleting && (
-        <Modal title="Eliminar promoción" onClose={() => { if (!busyId) setDeleting(null) }}>
-          <p className="admin-confirm-text">¿Seguro que querés eliminar <strong>{deleting.title}</strong>? Si solo querés sacarla del sitio, podés apagarla.</p>
+        <Modal
+          title="Eliminar promoción"
+          onClose={() => {
+            if (!busyId) setDeleting(null)
+          }}
+        >
+          <p className="admin-confirm-text">
+            ¿Seguro que querés eliminar <strong>{deleting.title}</strong>? Si solo querés sacarla
+            del sitio, podés apagarla.
+          </p>
           <div className="admin-form-actions">
-            <button type="button" className="admin-secondary" disabled={Boolean(busyId)} onClick={() => setDeleting(null)}>Cancelar</button>
-            <button type="button" className="admin-danger" disabled={Boolean(busyId)} onClick={() => void confirmDelete()}>
+            <button
+              type="button"
+              className="admin-secondary"
+              disabled={Boolean(busyId)}
+              onClick={() => setDeleting(null)}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="admin-danger"
+              disabled={Boolean(busyId)}
+              onClick={() => void confirmDelete()}
+            >
               {busyId ? 'Eliminando...' : 'Sí, eliminar'}
             </button>
           </div>

@@ -25,7 +25,10 @@ export default function ProfilePage() {
     event.preventDefault()
     setProfileError('')
     setProfileSuccess('')
-    if (!accessToken) { setProfileError('Tu sesión expiró. Volvé a iniciar sesión.'); return }
+    if (!accessToken) {
+      setProfileError('Tu sesión expiró. Volvé a iniciar sesión.')
+      return
+    }
 
     const values = {
       fullName: fullName.trim(),
@@ -56,9 +59,15 @@ export default function ProfilePage() {
     event.preventDefault()
     setPasswordError('')
     setPasswordSuccess('')
-    if (!accessToken) { setPasswordError('Tu sesión expiró. Volvé a iniciar sesión.'); return }
+    if (!accessToken) {
+      setPasswordError('Tu sesión expiró. Volvé a iniciar sesión.')
+      return
+    }
     const problem = newPasswordProblem(newPassword, repeatPassword)
-    if (problem) { setPasswordError(problem); return }
+    if (problem) {
+      setPasswordError(problem)
+      return
+    }
     setChangingPassword(true)
     try {
       const result = await changePassword(accessToken, currentPassword, newPassword)
@@ -66,7 +75,9 @@ export default function ProfilePage() {
       setCurrentPassword('')
       setNewPassword('')
       setRepeatPassword('')
-      setPasswordSuccess('Tu contraseña se actualizó. Se cerraron las sesiones abiertas en otros dispositivos.')
+      setPasswordSuccess(
+        'Tu contraseña se actualizó. Se cerraron las sesiones abiertas en otros dispositivos.',
+      )
     } catch (error) {
       setPasswordError(getErrorMessage(error))
     } finally {
@@ -92,20 +103,54 @@ export default function ProfilePage() {
             </div>
             <span className="admin-tag">Administrador</span>
           </header>
-          <form className="admin-form admin-panel-body" onSubmit={(event) => void saveProfile(event)}>
-            {profileError && <p className="admin-alert is-error" role="alert">{profileError}</p>}
-            {profileSuccess && <p className="admin-alert is-success" role="status">{profileSuccess}</p>}
+          <form
+            className="admin-form admin-panel-body"
+            onSubmit={(event) => void saveProfile(event)}
+          >
+            {profileError && (
+              <p className="admin-alert is-error" role="alert">
+                {profileError}
+              </p>
+            )}
+            {profileSuccess && (
+              <p className="admin-alert is-success" role="status">
+                {profileSuccess}
+              </p>
+            )}
             <div className="admin-field">
               <label htmlFor="profile-full-name">Nombre y apellido</label>
-              <input id="profile-full-name" required autoComplete="name" maxLength={150} value={fullName} onChange={(event) => setFullName(event.target.value)} />
+              <input
+                id="profile-full-name"
+                required
+                autoComplete="name"
+                maxLength={120}
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
+              />
             </div>
             <div className="admin-field">
               <label htmlFor="profile-email">Correo electrónico</label>
-              <input id="profile-email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+              <input
+                id="profile-email"
+                required
+                type="email"
+                maxLength={254}
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
             </div>
             <div className="admin-field">
               <label htmlFor="profile-phone">Teléfono</label>
-              <input id="profile-phone" required type="tel" autoComplete="tel" value={phone} onChange={(event) => setPhone(event.target.value)} />
+              <input
+                id="profile-phone"
+                required
+                type="tel"
+                maxLength={40}
+                autoComplete="tel"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+              />
             </div>
             <div className="admin-form-actions">
               <button className="admin-primary" type="submit" disabled={saving}>
@@ -122,20 +167,58 @@ export default function ProfilePage() {
               <p>Por seguridad, ingresá tu contraseña actual.</p>
             </div>
           </header>
-          <form className="admin-form admin-panel-body" onSubmit={(event) => void savePassword(event)}>
-            {passwordError && <p className="admin-alert is-error" role="alert">{passwordError}</p>}
-            {passwordSuccess && <p className="admin-alert is-success" role="status">{passwordSuccess}</p>}
+          <form
+            className="admin-form admin-panel-body"
+            onSubmit={(event) => void savePassword(event)}
+          >
+            {passwordError && (
+              <p className="admin-alert is-error" role="alert">
+                {passwordError}
+              </p>
+            )}
+            {passwordSuccess && (
+              <p className="admin-alert is-success" role="status">
+                {passwordSuccess}
+              </p>
+            )}
             <div className="admin-field">
               <label htmlFor="profile-current-password">Contraseña actual</label>
-              <input id="profile-current-password" type="password" required autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
+              <input
+                id="profile-current-password"
+                type="password"
+                required
+                maxLength={200}
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+              />
             </div>
             <div className="admin-field">
               <label htmlFor="profile-new-password">Nueva contraseña</label>
-              <input id="profile-new-password" type="password" required minLength={8} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} placeholder="Mínimo 8 caracteres" />
+              <input
+                id="profile-new-password"
+                type="password"
+                required
+                minLength={8}
+                maxLength={200}
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                placeholder="Mínimo 8 caracteres"
+              />
             </div>
             <div className="admin-field">
               <label htmlFor="profile-repeat-password">Confirmar contraseña</label>
-              <input id="profile-repeat-password" type="password" required minLength={8} autoComplete="new-password" value={repeatPassword} onChange={(event) => setRepeatPassword(event.target.value)} />
+              <input
+                id="profile-repeat-password"
+                type="password"
+                required
+                minLength={8}
+                maxLength={200}
+                autoComplete="new-password"
+                value={repeatPassword}
+                onChange={(event) => setRepeatPassword(event.target.value)}
+              />
             </div>
             <div className="admin-form-actions">
               <button className="admin-primary" type="submit" disabled={changingPassword}>

@@ -8,7 +8,7 @@ import { objectIdSchema } from "./common.schema.ts";
 const promotionFields = {
   title: z.string().trim().min(1).max(80),
   description: z.string().trim().min(1).max(300),
-  image: z.url().nullable().optional(),
+  image: z.url().max(2048).nullable().optional(),
   category: objectIdSchema.nullable().optional(),
   linkedCollection: objectIdSchema.nullable().optional(),
   // Porcentaje entero para los productos de la coleccion.

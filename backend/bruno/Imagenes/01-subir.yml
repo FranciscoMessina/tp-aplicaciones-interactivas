@@ -12,16 +12,12 @@ http:
       - name: image
         type: file
         value:
-          - C:\Users\fm230\Pictures\qUw4u9E5_400x400.jpg
-        contentType: image/jpeg
+          - Imagenes/ejemplo.png
+        contentType: image/png
   auth: inherit
 
 settings:
   encodeUrl: true
-  timeout: 0
-  followRedirects: true
-  maxRedirects: 5
-  forwardAuthorizationHeader: true
 
 docs: |-
   Sube una imagen y devuelve su URL, para usarla en el array `images` de "Crear producto" o "Actualizar producto".

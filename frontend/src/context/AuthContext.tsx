@@ -43,11 +43,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void fetchProfile(token)
       .then((profile) => {
         if (cancelled) return
-        setSession((current) => current?.accessToken === token ? { accessToken: token, user: profile } : current)
+        setSession((current) =>
+          current?.accessToken === token ? { accessToken: token, user: profile } : current,
+        )
       })
       .catch(() => undefined)
-      .finally(() => { if (!cancelled) setCheckingSession(false) })
-    return () => { cancelled = true }
+      .finally(() => {
+        if (!cancelled) setCheckingSession(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [token])
 
   function signIn(nextSession: AuthSession) {
@@ -70,11 +76,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem(STORAGE_KEY)
     setSession(null)
     setCheckingSession(false)
-    if (token) { try { await logoutRequest(token) } catch { /* Ya cerramos la sesión local */ } }
+    if (token) {
+      try {
+        await logoutRequest(token)
+      } catch {
+        /* Ya cerramos la sesión local */
+      }
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ user: session?.user ?? null, accessToken: token ?? null, checkingSession, sessionExpired, signIn, updateUser, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user: session?.user ?? null,
+        accessToken: token ?? null,
+        checkingSession,
+        sessionExpired,
+        signIn,
+        updateUser,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

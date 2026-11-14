@@ -1,6 +1,15 @@
 import { useEffect } from 'react'
 import type { ReactElement } from 'react'
-import { BrowserRouter, Link, NavLink, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import {
+  BrowserRouter,
+  Link,
+  NavLink,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './context/auth-context'
 import { useSpotlight } from './hooks/useSpotlight'
@@ -30,7 +39,10 @@ import './App.css'
 function ScrollToSection() {
   const location = useLocation()
   useEffect(() => {
-    if (!location.hash) { window.scrollTo(0, 0); return }
+    if (!location.hash) {
+      window.scrollTo(0, 0)
+      return
+    }
     const target = document.getElementById(decodeURIComponent(location.hash.slice(1)))
     target?.scrollIntoView({ behavior: 'smooth' })
   }, [location.pathname, location.hash])
@@ -49,7 +61,9 @@ function PublicLayout() {
           <LogoMark /> {businessName}
         </Link>
         <nav className="nav" aria-label="Navegación principal">
-          <NavLink to="/" end>Inicio</NavLink>
+          <NavLink to="/" end>
+            Inicio
+          </NavLink>
           <NavLink to="/catalogo">Catálogo</NavLink>
           <NavLink to="/nosotros">Nosotros</NavLink>
           <NavLink to="/contacto">Contacto</NavLink>
@@ -57,7 +71,9 @@ function PublicLayout() {
       </header>
       <Outlet />
       <footer className="footer">
-        <Link to="/" className="footer-logo"><LogoMark /> {businessName}</Link>
+        <Link to="/" className="footer-logo">
+          <LogoMark /> {businessName}
+        </Link>
         <p>© 2026{businessName && ` ${businessName}`}. Todos los derechos reservados.</p>
         <div className="footer-links">
           <Link to="/nosotros">Nosotros</Link>
@@ -75,7 +91,12 @@ function AppRoutes() {
   // Las únicas cuentas son las de los administradores del comercio:
   // estar logueado alcanza para entrar al área privada.
   function privateRoute(page: ReactElement) {
-    if (checkingSession) return <main className="profile-loading" role="status">Verificando tu sesión...</main>
+    if (checkingSession)
+      return (
+        <main className="profile-loading" role="status">
+          Verificando tu sesión...
+        </main>
+      )
     return user ? page : <Navigate to="/login" replace />
   }
 
@@ -114,7 +135,15 @@ function AppRoutes() {
 
 function App() {
   useSpotlight()
-  return <BrowserRouter><BusinessProvider><AuthProvider><AppRoutes /></AuthProvider></BusinessProvider></BrowserRouter>
+  return (
+    <BrowserRouter>
+      <BusinessProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BusinessProvider>
+    </BrowserRouter>
+  )
 }
 
 export default App

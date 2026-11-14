@@ -32,21 +32,37 @@ export default function BusinessDetails({ info }: { info: BusinessInfo }) {
       </div>
       <div className="business-detail-card">
         <h3>Teléfono</h3>
-        <p><a href={`tel:${info.phone.replace(/[^\d+]/g, '')}`}>{info.phone}</a></p>
+        <p>
+          <a href={`tel:${info.phone.replace(/[^\d+]/g, '')}`}>{info.phone}</a>
+        </p>
       </div>
       <div className="business-detail-card">
         <h3>Horarios</h3>
         {info.openingHours.length > 0 ? (
-          <ul>{info.openingHours.map((hours, index) => <li key={`${index}-${hours}`}>{hours}</li>)}</ul>
-        ) : <p>Horarios no informados.</p>}
+          <ul>
+            {info.openingHours.map((hours, index) => (
+              <li key={`${index}-${hours}`}>{hours}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>Horarios no informados.</p>
+        )}
       </div>
       <div className="business-detail-card">
         <h3>Redes sociales</h3>
         {networks.length > 0 ? (
-          <ul>{networks.map((url) => (
-            <li key={url}><a href={url} target="_blank" rel="noopener noreferrer">{socialLabel(url)} ↗</a></li>
-          ))}</ul>
-        ) : <p>Redes sociales no informadas.</p>}
+          <ul>
+            {networks.map((url) => (
+              <li key={url}>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  {socialLabel(url)} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>Redes sociales no informadas.</p>
+        )}
       </div>
     </div>
   )

@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 
 // Bloques con fondo negro que muestran el cuadriculado y el foco de luz amarillo (ver motion.css).
-const SPOTLIGHT_SELECTOR = '.welcome, .section-heading, .contact-section, .information-bottom-cta, .contact-aside, .admin-sidebar, .auth-aside'
+const SPOTLIGHT_SELECTOR =
+  '.welcome, .section-heading, .contact-section, .information-bottom-cta, .contact-aside, .admin-sidebar, .auth-aside'
 
 // Un único listener global: guarda la posición del mouse en --mx y --my del bloque que está bajo el puntero.
 export function useSpotlight() {

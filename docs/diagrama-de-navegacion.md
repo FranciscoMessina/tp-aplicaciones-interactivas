@@ -76,7 +76,7 @@ flowchart TD
 | Ruta | Acceso | Qué se hace |
 | --- | --- | --- |
 | `/` | Público | Categorías principales con cantidad y precio desde, promociones vigentes, productos destacados (o los más nuevos) y las colecciones encendidas con sus primeros cuatro productos |
-| `/catalogo` | Público | Catálogo paginado con búsqueda, orden y un panel lateral de filtros (una o varias categorías, rango de precio, con stock, ofertas). Los filtros aplicados se ven como chips y viven en la URL: `?q=`, `categoria=<id>,<id>`, `desde=`, `hasta=`, `stock=1`, `ofertas=1`, `orden=`, `pagina=` |
+| `/catalogo` | Público | Catálogo paginado con búsqueda, orden y un panel lateral de filtros (una o varias categorías, rango de precio, con stock, ofertas). Los filtros aplicados se ven como chips y viven en la URL: `?q=`, `categoria=<id>,<id>`, `desde=`, `hasta=`, `stock=1`, `ofertas=1`, `orden=` (`recent` por defecto, `price-asc`, `price-desc`, `name` y `relevance`, que solo aplica con `q`: es el orden por defecto al buscar y sin `q` se ignora), `pagina=` |
 | `/productos/:id` | Público | Detalle del producto con todas sus imágenes, descuento (si viene de una promoción, la nombra y lleva a su colección), aviso de pocas unidades, acceso a consultar (o a pedir aviso si no hay stock) y otros productos de su colección o, si no está en ninguna, de su categoría |
 | `/colecciones/:id` | Público | Título, descripción y productos publicados de una colección, en el orden elegido en el panel |
 | `/nosotros` | Público | Descripción, dirección, teléfono, horarios y redes del comercio |
