@@ -30,12 +30,17 @@ export const loginSchema = z.object({
   password: enteredPasswordSchema,
 });
 
+// `currentPassword` solo es obligatoria si cambia el email (ver
+// `updateUserProfile`): con el email se puede recuperar la cuenta.
 export const updateProfileSchema = z
-  .object(userFields)
-  .partial()
-  .refine((value) => Object.keys(value).length > 0, {
-    message: "Enviá al menos un campo para modificar",
-  });
+  .object({
+    ...z.object(userFields).partial().shape,
+    currentPassword: enteredPasswordSchema.optional(),
+  })
+  .refine(
+    (value) => Object.keys(value).some((field) => field !== "currentPassword"),
+    { message: "Enviá al menos un campo para modificar" },
+  );
 
 export const changePasswordSchema = z.object({
   currentPassword: enteredPasswordSchema,

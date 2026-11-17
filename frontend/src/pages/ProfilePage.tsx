@@ -10,6 +10,7 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState(user?.fullName ?? '')
   const [email, setEmail] = useState(user?.email ?? '')
   const [phone, setPhone] = useState(user?.phone ?? '')
+  const [emailPassword, setEmailPassword] = useState('')
   const [saving, setSaving] = useState(false)
   const [profileError, setProfileError] = useState('')
   const [profileSuccess, setProfileSuccess] = useState('')
@@ -35,6 +36,8 @@ export default function ProfilePage() {
       email: email.trim(),
       phone: phone.trim(),
     }
+    // El backend pide la contraseña actual para cambiar el email.
+    const emailChanged = values.email.toLowerCase() !== user?.email
     if (!values.fullName || !values.email || !values.phone) {
       setProfileError('Completá nombre, correo y teléfono.')
       return
@@ -42,8 +45,12 @@ export default function ProfilePage() {
 
     setSaving(true)
     try {
-      const updated = await updateProfile(accessToken, values)
+      const updated = await updateProfile(
+        accessToken,
+        emailChanged ? { ...values, currentPassword: emailPassword } : values,
+      )
       updateUser(updated)
+      setEmailPassword('')
       setFullName(updated.fullName)
       setEmail(updated.email)
       setPhone(updated.phone)
@@ -140,6 +147,22 @@ export default function ProfilePage() {
                 onChange={(event) => setEmail(event.target.value)}
               />
             </div>
+            {email.trim().toLowerCase() !== user?.email && (
+              <div className="admin-field">
+                <label htmlFor="profile-email-password">
+                  Contraseña actual (para cambiar el correo)
+                </label>
+                <input
+                  id="profile-email-password"
+                  required
+                  type="password"
+                  maxLength={200}
+                  autoComplete="current-password"
+                  value={emailPassword}
+                  onChange={(event) => setEmailPassword(event.target.value)}
+                />
+              </div>
+            )}
             <div className="admin-field">
               <label htmlFor="profile-phone">Teléfono</label>
               <input

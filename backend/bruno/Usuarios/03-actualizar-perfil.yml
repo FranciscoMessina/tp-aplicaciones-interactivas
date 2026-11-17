@@ -28,12 +28,13 @@ docs: |-
   Body, todos opcionales pero al menos uno:
   - `fullName`
   - `email`: no puede estar en uso por otra cuenta.
+  - `currentPassword`: obligatoria solo si cambia el `email`.
   - `phone`
 
   **Devuelve**
 
   - `200` con el perfil actualizado.
-  - `400` si algún campo es inválido; `error.fields` trae los mensajes por campo.
+  - `400` si algún campo es inválido o si cambia el email sin la contraseña actual correcta; `error.fields` trae los mensajes por campo.
   - `401` si falta el token o está vencido.
   - `409` si el email ya lo usa otra cuenta.
 

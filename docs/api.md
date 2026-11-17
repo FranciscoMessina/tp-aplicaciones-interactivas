@@ -212,7 +212,7 @@ administrador da de alta a los demás desde el panel.
 - `POST /api/users/login`: inicia sesión con `email` y `password` y devuelve un JWT (incluye el rol del usuario).
 - `POST /api/users/logout`: valida el JWT y responde sin contenido; el cliente debe eliminar el token almacenado.
 - `GET /api/users/me`: obtiene los datos del usuario autenticado.
-- `PATCH /api/users/me`: modifica `fullName`, `email` y/o `phone` del usuario autenticado.
+- `PATCH /api/users/me`: modifica `fullName`, `email` y/o `phone` del usuario autenticado. Para cambiar el `email` hay que mandar también `currentPassword`: con el email se puede recuperar la cuenta, así que un token robado no alcanza para quedarse con ella.
 - `PATCH /api/users/me/password`: cambia la contraseña con `currentPassword` y `newPassword`. Cierra las demás sesiones, anula los enlaces de recuperación pendientes y devuelve un `accessToken` nuevo para seguir en la sesión actual.
 - `POST /api/users/forgot-password`: genera un token de recuperación y le manda al usuario un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...`. La respuesta es la misma exista o no la cuenta.
 - `POST /api/users/reset-password`: cambia la contraseña con `token` y `password`, y cierra las sesiones abiertas. También activa las cuentas invitadas.

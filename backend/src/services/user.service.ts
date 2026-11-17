@@ -37,6 +37,7 @@ export interface UpdateProfileInput {
   fullName?: string;
   email?: string;
   phone?: string;
+  currentPassword?: string;
 }
 
 export interface PublicUser {
@@ -174,10 +175,25 @@ export async function getUserProfile(
   return user;
 }
 
+/**
+ * Cambiar el email pide la contraseña actual: si no, quien consiga un token
+ * (una sesion abierta en una PC compartida) podria poner su propio email,
+ * pedir la recuperacion y quedarse con la cuenta.
+ */
 export async function updateUserProfile(
   userId: string,
-  updates: UpdateProfileInput,
+  { currentPassword, ...updates }: UpdateProfileInput,
 ): Promise<DocumentType<User>> {
+  if (updates.email !== undefined) {
+    const current = await UserModel.findById(userId).select(
+      "+passwordHash email",
+    );
+
+    if (current && current.email !== updates.email) {
+      await ensureCurrentPassword(current, currentPassword);
+    }
+  }
+
   const user = await UserModel.findByIdAndUpdate(
     userId,
     { $set: updates },
@@ -192,6 +208,30 @@ export async function updateUserProfile(
   }
 
   return user;
+}
+
+/** Para los cambios sensibles de la cuenta. `user` tiene que traer `passwordHash`. */
+async function ensureCurrentPassword(
+  user: DocumentType<User>,
+  currentPassword: string | undefined,
+): Promise<void> {
+  if (
+    !currentPassword ||
+    !user.passwordHash ||
+    !(await verifyPassword(currentPassword, user.passwordHash))
+  ) {
+    throw new ApplicationError(
+      ApplicationErrorKind.InvalidInput,
+      "Hay campos con errores",
+      {
+        currentPassword: [
+          currentPassword
+            ? "La contraseña actual es incorrecta"
+            : "Ingresá tu contraseña actual",
+        ],
+      },
+    );
+  }
 }
 
 /**
@@ -214,16 +254,7 @@ export async function changePassword(
     );
   }
 
-  if (
-    !user.passwordHash ||
-    !(await verifyPassword(currentPassword, user.passwordHash))
-  ) {
-    throw new ApplicationError(
-      ApplicationErrorKind.InvalidInput,
-      "Hay campos con errores",
-      { currentPassword: ["La contraseña actual es incorrecta"] },
-    );
-  }
+  await ensureCurrentPassword(user, currentPassword);
 
   user.passwordHash = await hashPassword(newPassword);
   user.sessionVersion += 1;

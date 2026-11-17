@@ -31,6 +31,8 @@ export interface ProfileChanges {
   fullName: string
   email: string
   phone: string
+  // Solo hace falta si cambia el email.
+  currentPassword?: string
 }
 
 export function updateProfile(token: string, updates: ProfileChanges) {

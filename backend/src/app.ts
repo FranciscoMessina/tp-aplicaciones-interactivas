@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import cors from "cors";
 import express from "express";
+import helmet from "helmet";
 import morgan from "morgan";
 import { env } from "./config/env.ts";
 import {
@@ -25,6 +26,12 @@ app.set("trust proxy", env.trustProxyHops);
 // El orden de los `app.use` importa: Express pasa cada request por estas
 // funciones de arriba hacia abajo.
 
+// Agrega headers de seguridad estandar a todas las respuestas: que el navegador
+// no adivine el tipo de un archivo, que la API no se pueda embeber en un
+// iframe, que no se informe el framework, etc. Las imagenes de `/uploads` se
+// muestran desde el front, que esta en otro origen: por eso se permite que
+// otros origenes las carguen.
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 // Escribe en consola una linea por cada request (metodo, ruta, status y tiempo
 // de respuesta). Va primero para registrar tambien los que terminan en error.
 // En desarrollo usa un formato corto y con colores; en produccion, el formato
