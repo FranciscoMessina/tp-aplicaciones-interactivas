@@ -916,7 +916,9 @@
   background: var(--sheet);
   color: var(--ink);
   box-shadow: 0 24px 64px rgba(16, 19, 23, 0.28);
-  overflow: auto;
+  /* Solo scroll vertical: el contenido es fluido y nunca necesita el horizontal
+     (los elementos que inyecta el autocompletado del navegador sí lo provocaban). */
+  overflow: hidden auto;
 }
 .modal-wide {
   width: min(94vw, 720px);

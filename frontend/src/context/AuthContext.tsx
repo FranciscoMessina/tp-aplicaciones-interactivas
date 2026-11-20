@@ -9,7 +9,7 @@ const STORAGE_KEY = 'KernelStore_session'
 
 function readSession(): AuthSession | null {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const session: AuthSession = JSON.parse(raw)
     if (typeof session.accessToken !== 'string' || !session.user?.id) return null
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // las rutas privadas redirigen al login, que explica el motivo.
   useEffect(() => {
     setSessionRejectedHandler(() => {
-      sessionStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(STORAGE_KEY)
       setSession(null)
       setSessionExpired(true)
     })
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token])
 
   function signIn(nextSession: AuthSession) {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextSession))
     setSession(nextSession)
     setCheckingSession(false)
     setSessionExpired(false)
@@ -66,14 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   function updateUser(nextUser: AuthUser) {
     if (!session) return
     const updatedSession = { ...session, user: nextUser }
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSession))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSession))
     setSession(updatedSession)
   }
 
   async function signOut() {
     const token = session?.accessToken
     // Limpiar el token del cliente siempre, incluso si falla la red.
-    sessionStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(STORAGE_KEY)
     setSession(null)
     setCheckingSession(false)
     if (token) {

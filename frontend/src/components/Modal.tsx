@@ -28,7 +28,14 @@ export default function Modal({ title, onClose, children, wide = false }: ModalP
         onClose()
       }}
       onMouseDown={(event) => {
-        if (event.target === ref.current) onClose()
+        // Cierra solo con un clic en el fondo: la scrollbar y el padding del <dialog> también lo reciben como target.
+        const box = event.currentTarget.getBoundingClientRect()
+        const outside =
+          event.clientX < box.left ||
+          event.clientX > box.right ||
+          event.clientY < box.top ||
+          event.clientY > box.bottom
+        if (outside) onClose()
       }}
     >
       <div className="modal-header">

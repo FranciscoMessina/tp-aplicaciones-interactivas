@@ -206,8 +206,9 @@ Las únicas cuentas son las de los administradores del comercio: los visitantes
 navegan y envían consultas sin registrarse. No hay registro público: un
 administrador da de alta a los demás desde el panel.
 
-- `GET /api/users`: lista los administradores. Solo administradores.
+- `GET /api/users`: lista los administradores. Cada uno trae `pendingInvitation`, que es `true` mientras no haya elegido su contraseña. Solo administradores.
 - `POST /api/users`: crea un administrador con `fullName` (hasta 120 caracteres), `email` (hasta 254) y `phone` (hasta 40). La cuenta nace sin contraseña y la persona recibe un mail con el enlace `FRONTEND_URL/restablecer-contrasena?token=...&invitacion=1` para elegirla; vence a las 72 horas. Solo administradores.
+- `POST /api/users/:id/resend-invitation`: genera un enlace nuevo (vence a las 72 horas) y se lo manda a un administrador que todavía no eligió su contraseña; el enlace anterior deja de servir. Responde `204`; `409` si la cuenta ya está activada. Solo administradores.
 - `DELETE /api/users/:id`: elimina un administrador; sus sesiones dejan de valer en el acto. Nadie puede eliminar su propia cuenta (`409`), así que siempre queda al menos uno. Solo administradores.
 - `POST /api/users/login`: inicia sesión con `email` y `password` y devuelve un JWT (incluye el rol del usuario).
 - `POST /api/users/logout`: valida el JWT y responde sin contenido; el cliente debe eliminar el token almacenado.

@@ -8,6 +8,7 @@ import {
   login,
   logout,
   requestPasswordReset,
+  resendInvitation,
   resetPassword,
   updateProfile,
 } from "../controllers/user.controller.ts";
@@ -23,6 +24,12 @@ const userRouter = Router();
 // No hay registro publico: las cuentas las crea un administrador.
 userRouter.get("/", authenticate, requireAdmin, listUsers);
 userRouter.post("/", authenticate, requireAdmin, createUser);
+userRouter.post(
+  "/:id/resend-invitation",
+  authenticate,
+  requireAdmin,
+  resendInvitation,
+);
 userRouter.delete("/:id", authenticate, requireAdmin, deleteUser);
 userRouter.post("/login", loginLimiter, login);
 userRouter.post("/logout", authenticate, logout);

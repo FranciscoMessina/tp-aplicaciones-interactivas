@@ -92,8 +92,48 @@ export async function createUser(input: CreateUserInput): Promise<PublicUser> {
   return toPublicUser(user);
 }
 
-export function listUsers(): Promise<DocumentType<User>[]> {
-  return UserModel.find().select(PUBLIC_USER_FIELDS).sort({ fullName: 1 });
+/**
+ * Una cuenta sin contraseña es una invitacion que todavia no se aceptó. El hash
+ * no sale de aca: solo se usa para calcular `pendingInvitation`.
+ */
+export async function listUsers() {
+  const users = await UserModel.find()
+    .select(`${PUBLIC_USER_FIELDS} +passwordHash`)
+    .sort({ fullName: 1 });
+
+  return users.map((user) => {
+    const { passwordHash, ...publicFields } = user.toJSON();
+    return { ...publicFields, pendingInvitation: !passwordHash };
+  });
+}
+
+/**
+ * Genera un enlace nuevo para una cuenta que todavia no eligio su contraseña.
+ * El anterior deja de servir porque el token se reemplaza.
+ */
+export async function resendInvitation(userId: string): Promise<void> {
+  const user = await UserModel.findById(userId).select("+passwordHash");
+
+  if (!user) {
+    throw new ApplicationError(
+      ApplicationErrorKind.NotFound,
+      "No se encontró el usuario",
+    );
+  }
+
+  if (user.passwordHash) {
+    throw new ApplicationError(
+      ApplicationErrorKind.Conflict,
+      "Esta persona ya activó su cuenta",
+    );
+  }
+
+  const { token, tokenHash } = createPasswordResetToken();
+  user.passwordResetTokenHash = tokenHash;
+  user.passwordResetExpiresAt = new Date(Date.now() + INVITATION_DURATION_MS);
+  await user.save();
+
+  sendInvitationEmail(user.email, user.fullName, token);
 }
 
 export async function deleteUser(

@@ -117,38 +117,43 @@ function HomePage() {
       </section>
 
       {!categories.error && (
-        <nav className="order-table" aria-label="Categorías principales">
-          {categories.isLoading ? (
-            Array.from({ length: MAIN_CATEGORIES + 1 }, (_, index) => (
-              <div key={index} className="order-row is-placeholder" aria-hidden="true" />
-            ))
-          ) : (
-            <>
-              {mainCategories.map((stat, index) => (
-                <Link key={stat.id} className="order-row" to={`/catalogo?categoria=${stat.id}`}>
+        <>
+          <div className="section-heading categories-heading">
+            <h2 id="categories-title">Categorías</h2>
+          </div>
+          <nav className="order-table" aria-labelledby="categories-title">
+            {categories.isLoading ? (
+              Array.from({ length: MAIN_CATEGORIES + 1 }, (_, index) => (
+                <div key={index} className="order-row is-placeholder" aria-hidden="true" />
+              ))
+            ) : (
+              <>
+                {mainCategories.map((stat, index) => (
+                  <Link key={stat.id} className="order-row" to={`/catalogo?categoria=${stat.id}`}>
+                    <span className="order-code" aria-hidden="true">
+                      C-{String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="order-name">{stat.name}</span>
+                    <span className="order-examples">{stat.examples.join(', ')}</span>
+                    <span className="order-count">
+                      {stat.productCount} {stat.productCount === 1 ? 'producto' : 'productos'}
+                    </span>
+                    <span className="order-price">desde {formatPrice(stat.minPrice)}</span>
+                  </Link>
+                ))}
+                <Link className="order-row is-all" to="/catalogo">
                   <span className="order-code" aria-hidden="true">
-                    C-{String(index + 1).padStart(2, '0')}
+                    C-00
                   </span>
-                  <span className="order-name">{stat.name}</span>
-                  <span className="order-examples">{stat.examples.join(', ')}</span>
-                  <span className="order-count">
-                    {stat.productCount} {stat.productCount === 1 ? 'producto' : 'productos'}
-                  </span>
-                  <span className="order-price">desde {formatPrice(stat.minPrice)}</span>
+                  <span className="order-name">Todo el catálogo</span>
+                  <span className="order-examples" />
+                  <span className="order-count">{productCount} productos</span>
+                  <span className="order-price">Buscar y filtrar</span>
                 </Link>
-              ))}
-              <Link className="order-row is-all" to="/catalogo">
-                <span className="order-code" aria-hidden="true">
-                  C-00
-                </span>
-                <span className="order-name">Todo el catálogo</span>
-                <span className="order-examples" />
-                <span className="order-count">{productCount} productos</span>
-                <span className="order-price">Buscar y filtrar</span>
-              </Link>
-            </>
-          )}
-        </nav>
+              </>
+            )}
+          </nav>
+        </>
       )}
 
       {/* Las promociones son un extra: si fallan o no hay, la sección no aparece. */}

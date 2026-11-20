@@ -1,0 +1,34 @@
+info:
+  name: Reenviar invitación
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/users/:id/resend-invitation"
+  params:
+    - name: id
+      value: ""
+      type: path
+      description: Id del usuario, copiarlo de "Listar administradores"
+  auth: inherit
+
+docs: |-
+  Reenvía la invitación a un administrador que todavía no eligió su contraseña (en "Listar administradores" figura con `pendingInvitation: true`). Genera un enlace nuevo que vence en 72 horas; el anterior deja de funcionar. Sin SMTP, en desarrollo el mail se escribe en la consola del backend.
+
+  **Auth:** administrador. Usa el token guardado al iniciar sesión como admin.
+
+  **Recibe**
+
+  - Param `id`: id del usuario, sale de "Listar administradores".
+
+  **Devuelve**
+
+  - `204` sin cuerpo.
+  - `401` si falta el token o la sesión ya no es válida.
+  - `403` si el usuario no es administrador.
+  - `404` si el usuario no existe.
+  - `409` si la persona ya activó su cuenta.
+
+settings:
+  encodeUrl: true

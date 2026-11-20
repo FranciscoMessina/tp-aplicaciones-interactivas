@@ -7,8 +7,8 @@ import Icon from '../components/Icon'
 import Modal from '../components/Modal'
 import { useAuth } from '../context/auth-context'
 import { ApiRequestError, getErrorMessage as errorMessage } from '../services/api'
-import { createUser, deleteUser, fetchUsers } from '../services/users'
-import type { NewUser } from '../services/users'
+import { createUser, deleteUser, fetchUsers, resendInvitation } from '../services/users'
+import type { AdminUser, NewUser } from '../services/users'
 import type { AuthUser } from '../types/auth'
 
 type Field = keyof NewUser
@@ -152,12 +152,13 @@ export default function AdminUsersPage() {
   const { accessToken, user: currentUser } = useAuth()
   const token = accessToken ?? ''
 
-  const [users, setUsers] = useState<AuthUser[]>([])
+  const [users, setUsers] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [reload, setReload] = useState(0)
   const [creating, setCreating] = useState(false)
-  const [deleting, setDeleting] = useState<AuthUser | null>(null)
+  const [deleting, setDeleting] = useState<AdminUser | null>(null)
+  const [resendingId, setResendingId] = useState<string | null>(null)
   const [deleteBusy, setDeleteBusy] = useState(false)
   const [notice, setNotice] = useState<Notice | null>(null)
   const clearNotice = useCallback(() => setNotice(null), [])
@@ -185,12 +186,30 @@ export default function AdminUsersPage() {
   function handleSaved(saved: AuthUser) {
     setCreating(false)
     setUsers((current) =>
-      [...current, saved].sort((a, b) => a.fullName.localeCompare(b.fullName, 'es')),
+      [...current, { ...saved, pendingInvitation: true }].sort((a, b) =>
+        a.fullName.localeCompare(b.fullName, 'es'),
+      ),
     )
     setNotice({
       kind: 'success',
       text: `Se creó la cuenta de ${saved.fullName} y le enviamos la invitación a ${saved.email}.`,
     })
+  }
+
+  async function resend(item: AdminUser) {
+    if (resendingId) return
+    setResendingId(item.id)
+    try {
+      await resendInvitation(token, item.id)
+      setNotice({
+        kind: 'success',
+        text: `Le enviamos una invitación nueva a ${item.email}. La anterior dejó de funcionar.`,
+      })
+    } catch (error) {
+      setNotice({ kind: 'error', text: errorMessage(error) })
+    } finally {
+      setResendingId(null)
+    }
   }
 
   async function confirmDelete() {
@@ -273,11 +292,29 @@ export default function AdminUsersPage() {
                           <span className="admin-tag">Vos</span>
                         </>
                       )}
+                      {item.pendingInvitation && (
+                        <>
+                          {' '}
+                          <span className="admin-tag">Invitación pendiente</span>
+                        </>
+                      )}
                     </td>
                     <td data-label="Correo electrónico">{item.email}</td>
                     <td data-label="Teléfono">{item.phone}</td>
                     <td className="admin-actions-cell">
                       <div className="admin-row-actions">
+                        {item.pendingInvitation && (
+                          <button
+                            type="button"
+                            className="admin-icon-button"
+                            aria-label={`Reenviar la invitación a ${item.fullName}`}
+                            title="Reenviar invitación"
+                            disabled={resendingId !== null}
+                            onClick={() => void resend(item)}
+                          >
+                            <Icon name="mail" />
+                          </button>
+                        )}
                         {item.id !== currentUser?.id && (
                           <button
                             type="button"

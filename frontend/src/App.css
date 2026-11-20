@@ -339,6 +339,9 @@
 .collection-heading {
   margin-top: 20px;
 }
+.categories-heading {
+  margin: 0 var(--gutter);
+}
 .section-heading .collection-promotion {
   display: inline-block;
   margin-top: 12px;

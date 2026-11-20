@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
-    "dev": "tsc-watch --onSuccess \"node dist/server.js\"",
+    "dev": "tsc-watch --onSuccess \"node --use-system-ca dist/server.js\"",
     "typecheck": "tsc --noEmit",
     "build": "npm run clean && tsc",
     "start": "node dist/server.js",

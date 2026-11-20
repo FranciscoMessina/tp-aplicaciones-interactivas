@@ -22,6 +22,15 @@ export async function createUser(req: Request, res: Response): Promise<void> {
   sendSuccess(res, await userService.createUser(body), 201);
 }
 
+export async function resendInvitation(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { id } = validate(idParamsSchema, req.params);
+  await userService.resendInvitation(id);
+  res.status(204).send();
+}
+
 export async function deleteUser(req: Request, res: Response): Promise<void> {
   const { sub: requesterId } = getAuthenticatedUser(req);
   const { id } = validate(idParamsSchema, req.params);
